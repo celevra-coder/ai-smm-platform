@@ -16,7 +16,7 @@ const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  async function handleLogin(e: React.FormEvent) {
+    async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setMessage("");
@@ -27,18 +27,35 @@ const [showPassword, setShowPassword] = useState(false);
     });
 
     if (error) {
-  const friendlyMessage =
-    error.message === "Invalid login credentials"
-      ? "Грешен имейл или парола. Провери данните и опитай отново."
-      : "Неуспешен вход. Моля, опитай отново.";
+      const friendlyMessage =
+        error.message === "Invalid login credentials"
+          ? "Грешен имейл или парола. Провери данните и опитай отново."
+          : "Неуспешен вход. Моля, опитай отново.";
 
-  setMessage(friendlyMessage);
-  setLoading(false);
-  return;
-}
+      setMessage(friendlyMessage);
+      setLoading(false);
+      return;
+    }
 
     router.push("/");
-router.refresh();
+    router.refresh();
+  }
+
+  async function handleGoogleLogin() {
+    setLoading(true);
+    setMessage("");
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      setMessage("Неуспешен вход с Google. Моля, опитай отново.");
+      setLoading(false);
+    }
   }
 
   return (
@@ -48,7 +65,20 @@ router.refresh();
         <p className="text-sm text-gray-500 mb-6">
           Влез в платформата си
         </p>
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="mb-4 w-full rounded-xl border bg-white py-3 font-medium text-black hover:bg-gray-50 disabled:opacity-50"
+        >
+          Вход с Google
+        </button>
 
+        <div className="mb-4 flex items-center gap-3">
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs text-gray-400">или</span>
+          <div className="h-px flex-1 bg-gray-200" />
+        </div>
         <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
