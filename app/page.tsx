@@ -84,20 +84,20 @@ export default function HomePage() {
               </a>
             </div>
 
-            <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3 sm:gap-4">
-              <div className="rounded-[24px] border border-white/70 bg-white/80 p-4 shadow-sm">
+            <div className="mt-8 flex gap-3 overflow-x-auto pb-2 sm:grid sm:max-w-2xl sm:grid-cols-3 sm:gap-4 sm:overflow-visible">
+              <div className="min-w-[220px] flex-shrink-0 rounded-[20px] border border-white/70 bg-white/80 p-3 shadow-sm sm:min-w-0 sm:p-4">
                 <p className="text-2xl font-black text-neutral-900">Банери</p>
                 <p className="mt-1 text-sm text-neutral-500">
                   За промоции, услуги и локални оферти
                 </p>
               </div>
-              <div className="rounded-[24px] border border-white/70 bg-white/80 p-4 shadow-sm">
+              <div className="min-w-[220px] flex-shrink-0 rounded-[20px] border border-white/70 bg-white/80 p-3 shadow-sm sm:min-w-0 sm:p-4">
                 <p className="text-2xl font-black text-neutral-900">Текстове</p>
                 <p className="mt-1 text-sm text-neutral-500">
                   За постове и рекламни послания
                 </p>
               </div>
-              <div className="rounded-[24px] border border-white/70 bg-white/80 p-4 shadow-sm">
+              <div className="min-w-[220px] flex-shrink-0 rounded-[20px] border border-white/70 bg-white/80 p-3 shadow-sm sm:min-w-0 sm:p-4">
                 <p className="text-2xl font-black text-neutral-900">Концепция</p>
                 <p className="mt-1 text-sm text-neutral-500">
                   За по-цялостно присъствие онлайн
@@ -191,13 +191,13 @@ export default function HomePage() {
               </span>
             </h3>
 
-            <p className="mt-4 text-base leading-7 text-neutral-600">
+            <p className="mt-3 text-sm leading-6 text-neutral-600 sm:mt-4 sm:text-base sm:leading-7">
               Описваш на български какъв банер искаш — промоция, град, отстъпка,
               период, продукт, услуга или конкретен повод. По желание добавяш
               лого или изображение.
             </p>
 
-            <div className="mt-6 space-y-3 text-sm text-neutral-700">
+            <div className="mt-4 space-y-2 text-sm text-neutral-700 hidden sm:block">
               <div className="rounded-[20px] bg-[#f8f5f1] px-4 py-3">
                 Подходящо за промоции, локални обяви и кампании
               </div>
@@ -232,7 +232,7 @@ export default function HomePage() {
               </span>
             </h3>
 
-            <p className="mt-4 text-base leading-7 text-neutral-600">
+            <p className="mt-3 text-sm leading-6 text-neutral-600 sm:mt-4 sm:text-base sm:leading-7">
               За бизнеси, които искат последователен стил и по-добра рекламна
               структура в социалните мрежи — с бранд информация, насока и
               следващи формати.
@@ -273,7 +273,7 @@ export default function HomePage() {
               </span>
             </h3>
 
-            <p className="mt-4 text-base leading-7 text-neutral-600">
+            <p className="mt-3 text-sm leading-6 text-neutral-600 sm:mt-4 sm:text-base sm:leading-7">
               Генерирай структуриран календар със съдържание за твоя бизнес —
               теми, идеи за постове, формати и насоки по дни или седмици.
             </p>
