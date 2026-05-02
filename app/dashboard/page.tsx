@@ -1306,7 +1306,7 @@ const previewHeadlineSource = cleanHeadlineInput(
     clean = clean + "!";
   }
 
-  return clampText(clean, 72);
+  return clampText(clean, 58);
 };
 
   const getDisplaySubtext = () => {
@@ -1590,7 +1590,7 @@ const finalLines = [
     ]);
   });
 
-return finalLines.slice(0, (quickPhone || brandPhone || plan?.phone) ? 3 : 4);
+return finalLines.slice(0, (quickPhone || brandPhone || plan?.phone) ? 2 : 3);
 };
 
   const getOverlayStrength = () => {
@@ -2009,7 +2009,7 @@ const previewHeadline = previewOfferBadge
   : previewHeadlineBase;
 
 const previewSupportLines = getDisplaySupportLines();
-const previewPhone = clampText(quickPhone || plan?.phone, 24);
+const previewPhone = clampText(quickPhone || plan?.phone, 18);
 
 
 const getSmartLayout = () => {
@@ -2121,7 +2121,7 @@ const getHeadlineSizeClasses = (large = false) => {
     return `text-[24px] leading-[1.06] ${accentPalette.headline}`;
   }
 
-  return `text-[28px] leading-[1.03] ${accentPalette.headline}`;
+  return `text-[24px] leading-[1.04] ${accentPalette.headline}`;
 };
 
 const renderPhonePill = (large = false) => {
@@ -2161,7 +2161,7 @@ const renderPhonePill = (large = false) => {
       } ${
         large
           ? "text-[17px] md:px-4 md:py-2 md:text-[23px]"
-          : "text-[14px] md:text-[16px]"
+          : "text-[12px] md:text-[15px]"
       }`}
     >
       <span className="mr-1.5 text-[0.98em]">📞</span>
@@ -2295,8 +2295,8 @@ const renderSupportBlock = (large = false, dark = false) => {
             key={`${line}-${index}`}
             className={`flex items-center gap-2 font-semibold ${
               large
-                ? "text-[18px] md:text-[20px] leading-[1.35]"
-                : "text-[16px] leading-[1.35]"
+  ? "text-[15px] md:text-[18px] leading-[1.25]"
+  : "text-[13px] leading-[1.25]"
             } ${dark ? "text-neutral-800" : "text-white/92"}`}
           >
             <span className="shrink-0 text-[18px] leading-none">
@@ -2319,8 +2319,8 @@ const renderBannerComposition = (large = false) => {
   const rootClass = "relative aspect-square w-full overflow-hidden bg-neutral-900";
   const headlineClass = `font-black ${getHeadlineSizeClasses(large)}`;
   const subtextClass = large
-    ? `mt-4 max-w-[560px] text-[20px] font-semibold leading-[1.34] md:text-[24px] ${accentPalette.subtext}`
-    : `mt-4 text-[19px] font-semibold leading-[1.34] ${accentPalette.subtext}`;
+    ? `mt-3 max-w-[520px] text-[17px] font-semibold leading-[1.25] md:text-[21px] ${accentPalette.subtext}`
+    : `mt-3 text-[15px] font-semibold leading-[1.25] ${accentPalette.subtext}`;
 
   const textAlign = getTextAlign();
   const textWrapClass = large
