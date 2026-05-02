@@ -12,6 +12,7 @@ export default function Navbar() {
   const [credits, setCredits] = useState<number | null>(null);
 const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 const [unreadMessageIds, setUnreadMessageIds] = useState<string[]>([]);
+const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
   const checkUser = async () => {
@@ -197,6 +198,12 @@ const handleLogout = async () => {
     </span>
   ) : null}
 </Link>
+<button
+  onClick={() => setMenuOpen((v) => !v)}
+  className="flex h-10 w-10 items-center justify-center rounded-full border border-black/10 bg-white text-xl sm:hidden"
+>
+  ⋯
+</button>
             <Link
               href="/account"
               className="hidden rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 sm:inline-flex"
@@ -229,6 +236,27 @@ const handleLogout = async () => {
           </>
         )}
       </div>
+      {menuOpen && (
+  <div className="absolute right-4 top-20 z-50 flex w-44 flex-col rounded-2xl border bg-white p-2 shadow-lg sm:hidden">
+    <Link
+      href="/account"
+      onClick={() => setMenuOpen(false)}
+      className="rounded-xl px-4 py-2 text-sm hover:bg-gray-100"
+    >
+      Профил
+    </Link>
+
+    <button
+      onClick={async () => {
+        setMenuOpen(false);
+        await handleLogout();
+      }}
+      className="rounded-xl px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+    >
+      Изход
+    </button>
+  </div>
+)}
     </header>
   );
 }
