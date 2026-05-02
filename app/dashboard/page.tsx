@@ -1306,7 +1306,7 @@ const previewHeadlineSource = cleanHeadlineInput(
     clean = clean + "!";
   }
 
-  return clampText(clean, 58);
+  return clampText(clean, 46);
 };
 
   const getDisplaySubtext = () => {
@@ -2098,7 +2098,7 @@ const getHeadlineSizeClasses = (large = false) => {
       return `text-[30px] md:text-[40px] leading-[1.06] ${accentPalette.headline}`;
     }
 
-    return `text-[36px] md:text-[48px] leading-[1.02] ${accentPalette.headline}`;
+    return `text-[28px] md:text-[38px] leading-[1.06] ${accentPalette.headline}`;
   }
 
   if (headlineLength > 90) {
@@ -2121,7 +2121,7 @@ const getHeadlineSizeClasses = (large = false) => {
     return `text-[24px] leading-[1.06] ${accentPalette.headline}`;
   }
 
-  return `text-[24px] leading-[1.04] ${accentPalette.headline}`;
+  return `text-[21px] leading-[1.08] ${accentPalette.headline}`;
 };
 
 const renderPhonePill = (large = false) => {
@@ -2355,7 +2355,7 @@ const renderBannerComposition = (large = false) => {
 
           <div
             className={`relative z-20 flex h-full flex-col items-center text-center text-white ${
-              large ? "px-10 py-10 md:px-12 md:py-12" : "px-6 py-6"
+              large ? "px-12 py-14 md:px-16 md:py-16" : "px-8 py-9"
             }`}
           >
             <div className={large ? "h-[90px] md:h-[110px]" : "h-[72px]"} />
