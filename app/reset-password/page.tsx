@@ -15,6 +15,21 @@ const [message, setMessage] = useState("");
 const [isReady, setIsReady] = useState(false);
 useEffect(() => {
   const handleRecovery = async () => {
+    const code = new URLSearchParams(window.location.search).get("code");
+
+    if (code) {
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+      if (error) {
+        setMessage("Линкът за смяна на парола е изтекъл или невалиден.");
+        setIsReady(false);
+        return;
+      }
+
+      setIsReady(true);
+      return;
+    }
+
     const hash = window.location.hash;
 
     if (hash) {
@@ -30,6 +45,7 @@ useEffect(() => {
 
         if (error) {
           setMessage("Линкът е изтекъл или невалиден.");
+          setIsReady(false);
           return;
         }
 
@@ -38,7 +54,6 @@ useEffect(() => {
       }
     }
 
-    // 👉 FALLBACK: проверяваме дали вече има session
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -49,6 +64,7 @@ useEffect(() => {
     }
 
     setMessage("Линкът за смяна на парола е невалиден.");
+    setIsReady(false);
   };
 
   void handleRecovery();
@@ -81,11 +97,13 @@ useEffect(() => {
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm border">
         <h1 className="text-2xl font-bold mb-2">
-          Нова парола
-        </h1>
-        <p className="text-sm text-gray-500 mb-6">
-          Въведи новата си парола
-        </p>
+  {isReady ? "Нова парола" : "Невалиден линк"}
+</h1>
+<p className="text-sm text-gray-500 mb-6">
+  {isReady
+    ? "Въведи новата си парола"
+    : "Заяви нов линк за възстановяване на парола."}
+</p>
 
         {isReady ? (
 <form onSubmit={handleReset} className="space-y-4">
