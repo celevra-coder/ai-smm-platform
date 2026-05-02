@@ -17,31 +17,38 @@ useEffect(() => {
   const handleRecovery = async () => {
     const hash = window.location.hash;
 
-    if (!hash) {
-      setMessage("Линкът за смяна на парола е невалиден.");
+    if (hash) {
+      const params = new URLSearchParams(hash.replace("#", ""));
+      const access_token = params.get("access_token");
+      const refresh_token = params.get("refresh_token");
+
+      if (access_token && refresh_token) {
+        const { error } = await supabase.auth.setSession({
+          access_token,
+          refresh_token,
+        });
+
+        if (error) {
+          setMessage("Линкът е изтекъл или невалиден.");
+          return;
+        }
+
+        setIsReady(true);
+        return;
+      }
+    }
+
+    // 👉 FALLBACK: проверяваме дали вече има session
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (session?.user) {
+      setIsReady(true);
       return;
     }
 
-    const params = new URLSearchParams(hash.replace("#", ""));
-    const access_token = params.get("access_token");
-    const refresh_token = params.get("refresh_token");
-
-    if (!access_token || !refresh_token) {
-      setMessage("Линкът за смяна на парола е невалиден.");
-      return;
-    }
-
-    const { error } = await supabase.auth.setSession({
-      access_token,
-      refresh_token,
-    });
-
-    if (error) {
-      setMessage("Линкът е изтекъл или невалиден.");
-      return;
-    }
-
-    setIsReady(true);
+    setMessage("Линкът за смяна на парола е невалиден.");
   };
 
   void handleRecovery();
