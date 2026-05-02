@@ -21,14 +21,24 @@ useEffect(() => {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error) {
-        setMessage("Линкът за смяна на парола е изтекъл или невалиден.");
-        setIsReady(false);
-        return;
-      }
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-      setIsReady(true);
-      return;
-    }
+  if (session?.user) {
+    setIsReady(true);
+    setMessage("");
+    return;
+  }
+
+  setMessage("Линкът за смяна на парола е изтекъл или невалиден.");
+  setIsReady(false);
+  return;
+}
+
+setIsReady(true);
+setMessage("");
+return;
 
     const hash = window.location.hash;
 
