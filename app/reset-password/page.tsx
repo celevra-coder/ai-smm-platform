@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 
@@ -10,8 +10,32 @@ export default function ResetPasswordPage() {
 
   const [password, setPassword] = useState("");
 const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+const [loading, setLoading] = useState(false);
+const [message, setMessage] = useState("");
+const [isReady, setIsReady] = useState(false);
+useEffect(() => {
+  const handleRecoveryCode = async () => {
+    const code = new URLSearchParams(window.location.search).get("code");
+
+    if (!code) {
+      setMessage("Линкът за смяна на парола е невалиден или вече е използван.");
+      setIsReady(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      setMessage("Линкът за смяна на парола е изтекъл или невалиден.");
+      setIsReady(false);
+      return;
+    }
+
+    setIsReady(true);
+  };
+
+  void handleRecoveryCode();
+}, [supabase]);
 
   async function handleReset(e: React.FormEvent) {
     e.preventDefault();
@@ -46,7 +70,8 @@ const [showPassword, setShowPassword] = useState(false);
           Въведи новата си парола
         </p>
 
-        <form onSubmit={handleReset} className="space-y-4">
+        {isReady ? (
+<form onSubmit={handleReset} className="space-y-4">
           <div className="relative">
   <input
     type={showPassword ? "text" : "password"}
@@ -73,7 +98,8 @@ const [showPassword, setShowPassword] = useState(false);
           >
             {loading ? "Запазване..." : "Запази новата парола"}
           </button>
-        </form>
+                </form>
+        ) : null}
 
         {message && (
           <p className="mt-4 text-sm text-center text-green-600">
