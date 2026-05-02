@@ -2098,16 +2098,16 @@ const useCircularOfferBadge = shouldUseCircularOfferBadge();
   const headlineLength = (previewHeadline || "").trim().length;
 
   if (variant === "export") {
-    if (headlineLength > 34) {
-      return `text-[42px] leading-[1.08] ${accentPalette.headline}`;
-    }
-
-    if (style === "compact") {
-      return `text-[44px] leading-[1.08] ${accentPalette.headline}`;
-    }
-
-    return `text-[50px] leading-[1.04] ${accentPalette.headline}`;
+  if (headlineLength > 34) {
+    return `text-[34px] leading-[1.12] ${accentPalette.headline}`;
   }
+
+  if (style === "compact") {
+    return `text-[36px] leading-[1.12] ${accentPalette.headline}`;
+  }
+
+  return `text-[40px] leading-[1.08] ${accentPalette.headline}`;
+}
 
   if (variant === "desktop") {
     if (headlineLength > 34) {
@@ -2164,8 +2164,8 @@ const renderPhonePill = (large = false) => {
         accentPalette.phone
       } ${
         large
-          ? "text-[17px] md:px-4 md:py-2 md:text-[23px]"
-          : "text-[12px] md:text-[15px]"
+  ? "text-[15px] md:px-3.5 md:py-1.5 md:text-[18px]"
+  : "text-[12px] md:text-[15px]"
       }`}
     >
       <span className="mr-1.5 text-[0.98em]">📞</span>
@@ -2300,7 +2300,7 @@ const renderSupportBlock = (large = false, dark = false) => {
             key={`${line}-${index}`}
             className={`flex items-center gap-2 font-semibold ${
               large
-  ? "text-[18px] md:text-[20px] leading-[1.35]"
+  ? "text-[15px] md:text-[17px] leading-[1.32]"
   : "text-[13px] leading-[1.25]"
             } ${dark ? "text-neutral-800" : "text-white/92"}`}
           >
@@ -2330,7 +2330,7 @@ const renderBannerComposition = (
   const headlineClass = `font-black ${getHeadlineSizeClasses(variant)}`;
 
   const subtextClass = isExport
-    ? `mt-4 max-w-[620px] text-[28px] font-semibold leading-[1.25] ${accentPalette.subtext}`
+  ? `mt-3 max-w-[680px] text-[22px] font-semibold leading-[1.28] ${accentPalette.subtext}`
     : variant === "desktop"
     ? `mt-3 max-w-[520px] text-[18px] font-semibold leading-[1.25] ${accentPalette.subtext}`
     : `mt-3 text-[15px] font-semibold leading-[1.25] ${accentPalette.subtext}`;
