@@ -2913,7 +2913,6 @@ if (previewHeadline) {
   }
 };
 const getBannerExportNode = () => {
-  if (exportBannerRef.current) return exportBannerRef.current;
   if (bannerPreviewRef.current) return bannerPreviewRef.current;
   return null;
 };
