@@ -21,6 +21,7 @@ useEffect(() => {
       const { error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error) {
+        console.log("RESET EXCHANGE ERROR:", error);
   const {
     data: { session },
   } = await supabase.auth.getSession();
