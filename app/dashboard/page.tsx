@@ -2089,55 +2089,43 @@ const overlayClasses = getOverlayClasses();
 const accentPalette = getAccentPalette();
 const useCircularOfferBadge = shouldUseCircularOfferBadge();
 
-const getHeadlineSizeClasses = (large = false) => {
+
+
+  const getHeadlineSizeClasses = (
+  variant: "mobile" | "desktop" | "export" = "mobile"
+) => {
   const style = getHeadlineStyle();
   const headlineLength = (previewHeadline || "").trim().length;
 
-  if (large) {
-    if (headlineLength > 90) {
-      return `text-[24px] md:text-[30px] leading-[1.08] ${accentPalette.headline}`;
-    }
-
-    if (headlineLength > 72) {
-      return `text-[28px] md:text-[36px] leading-[1.06] ${accentPalette.headline}`;
-    }
-
-    if (headlineLength > 56) {
-      return `text-[31px] md:text-[40px] leading-[1.05] ${accentPalette.headline}`;
-    }
-
-    if (style === "editorial") {
-      return `text-[34px] md:text-[44px] leading-[1.05] ${accentPalette.headline}`;
+  if (variant === "export") {
+    if (headlineLength > 34) {
+      return `text-[42px] leading-[1.08] ${accentPalette.headline}`;
     }
 
     if (style === "compact") {
-      return `text-[30px] md:text-[40px] leading-[1.06] ${accentPalette.headline}`;
+      return `text-[44px] leading-[1.08] ${accentPalette.headline}`;
     }
 
-    return `text-[36px] md:text-[48px] leading-[1.02] ${accentPalette.headline}`;
+    return `text-[50px] leading-[1.04] ${accentPalette.headline}`;
   }
 
-  if (headlineLength > 90) {
-    return `text-[20px] leading-[1.10] ${accentPalette.headline}`;
+  if (variant === "desktop") {
+    if (headlineLength > 34) {
+      return `text-[28px] leading-[1.08] ${accentPalette.headline}`;
+    }
+
+    if (style === "compact") {
+      return `text-[30px] leading-[1.08] ${accentPalette.headline}`;
+    }
+
+    return `text-[34px] leading-[1.05] ${accentPalette.headline}`;
   }
 
-  if (headlineLength > 72) {
-    return `text-[22px] leading-[1.08] ${accentPalette.headline}`;
+  if (headlineLength > 34) {
+    return `text-[21px] leading-[1.08] ${accentPalette.headline}`;
   }
 
-  if (headlineLength > 56) {
-    return `text-[24px] leading-[1.06] ${accentPalette.headline}`;
-  }
-
-  if (style === "editorial") {
-    return `text-[26px] leading-[1.05] ${accentPalette.headline}`;
-  }
-
-  if (style === "compact") {
-    return `text-[24px] leading-[1.06] ${accentPalette.headline}`;
-  }
-
-  return `text-[21px] leading-[1.08] ${accentPalette.headline}`;
+  return `text-[23px] leading-[1.06] ${accentPalette.headline}`;
 };
 
 const renderPhonePill = (large = false) => {
@@ -2332,16 +2320,26 @@ const renderEditorialCtaText = () => {
   return null;
 };
 
-const renderBannerComposition = (large = false) => {
+const renderBannerComposition = (
+  variant: "mobile" | "desktop" | "export" = "mobile"
+) => {
+  const large = variant !== "mobile";
+  const isExport = variant === "export";
+
   const rootClass = "relative aspect-square w-full overflow-hidden bg-neutral-900";
-  const headlineClass = `font-black ${getHeadlineSizeClasses(large)}`;
-  const subtextClass = large
-    ? `mt-3 max-w-[520px] text-[17px] font-semibold leading-[1.25] md:text-[21px] ${accentPalette.subtext}`
+  const headlineClass = `font-black ${getHeadlineSizeClasses(variant)}`;
+
+  const subtextClass = isExport
+    ? `mt-4 max-w-[620px] text-[28px] font-semibold leading-[1.25] ${accentPalette.subtext}`
+    : variant === "desktop"
+    ? `mt-3 max-w-[520px] text-[18px] font-semibold leading-[1.25] ${accentPalette.subtext}`
     : `mt-3 text-[15px] font-semibold leading-[1.25] ${accentPalette.subtext}`;
 
   const textAlign = getTextAlign();
-  const textWrapClass = large
-    ? `max-w-[620px] ${textAlign === "center" ? "mx-auto text-center" : ""}`
+  const textWrapClass = isExport
+    ? `max-w-[700px] ${textAlign === "center" ? "mx-auto text-center" : ""}`
+    : variant === "desktop"
+    ? `max-w-[560px] ${textAlign === "center" ? "mx-auto text-center" : ""}`
     : `max-w-[320px] ${textAlign === "center" ? "mx-auto text-center" : ""}`;
 
   return (
@@ -3213,11 +3211,11 @@ const downloadImage = async (format: "png" | "jpg") => {
             ) : generatedImageUrl ? (
   <>
     <div className="md:hidden">
-      {renderBannerComposition(false)}
+      {renderBannerComposition("mobile")}
     </div>
 
     <div className="hidden md:block">
-      {renderBannerComposition(true)}
+      {renderBannerComposition("desktop")}
     </div>
   </>
 ) : (
@@ -3590,7 +3588,7 @@ const downloadImage = async (format: "png" | "jpg") => {
 {generatedImageUrl ? (
   <div className="fixed left-[-9999px] top-0 h-[1024px] w-[1024px] overflow-hidden">
     <div ref={exportBannerRef} className="h-[1024px] w-[1024px]">
-      {renderBannerComposition(true)}
+      {renderBannerComposition("export")}
     </div>
   </div>
 ) : null}
@@ -3609,7 +3607,7 @@ const downloadImage = async (format: "png" | "jpg") => {
     <div className="flex min-h-full items-center justify-center">
       <div className="w-full max-w-[min(92vw,900px)] rounded-[24px] bg-white p-3 shadow-2xl sm:p-5">
         <div className="overflow-hidden rounded-[20px] border border-black/10">
-          {renderBannerComposition(true)}
+          {renderBannerComposition("desktop")}
         </div>
       </div>
     </div>
