@@ -13,18 +13,25 @@ export default function HomePage() {
 
 
   useEffect(() => {
-    const checkUser = async () => {
-      const supabase = createClient();
+  const code = new URLSearchParams(window.location.search).get("code");
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  if (code) {
+    window.location.href = `/reset-password?code=${code}`;
+    return;
+  }
 
-      setIsLoggedIn(Boolean(user));
-    };
+  const checkUser = async () => {
+    const supabase = createClient();
 
-    void checkUser();
-  }, []);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    setIsLoggedIn(Boolean(user));
+  };
+
+  void checkUser();
+}, []);
   const handleProtectedClick = (e: React.MouseEvent, href: string) => {
   if (isLoggedIn) return;
 
