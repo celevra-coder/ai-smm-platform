@@ -1122,8 +1122,19 @@ if (userError || !user) {
 };
 
   const clampText = (value?: string, max = 120) => {
-  const clean = (value || "").trim().replace(/\s+/g, " ");
+  let clean = (value || "").trim().replace(/\s+/g, " ");
   if (!clean) return "";
+
+  const removeDanglingEnd = (text: string) => {
+    return text
+      .replace(/[,.!?:;–-]+\s*$/g, "")
+      .replace(/\b(в|на|за|с|от|по|към|при|до|без|над|под|около|след|преди)\s*$/i, "")
+      .replace(/\b(специална цена от|цена от|оферта за|само за|само от|елате на|заповядайте на|валидно до)\s*$/i, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  };
+
+  clean = removeDanglingEnd(clean);
 
   if (clean.length <= max) return clean;
 
@@ -1132,11 +1143,8 @@ if (userError || !user) {
   // маха срязана дума
   text = text.replace(/\s+\S*$/, "");
 
-  // маха висящи кратки думи
-  text = text.replace(
-    /\b(в|на|за|с|от|по|към|при|до|без)\s*$/i,
-    ""
-  );
+  // маха висящи фрази и предлози
+  text = removeDanglingEnd(text);
 
   return `${text.trim()}…`;
 };
