@@ -150,7 +150,7 @@ const handleLogout = async () => {
 };
 
   return (
-    <header className="flex items-center justify-between rounded-full border border-white/70 bg-white/75 px-5 py-3 shadow-[0_10px_35px_rgba(0,0,0,0.05)] backdrop-blur">
+    <header className="flex flex-wrap items-center justify-between gap-3 rounded-[2rem] border border-white/70 bg-white/75 px-4 py-3 shadow-[0_10px_35px_rgba(0,0,0,0.05)] backdrop-blur sm:flex-nowrap sm:rounded-full sm:px-5">
       <Link href="/" className="flex items-center gap-3">
   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-950 text-sm font-bold text-white">
     AI
@@ -162,7 +162,7 @@ const handleLogout = async () => {
   </div>
 </Link>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
         {isLoggedIn ? (
           <>
           {(credits ?? 0) > 0 ? (
@@ -199,17 +199,17 @@ const handleLogout = async () => {
 </Link>
             <Link
               href="/account"
-              className="inline-flex rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+              className="hidden rounded-full bg-neutral-900 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 sm:inline-flex"
             >
               Профил
             </Link>
 
             <button
-              onClick={handleLogout}
-              className="inline-flex rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"
-            >
-              Изход
-            </button>
+  onClick={handleLogout}
+  className="hidden rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white sm:inline-flex"
+>
+  Изход
+</button>
           </>
         ) : (
           <>
