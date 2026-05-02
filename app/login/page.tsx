@@ -65,20 +65,7 @@ const [showPassword, setShowPassword] = useState(false);
         <p className="text-sm text-gray-500 mb-6">
           Влез в платформата си
         </p>
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={loading}
-          className="mb-4 w-full rounded-xl border bg-white py-3 font-medium text-black hover:bg-gray-50 disabled:opacity-50"
-        >
-          Вход с Google
-        </button>
-
-        <div className="mb-4 flex items-center gap-3">
-          <div className="h-px flex-1 bg-gray-200" />
-          <span className="text-xs text-gray-400">или</span>
-          <div className="h-px flex-1 bg-gray-200" />
-        </div>
+        
         <form onSubmit={handleLogin} className="space-y-4">
           <input
             type="email"
@@ -116,6 +103,21 @@ const [showPassword, setShowPassword] = useState(false);
             {loading ? "Влизане..." : "Вход"}
           </button>
         </form>
+        <div className="mt-4">
+  <button
+    type="button"
+    onClick={handleGoogleLogin}
+    disabled={loading}
+    className="flex w-full items-center justify-center gap-3 rounded-xl border bg-white py-3 font-medium text-black hover:bg-gray-50 disabled:opacity-50"
+  >
+    <img
+      src="https://www.svgrepo.com/show/475656/google-color.svg"
+      alt="Google"
+      className="h-5 w-5"
+    />
+    Вход с Google
+  </button>
+</div>
 
 <div className="mt-3 text-right">
   <Link
