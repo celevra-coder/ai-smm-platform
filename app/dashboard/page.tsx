@@ -2113,7 +2113,7 @@ const getHeadlineSizeClasses = (large = false) => {
       return `text-[30px] md:text-[40px] leading-[1.06] ${accentPalette.headline}`;
     }
 
-    return `text-[28px] md:text-[38px] leading-[1.06] ${accentPalette.headline}`;
+    return `text-[36px] md:text-[48px] leading-[1.02] ${accentPalette.headline}`;
   }
 
   if (headlineLength > 90) {
@@ -2310,7 +2310,7 @@ const renderSupportBlock = (large = false, dark = false) => {
             key={`${line}-${index}`}
             className={`flex items-center gap-2 font-semibold ${
               large
-  ? "text-[15px] md:text-[18px] leading-[1.25]"
+  ? "text-[18px] md:text-[20px] leading-[1.35]"
   : "text-[13px] leading-[1.25]"
             } ${dark ? "text-neutral-800" : "text-white/92"}`}
           >
@@ -2339,7 +2339,7 @@ const renderBannerComposition = (large = false) => {
 
   const textAlign = getTextAlign();
   const textWrapClass = large
-    ? `max-w-[470px] ${textAlign === "center" ? "mx-auto text-center" : ""}`
+    ? `max-w-[620px] ${textAlign === "center" ? "mx-auto text-center" : ""}`
     : `max-w-[320px] ${textAlign === "center" ? "mx-auto text-center" : ""}`;
 
   return (
