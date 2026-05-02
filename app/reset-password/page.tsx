@@ -39,6 +39,7 @@ useEffect(() => {
 setIsReady(true);
 setMessage("");
 return;
+}
 
     const hash = window.location.hash;
 
