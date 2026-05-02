@@ -3170,7 +3170,7 @@ const downloadImage = async (format: "png" | "jpg") => {
 
           <div
   ref={generatedImageUrl ? bannerPreviewRef : null}
-  className="overflow-hidden rounded-[28px] border border-black/10 bg-[#f5f1ec]"
+  className="w-full overflow-hidden rounded-[28px] border border-black/10 bg-[#f5f1ec]"
 >
             {loading ? (
               <div className="flex aspect-square items-center justify-center p-8 text-center">
@@ -3554,28 +3554,25 @@ const downloadImage = async (format: "png" | "jpg") => {
     </main>
 
             {isPreviewOpen && generatedImageUrl ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-          onClick={() => setIsPreviewOpen(false)}
-        >
-          <div
-            className="relative w-full max-w-4xl max-h-[90vh] overflow-auto rounded-[24px] bg-white p-4 md:p-6"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setIsPreviewOpen(false)}
-              className="absolute right-3 top-3 z-10 rounded-full bg-black px-3 py-1 text-sm text-white"
-            >
-              ✕
-            </button>
+  <div className="fixed inset-0 z-50 bg-black/80 p-3 sm:flex sm:items-center sm:justify-center sm:p-4">
+    <button
+      type="button"
+      onClick={() => setIsPreviewOpen(false)}
+      className="fixed right-4 top-4 z-[70] flex h-11 w-11 items-center justify-center rounded-full bg-white text-xl font-black text-black shadow-lg"
+      aria-label="Затвори"
+    >
+      ✕
+    </button>
 
-            <div className="overflow-hidden rounded-[24px] border border-black/10">
-              {renderBannerComposition(true)}
-            </div>
-          </div>
+    <div className="flex min-h-full items-center justify-center">
+      <div className="w-full max-w-[min(92vw,900px)] rounded-[24px] bg-white p-3 shadow-2xl sm:p-5">
+        <div className="overflow-hidden rounded-[20px] border border-black/10">
+          {renderBannerComposition(true)}
         </div>
-      ) : null}
+      </div>
+    </div>
+  </div>
+) : null}
       {showDemoLimitModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
     <div className="w-full max-w-md rounded-[24px] bg-white p-6 text-center">
