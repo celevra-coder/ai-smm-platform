@@ -2445,7 +2445,7 @@ const renderBannerComposition = (
 
               {renderSupportBlock(large, false)}
 
-              <div className={previewPhone ? "mt-4 mb-6" : "mt-2"}>
+              <div className={previewPhone ? "mt-8" : "mt-2"}>
   {previewPhone ? renderPhonePill(large) : null}
 </div>
             </div>
@@ -2477,7 +2477,7 @@ const renderBannerComposition = (
 
               {renderSupportBlock(large, false)}
 
-              <div className={previewPhone ? "mt-4 mb-6" : "mt-2"}>
+              <div className={previewPhone ? "mt-8" : "mt-2"}>
   {previewPhone ? renderPhonePill(large) : null}
 </div>
             </div>
@@ -2533,7 +2533,7 @@ const renderBannerComposition = (
                 {renderSupportBlock(large, true)}
               </div>
 
-              <div className={previewPhone ? "mt-4 mb-6" : "mt-2"}>
+             <div className={previewPhone ? "mt-8" : "mt-2"}>
   {previewPhone ? renderPhonePill(large) : null}
 </div>
             </div>
@@ -2573,7 +2573,7 @@ const renderBannerComposition = (
 
               {renderSupportBlock(large, false)}
 
-              <div className={previewPhone ? "mt-4 mb-6" : "mt-2"}>
+              <div className={previewPhone ? "mt-8" : "mt-2"}>
   {previewPhone ? renderPhonePill(large) : null}
 </div>
             </div>
@@ -3588,7 +3588,7 @@ const downloadImage = async (format: "png" | "jpg") => {
 {generatedImageUrl ? (
   <div className="fixed left-[-9999px] top-0 h-[1024px] w-[1024px] overflow-hidden">
     <div ref={exportBannerRef} className="h-[1024px] w-[1024px]">
-      {renderBannerComposition("export")}
+      {renderBannerComposition("desktop")}
     </div>
   </div>
 ) : null}
