@@ -47,29 +47,29 @@ export default function HomePage() {
         <div className="absolute bottom-[-120px] left-[18%] h-[300px] w-[300px] rounded-full bg-[#ddd0c3] blur-3xl" />
       </div>
 
-      <section className="mx-auto max-w-7xl px-6 pb-10 pt-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 lg:px-8">
        
 
-        <div className="grid items-center gap-14 py-16 lg:grid-cols-[1.02fr_0.98fr] lg:py-24">
+        <div className="grid items-center gap-8 py-10 sm:py-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:py-24">
           <div>
-            <div className="inline-flex rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm backdrop-blur">
+            <div className="inline-flex max-w-full rounded-full border border-black/10 bg-white/80 px-4 py-2 text-center text-xs font-semibold text-neutral-700 shadow-sm backdrop-blur sm:text-sm">
               Създавай реклами по описание на български
             </div>
 
-            <h1 className="mt-7 max-w-3xl text-4xl font-black leading-[1.02] tracking-tight text-neutral-950 sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 max-w-3xl text-[2.35rem] font-black leading-[1.05] tracking-tight text-neutral-950 sm:text-5xl lg:text-6xl">
               Премиум рекламни визии,
               <span className="block text-[#7a6d62]">
                 създадени по описание на български.
               </span>
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-neutral-600">
+            <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-600 sm:text-lg sm:leading-8">
               Създавай банери и рекламни идеи за социалните мрежи, без да мислиш
               като дизайнер или copywriter. Просто опиши какво искаш — системата
               оформя визията вместо теб.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <a
                 href="#solutions"
                 className="inline-flex items-center justify-center rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
@@ -84,7 +84,7 @@ export default function HomePage() {
               </a>
             </div>
 
-            <div className="mt-10 grid max-w-2xl gap-4 sm:grid-cols-3">
+            <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3 sm:gap-4">
               <div className="rounded-[24px] border border-white/70 bg-white/80 p-4 shadow-sm">
                 <p className="text-2xl font-black text-neutral-900">Банери</p>
                 <p className="mt-1 text-sm text-neutral-500">
@@ -110,12 +110,12 @@ export default function HomePage() {
   <div className="absolute -left-10 top-12 h-40 w-40 rounded-full bg-white/55 blur-3xl" />
   <div className="absolute -right-10 bottom-10 h-44 w-44 rounded-full bg-[#e7ddd2] blur-3xl" />
 
-  <div className="relative rounded-[36px] border border-white/70 bg-white/85 p-8 text-center shadow-[0_25px_80px_rgba(0,0,0,0.08)] backdrop-blur">
+  <div className="relative rounded-[28px] border border-white/70 bg-white/85 p-4 text-center shadow-[0_25px_80px_rgba(0,0,0,0.08)] backdrop-blur sm:rounded-[36px] sm:p-8">
     <p className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-500">
   Професионално видео
 </p>
 
-<h2 className="mt-3 text-3xl font-black tracking-tight text-neutral-950 sm:text-4xl">
+<h2 className="mt-3 text-2xl font-black tracking-tight text-neutral-950 sm:text-4xl">
   Поръчай видео за твоя бизнес
 </h2>
 
@@ -131,7 +131,7 @@ export default function HomePage() {
         muted
         loop
         playsInline
-        className="h-[260px] w-full object-cover opacity-90"
+        className="h-[190px] w-full object-cover opacity-90 sm:h-[260px]"
       />
 
       <div className="p-4 text-left text-white">
@@ -163,13 +163,13 @@ export default function HomePage() {
 
       <section
         id="solutions"
-        className="mx-auto max-w-[1400px] px-6 py-4 lg:px-8 lg:py-8"
+        className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8 lg:py-10"
             >
         <div className="mb-8 max-w-2xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-500">
             Избери своя подход
           </p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight text-neutral-950 sm:text-4xl">
+          <h2 className="mt-3 text-2xl font-black tracking-tight text-neutral-950 sm:text-4xl">
             Създай реклама според нуждата си
           </h2>
           <p className="mt-4 text-base leading-7 text-neutral-600">
@@ -179,7 +179,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="rounded-[32px] border border-neutral-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+          <div className="rounded-[28px] border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:rounded-[32px] sm:p-7">
             <div className="inline-flex rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
               Най-бърз старт
             </div>
@@ -220,7 +220,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-[32px] border border-neutral-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+          <div className="rounded-[28px] border border-white/70 bg-white/70 px-4 py-8 shadow-[0_18px_60px_rgba(0,0,0,0.05)] backdrop-blur sm:rounded-[36px] sm:px-8 lg:px-12 lg:py-14">
             <div className="inline-flex rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-700">
               За по-силно присъствие
             </div>
@@ -261,7 +261,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-[32px] border border-neutral-200 bg-white p-7 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+          <div className="rounded-[28px] border border-white/70 bg-white/70 px-4 py-8 shadow-[0_18px_60px_rgba(0,0,0,0.05)] backdrop-blur sm:rounded-[36px] sm:px-8 lg:px-12 lg:py-14">
             <div className="inline-flex rounded-full bg-[#f3eee8] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-700">
               Нов модул
             </div>
@@ -305,9 +305,9 @@ export default function HomePage() {
 
       <section
         id="how-it-works"
-        className="mx-auto max-w-7xl px-6 py-16 lg:px-8"
+        className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8"
       >
-        <div className="rounded-[36px] border border-white/70 bg-white/70 px-6 py-10 shadow-[0_18px_60px_rgba(0,0,0,0.05)] backdrop-blur sm:px-8 lg:px-12 lg:py-14">
+        <div className="rounded-[28px] border border-white/70 bg-white/70 px-4 py-8 shadow-[0_18px_60px_rgba(0,0,0,0.05)] backdrop-blur sm:rounded-[36px] sm:px-8 lg:px-12 lg:py-14">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-500">
               Как работи
@@ -365,7 +365,7 @@ export default function HomePage() {
       </section>
       {showAuthModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-    <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-xl">
+    <div className="w-full max-w-md rounded-2xl bg-white p-5 text-center shadow-xl sm:p-6">
       <h2 className="text-2xl font-bold mb-2">
         Тествай платформата безплатно
       </h2>
