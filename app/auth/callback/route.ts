@@ -5,8 +5,7 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
 
-  let response = NextResponse.redirect(new URL("/dashboard", request.url));
-
+  let response = NextResponse.redirect(new URL("/", request.url));
   if (code) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
