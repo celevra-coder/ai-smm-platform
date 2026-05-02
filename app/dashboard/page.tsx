@@ -2001,12 +2001,19 @@ const removeDuplicateWords = (text: string, reference: string) => {
 cleanSubtext = removeDuplicateWords(cleanSubtext, headlineText);
   return cleanSubtext;
 })();
+const isTextHeavy =
+  Boolean(quickPhone || plan?.phone) ||
+  Boolean(address) ||
+  Boolean(periodText) ||
+  exactLines.length >= 3 ||
+  previewSubtext.length > 60;
+
 const previewHeadline = previewOfferBadge
   ? clampText(
       previewHeadlineBase.replace(/\d+\s?(евро|€|eur|лв)/gi, "").trim(),
-      72
+      isTextHeavy ? 38 : 46
     )
-  : previewHeadlineBase;
+  : clampText(previewHeadlineBase, isTextHeavy ? 38 : 46);
 
 const previewSupportLines = getDisplaySupportLines();
 const previewPhone = clampText(quickPhone || plan?.phone, 18);
@@ -2417,7 +2424,7 @@ const renderBannerComposition = (large = false) => {
 
           <div
             className={`relative z-20 flex h-full items-center text-white ${
-              large ? "px-8 py-8 md:px-10" : "px-5 py-5"
+             large ? "px-10 py-10 md:px-12" : "px-7 py-8"
             }`}
           >
             <div className={textWrapClass}>
@@ -2447,7 +2454,7 @@ const renderBannerComposition = (large = false) => {
 
           <div
             className={`relative z-20 flex h-full items-end text-white ${
-              large ? "px-8 py-8 md:px-10" : "px-5 py-5"
+              large ? "px-10 py-10 md:px-12" : "px-7 py-8"
             }`}
           >
             <div className={large ? "max-w-[560px]" : "max-w-[330px]"}>
@@ -2535,12 +2542,20 @@ const renderBannerComposition = (large = false) => {
 
           <div
             className={`relative z-20 flex h-full items-center text-white ${
-              large ? "px-8 py-8 md:px-10" : "px-5 py-5"
+              large ? "px-10 py-10 md:px-12" : "px-7 py-8"
             }`}
           >
             <div className={textWrapClass}>
-              {previewHeadline ? <h3 className={headlineClass}>{previewHeadline}</h3> : null}
-              {previewSubtext ? <p className={subtextClass}>{previewSubtext}</p> : null}
+              {previewHeadline ? (
+  <h3 className={`${headlineClass} line-clamp-3`}>
+    {previewHeadline}
+  </h3>
+) : null}
+              {previewSubtext ? (
+  <p className={`${subtextClass} line-clamp-2`}>
+    {previewSubtext}
+  </p>
+) : null}
 
               {!useCircularOfferBadge ? (
                 <div className="mt-6 flex flex-wrap gap-3">
