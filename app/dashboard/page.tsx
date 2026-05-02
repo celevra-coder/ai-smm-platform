@@ -1,7 +1,7 @@
 "use client";
 import { createClient } from "@/lib/supabase-browser";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { toBlob, toJpeg, toPng } from "html-to-image";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -76,7 +76,7 @@ type BannerPlan = {
   badge_style?: "rounded" | "circle";
 };
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -3691,5 +3691,12 @@ const downloadImage = async (format: "png" | "jpg") => {
 )}
 
     </>
+  );
+}
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={null}>
+      <DashboardPageContent />
+    </Suspense>
   );
 }

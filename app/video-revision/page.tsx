@@ -1,10 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
 
-export default function VideoRevisionPage() {
+function VideoRevisionPageContent() {
   const params = useSearchParams();
   const orderId = params.get("order_id");
 
@@ -100,5 +100,12 @@ export default function VideoRevisionPage() {
         </button>
       </div>
     </main>
+  );
+}
+export default function VideoRevisionPage() {
+  return (
+    <Suspense fallback={null}>
+      <VideoRevisionPageContent />
+    </Suspense>
   );
 }
