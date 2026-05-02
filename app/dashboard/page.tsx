@@ -84,6 +84,7 @@ function DashboardPageContent() {
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const brandLogoInputRef = useRef<HTMLInputElement | null>(null);
   const bannerPreviewRef = useRef<HTMLDivElement | null>(null);
+const exportBannerRef = useRef<HTMLDivElement | null>(null);
 
       const modeParam =
     searchParams.get("mode") ||
@@ -2221,6 +2222,7 @@ const renderOfferBadge = (large = false) => {
 };
 const renderLogoBadge = (large = false) => {
   if (!logoUrl) return null;
+  if (!large) return null;
 
   return (
     <div
@@ -2913,8 +2915,9 @@ if (previewHeadline) {
   }
 };
 const getBannerExportNode = () => {
-  if (!bannerPreviewRef.current) return null;
-  return bannerPreviewRef.current;
+  if (exportBannerRef.current) return exportBannerRef.current;
+  if (bannerPreviewRef.current) return bannerPreviewRef.current;
+  return null;
 };
 
 const downloadImage = async (format: "png" | "jpg") => {
@@ -3208,8 +3211,16 @@ const downloadImage = async (format: "png" | "jpg") => {
                 </div>
               </div>
             ) : generatedImageUrl ? (
-              renderBannerComposition(false)
-            ) : (
+  <>
+    <div className="md:hidden">
+      {renderBannerComposition(false)}
+    </div>
+
+    <div className="hidden md:block">
+      {renderBannerComposition(true)}
+    </div>
+  </>
+) : (
               <div className="flex aspect-square items-center justify-center p-8 text-center">
                 <div>
                   <div className="text-[15px] font-semibold text-neutral-700">
@@ -3575,6 +3586,14 @@ const downloadImage = async (format: "png" | "jpg") => {
         {mode === "quick-ad" ? renderQuickPreview() : renderBrandMode()}
       </div>
     </main>
+
+{generatedImageUrl ? (
+  <div className="fixed left-[-9999px] top-0 h-[1024px] w-[1024px] overflow-hidden">
+    <div ref={exportBannerRef} className="h-[1024px] w-[1024px]">
+      {renderBannerComposition(true)}
+    </div>
+  </div>
+) : null}
 
             {isPreviewOpen && generatedImageUrl ? (
   <div className="fixed inset-0 z-50 bg-black/80 p-3 sm:flex sm:items-center sm:justify-center sm:p-4">
