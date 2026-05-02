@@ -40,7 +40,7 @@ export default function HomePage() {
 };
 
   return (
-    <main className="min-h-screen bg-[#f5f1ec] text-neutral-900">
+    <main className="min-h-screen overflow-x-hidden bg-[#f5f1ec] text-neutral-900">
       <div className="absolute inset-0 -z-10 overflow-hidden hidden sm:block">
         <div className="absolute left-[-120px] top-[-80px] h-[320px] w-[320px] rounded-full bg-[#e9dfd3] blur-3xl" />
         <div className="absolute right-[-100px] top-[120px] h-[280px] w-[280px] rounded-full bg-[#efe7de] blur-3xl" />
@@ -84,7 +84,7 @@ export default function HomePage() {
               </a>
             </div>
 
-            <div className="mt-8 flex gap-3 overflow-x-auto pb-2 sm:grid sm:max-w-2xl sm:grid-cols-3 sm:gap-4 sm:overflow-visible">
+            <div className="mt-8 grid gap-3 sm:max-w-2xl sm:grid-cols-3 sm:gap-4">
               <div className="min-w-[220px] flex-shrink-0 rounded-[20px] border border-white/70 bg-white/80 p-3 shadow-sm sm:min-w-0 sm:p-4">
                 <p className="text-2xl font-black text-neutral-900">Банери</p>
                 <p className="mt-1 text-sm text-neutral-500">
@@ -220,7 +220,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/70 bg-white/70 px-4 py-8 shadow-[0_18px_60px_rgba(0,0,0,0.05)] backdrop-blur sm:rounded-[36px] sm:px-8 lg:px-12 lg:py-14">
+          <div className="rounded-[28px] border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:rounded-[32px] sm:p-7">
             <div className="inline-flex rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-700">
               За по-силно присъствие
             </div>
@@ -261,7 +261,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-white/70 bg-white/70 px-4 py-8 shadow-[0_18px_60px_rgba(0,0,0,0.05)] backdrop-blur sm:rounded-[36px] sm:px-8 lg:px-12 lg:py-14">
+          <div className="rounded-[28px] border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:rounded-[32px] sm:p-7">
             <div className="inline-flex rounded-full bg-[#f3eee8] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-700">
               Нов модул
             </div>

@@ -151,7 +151,7 @@ const handleLogout = async () => {
 };
 
   return (
-    <header className="flex flex-wrap items-center justify-between gap-3 rounded-[2rem] border border-white/70 bg-white/75 px-4 py-3 shadow-[0_10px_35px_rgba(0,0,0,0.05)] backdrop-blur sm:flex-nowrap sm:rounded-full sm:px-5">
+    <header className="relative flex w-full flex-wrap items-center justify-between gap-3 rounded-[2rem] border border-white/70 bg-white/75 px-4 py-3 shadow-[0_10px_35px_rgba(0,0,0,0.05)] backdrop-blur sm:flex-nowrap sm:rounded-full sm:px-5">
       <Link href="/" className="flex items-center gap-3">
   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-950 text-sm font-bold text-white">
     AI
@@ -163,7 +163,7 @@ const handleLogout = async () => {
   </div>
 </Link>
 
-      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+      <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end sm:gap-3">
         {isLoggedIn ? (
           <>
           {(credits ?? 0) > 0 ? (
@@ -237,7 +237,7 @@ const handleLogout = async () => {
         )}
       </div>
       {menuOpen && (
-  <div className="absolute right-4 top-20 z-50 flex w-44 flex-col rounded-2xl border bg-white p-2 shadow-lg sm:hidden">
+  <div className="absolute right-4 top-full z-50 mt-2 flex w-44 flex-col rounded-2xl border bg-white p-2 shadow-lg sm:hidden">
     <Link
       href="/account"
       onClick={() => setMenuOpen(false)}
