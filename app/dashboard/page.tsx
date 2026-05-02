@@ -2333,7 +2333,7 @@ const renderBannerComposition = (large = false) => {
         <img
           src={previewImageSource}
           alt="Banner background"
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain bg-neutral-900"
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-700" />
