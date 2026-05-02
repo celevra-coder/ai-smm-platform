@@ -41,7 +41,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-[#f5f1ec] text-neutral-900">
-      <div className="absolute inset-0 -z-10 overflow-hidden">
+      <div className="absolute inset-0 -z-10 overflow-hidden hidden sm:block">
         <div className="absolute left-[-120px] top-[-80px] h-[320px] w-[320px] rounded-full bg-[#e9dfd3] blur-3xl" />
         <div className="absolute right-[-100px] top-[120px] h-[280px] w-[280px] rounded-full bg-[#efe7de] blur-3xl" />
         <div className="absolute bottom-[-120px] left-[18%] h-[300px] w-[300px] rounded-full bg-[#ddd0c3] blur-3xl" />
