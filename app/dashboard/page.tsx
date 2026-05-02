@@ -3215,16 +3215,7 @@ const downloadImage = async (format: "png" | "jpg") => {
     </div>
 
     <div className="hidden md:block">
-  <div className="relative aspect-square w-full overflow-hidden">
-    <div
-      className="absolute left-0 top-0 h-[1024px] w-[1024px] origin-top-left"
-      style={{
-        transform: "scale(calc(100% / 1024))",
-      }}
-    >
-      {renderBannerComposition("export")}
-    </div>
-  </div>
+  {renderBannerComposition("desktop")}
 </div>
   </>
 ) : (
@@ -3616,16 +3607,7 @@ const downloadImage = async (format: "png" | "jpg") => {
     <div className="flex min-h-full items-center justify-center">
       <div className="w-full max-w-[min(92vw,900px)] rounded-[24px] bg-white p-3 shadow-2xl sm:p-5">
         <div className="overflow-hidden rounded-[20px] border border-black/10">
-          <div className="relative aspect-square w-full overflow-hidden">
-  <div
-    className="absolute left-0 top-0 h-[1024px] w-[1024px] origin-top-left"
-    style={{
-      transform: "scale(calc(100% / 1024))",
-    }}
-  >
-    {renderBannerComposition("export")}
-  </div>
-</div>
+          {renderBannerComposition("desktop")}
         </div>
       </div>
     </div>
