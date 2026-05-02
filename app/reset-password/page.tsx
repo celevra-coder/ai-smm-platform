@@ -14,27 +14,37 @@ const [loading, setLoading] = useState(false);
 const [message, setMessage] = useState("");
 const [isReady, setIsReady] = useState(false);
 useEffect(() => {
-  const handleRecoveryCode = async () => {
-    const code = new URLSearchParams(window.location.search).get("code");
+  const handleRecovery = async () => {
+    const hash = window.location.hash;
 
-    if (!code) {
-      setMessage("Линкът за смяна на парола е невалиден или вече е използван.");
-      setIsReady(false);
+    if (!hash) {
+      setMessage("Линкът за смяна на парола е невалиден.");
       return;
     }
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const params = new URLSearchParams(hash.replace("#", ""));
+    const access_token = params.get("access_token");
+    const refresh_token = params.get("refresh_token");
+
+    if (!access_token || !refresh_token) {
+      setMessage("Линкът за смяна на парола е невалиден.");
+      return;
+    }
+
+    const { error } = await supabase.auth.setSession({
+      access_token,
+      refresh_token,
+    });
 
     if (error) {
-      setMessage("Линкът за смяна на парола е изтекъл или невалиден.");
-      setIsReady(false);
+      setMessage("Линкът е изтекъл или невалиден.");
       return;
     }
 
     setIsReady(true);
   };
 
-  void handleRecoveryCode();
+  void handleRecovery();
 }, [supabase]);
 
   async function handleReset(e: React.FormEvent) {
