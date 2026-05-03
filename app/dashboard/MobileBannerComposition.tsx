@@ -32,9 +32,7 @@ export default function MobileBannerComposition({
       )}
 
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/28 to-black/10" />
-<div className="absolute left-2 top-2 z-50 bg-red-500 px-2 py-1 text-[10px] text-white">
-  logo: {logoUrl ? "YES" : "NO"}
-</div>
+
       {logoUrl ? (
   <div className="absolute right-3 top-3 z-[60] flex h-[54px] min-w-[72px] items-center justify-center rounded-2xl border border-black/10 bg-white/95 px-3 py-2 shadow-lg">
     <img
