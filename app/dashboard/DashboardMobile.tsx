@@ -108,9 +108,7 @@ export default function DashboardMobile({
           Бърз рекламен банер
         </h1>
 
-        <p className="mt-2 text-xs leading-5 text-neutral-500">
-          Попълни само най-важното. Допълнителните полета са прибрани, за да няма дълъг скрол.
-        </p>
+        
 
         <div className="mt-4">
           <label className="block">
@@ -368,20 +366,12 @@ export default function DashboardMobile({
             </button>
 
             <button
-              type="button"
-              onClick={onDownloadPng}
-              className="rounded-[18px] border border-black/10 bg-white px-3 py-3 text-xs font-bold"
-            >
-              PNG
-            </button>
-
-            <button
-              type="button"
-              onClick={onDownloadJpg}
-              className="col-span-2 rounded-[18px] border border-black/10 bg-white px-3 py-3 text-xs font-bold"
-            >
-              JPG
-            </button>
+  type="button"
+  onClick={onDownloadPng}
+  className="w-full rounded-[20px] bg-black px-5 py-3 text-[15px] font-bold text-white"
+>
+  Свали банера
+</button>
           </div>
         ) : null}
       </section>
