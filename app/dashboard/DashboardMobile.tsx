@@ -19,8 +19,7 @@ type Props = {
   setExactText: (value: string) => void;
   extraText: string;
   setExtraText: (value: string) => void;
-  
-  previewRef: React.RefObject<HTMLDivElement>;
+  previewRef: React.RefObject<HTMLDivElement | null>;
 
   logoUrl: string;
   logoFileName: string;
