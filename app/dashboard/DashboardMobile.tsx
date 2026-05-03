@@ -344,37 +344,30 @@ mobileBannerPhone,
           ) : null}
         </div>
 
-       <div
-  ref={previewRef}
-  className="mt-4 overflow-hidden rounded-[22px] border border-black/10 bg-[#f5f1ec]"
->
-          {loading ? (
-            <div className="flex aspect-square items-center justify-center p-6 text-center">
-              <div>
-                <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-black/10 border-t-black" />
-                <p className="mt-4 text-sm font-bold">
-                  Генерираме рекламата...
-                </p>
-              </div>
-            </div>
-          ) : generatedImageUrl ? (
-            <MobileBannerComposition
-  imageUrl={previewImageSource}
-  logoUrl={logoUrl}
-  headline={mobileBannerHeadline}
-  subtext={mobileBannerSubtext}
-  offerBadge={mobileBannerOfferBadge}
-  supportLines={mobileBannerSupportLines}
-  phone={mobileBannerPhone}
-/>
-          ) : (
-            <div className="flex aspect-square items-center justify-center p-6 text-center">
-              <p className="text-sm font-bold text-neutral-500">
-                Все още няма генериран банер.
-              </p>
-            </div>
-          )}
+       <div className="mt-4 overflow-hidden rounded-[22px] border border-black/10 bg-[#f5f1ec]">
+  <div ref={previewRef} className="bg-[#f5f1ec]">
+
+    {loading ? (
+      <div className="flex aspect-square items-center justify-center p-6 text-center">
+        <div>
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-black/10 border-t-black" />
+          <p className="mt-4 text-sm font-bold">
+            Генерираме рекламата...
+          </p>
         </div>
+      </div>
+    ) : generatedImageUrl ? (
+      renderBanner()
+    ) : (
+      <div className="flex aspect-square items-center justify-center p-6 text-center">
+        <p className="text-sm font-bold text-neutral-500">
+          Все още няма генериран банер.
+        </p>
+      </div>
+    )}
+
+  </div>
+</div>
 
         {previewImageSource ? (
           <div className="mt-3 grid grid-cols-2 gap-2">
