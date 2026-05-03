@@ -7,6 +7,7 @@ import { toBlob } from "html-to-image";
 import { toPng } from "html-to-image";
 import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
+import BrandStudioMobile from "./BrandStudioMobile";
 
 
 type BrandProfile = {
@@ -1514,7 +1515,41 @@ const handleContinueFromVideoSetup = async () => {
   await handleGenerateVideo();
 };
   return (
-    <main className="min-h-screen bg-[#f5f1ec] px-6 py-10">
+  <>
+    <div className="md:hidden">
+      <BrandStudioMobile
+        brandName={brandName}
+        selectedPostText={selectedPostText}
+        workspace={workspace}
+        generatedBannerUrl={generatedBannerUrl}
+        generatedVideoUrl={generatedVideoUrl}
+        uploadedImageUrl={uploadedImageUrl}
+        imageUsageMode={imageUsageMode}
+        videoDuration={videoDuration}
+        isGenerating={isGenerating}
+        isVideoGenerating={isVideoGenerating}
+        isGeneratingVideoFrames={isGeneratingVideoFrames}
+        isAdminUser={isAdminUser}
+        useFakeVideo={useFakeVideo}
+        renderBannerCard={() => renderBannerCard(false)}
+        onCopyPostText={handleCopyPostText}
+        onGenerateCampaign={() => openVideoSetupModal("campaign")}
+        onGenerateBanner={() => handleGenerateAll(false)}
+        onDownloadBanner={handleDownloadBanner}
+        onCopyBanner={handleCopyBanner}
+        onOpenVideoSetup={() => openVideoSetupModal("video")}
+        onVideoDurationChange={setVideoDuration}
+        onUseFakeVideoToggle={() => setUseFakeVideo((prev) => !prev)}
+        onImageUpload={setUploadedImageUrl}
+        onClearImage={() => {
+          setUploadedImageUrl("");
+          setImageUsageMode("integrate");
+        }}
+        onImageUsageModeChange={setImageUsageMode}
+      />
+    </div>
+
+    <main className="hidden min-h-screen bg-[#f5f1ec] px-6 py-10 md:block">
             <div className="mx-auto max-w-5xl">
         
 
@@ -2020,6 +2055,7 @@ const handleContinueFromVideoSetup = async () => {
     </div>
   </div>
 ) : null}
-    </main>
-  );
+        </main>
+  </>
+);
 }
