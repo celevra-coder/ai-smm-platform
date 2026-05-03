@@ -2,6 +2,7 @@
 import { createClient } from "@/lib/supabase-browser";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import BrandWorkspaceMobile from "./BrandWorkspaceMobile";
 
 type BrandProfile = {
   id?: string;
@@ -88,7 +89,7 @@ export default function BrandWorkspacePage() {
   const [promoPhone, setPromoPhone] = useState("");
   const [promoAddress, setPromoAddress] = useState("");
 
-     useEffect(() => {
+    useEffect(() => { 
     const loadWorkspace = async () => {
       try {
       const stored = localStorage.getItem("active_brand_profile");
@@ -364,7 +365,34 @@ const accessToken = session?.access_token;
 }
 
   return (
-    <main className="min-h-screen bg-[#f5f1ec] px-6 py-10 text-black">
+  <>
+    <div className="md:hidden">
+      <BrandWorkspaceMobile
+        brandProfile={brandProfile}
+        userRequest={userRequest}
+        setUserRequest={setUserRequest}
+        tone={tone}
+        setTone={setTone}
+        toneOptions={toneOptions}
+        promoHelperMessage={promoHelperMessage}
+        promoPhone={promoPhone}
+        setPromoPhone={setPromoPhone}
+        promoAddress={promoAddress}
+        setPromoAddress={setPromoAddress}
+        variations={variations}
+        selectedVariationIndex={selectedVariationIndex}
+        setSelectedVariationIndex={setSelectedVariationIndex}
+        selectedVariation={selectedVariation}
+        loading={loading}
+        error={error}
+        copyMessage={copyMessage}
+        onGenerate={handleGenerate}
+        onCopyText={handleCopyText}
+        onOpenVideoWorkspace={handleOpenVideoWorkspace}
+      />
+    </div>
+
+    <main className="hidden min-h-screen bg-[#f5f1ec] px-6 py-10 text-black md:block">
             <div className="mx-auto max-w-7xl space-y-8">
         
         <div className="mb-2">
@@ -709,6 +737,7 @@ const accessToken = session?.access_token;
           </>
         )}
       </div>
-    </main>
-  );
+        </main>
+  </>
+);
 }
