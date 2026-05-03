@@ -2376,15 +2376,15 @@ const renderBannerComposition = (
             <div className={large ? "h-[90px] md:h-[110px]" : "h-[72px]"} />
 
             <div
-              className={`flex w-full flex-1 flex-col items-center ${
-                large ? "max-w-[760px]" : "max-w-[360px]"
-              }`}
-            >
+  className={`flex w-full flex-1 flex-col items-center ${
+    large && logoUrl ? "max-w-[560px]" : large ? "max-w-[760px]" : "max-w-[360px]"
+  }`}
+>
               {previewHeadline ? (
                 <h3
                   className={`${headlineClass} ${
-                    large ? "max-w-[720px]" : "max-w-[340px]"
-                  }`}
+  large && logoUrl ? "max-w-[520px]" : large ? "max-w-[720px]" : "max-w-[340px]"
+}`}
                 >
                   {previewHeadline}
                 </h3>
