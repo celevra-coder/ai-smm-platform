@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { toBlob, toJpeg, toPng } from "html-to-image";
 import { useRouter, useSearchParams } from "next/navigation";
+import DashboardMobile from "./DashboardMobile";
 
 type Mode = "quick-ad" | "brand";
 type ImageUsageMode = "auto" | "integrate" | "exact";
@@ -3578,7 +3579,55 @@ const downloadImage = async (format: "png" | "jpg") => {
 
   return (
   <>
-    <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-black md:px-6 md:py-10">
+    {isQuickMode ? (
+      <div className="md:hidden">
+        <DashboardMobile
+          description={description}
+          setDescription={setDescription}
+          offerText={offerText}
+          setOfferText={setOfferText}
+          discountText={discountText}
+          setDiscountText={setDiscountText}
+          periodText={periodText}
+          setPeriodText={setPeriodText}
+          quickPhone={quickPhone}
+          setQuickPhone={setQuickPhone}
+          address={address}
+          setAddress={setAddress}
+          exactText={exactText}
+          setExactText={setExactText}
+          extraText={extraText}
+          setExtraText={setExtraText}
+          logoUrl={logoUrl}
+          logoFileName={logoFileName}
+          logoUploading={logoUploading}
+          logoUploadMessage={logoUploadMessage}
+          onLogoClick={() => logoInputRef.current?.click()}
+          onClearLogo={clearLogoSelection}
+          imageUrl={imageUrl}
+          imageFileName={imageFileName}
+          imageUploading={imageUploading}
+          imageUploadMessage={imageUploadMessage}
+          imageUsageMode={imageUsageMode}
+          setImageUsageMode={setImageUsageMode}
+          onImageClick={() => imageInputRef.current?.click()}
+          onClearImage={clearImageSelection}
+          loading={loading}
+          message={message}
+          generatedImageUrl={generatedImageUrl}
+          previewImageSource={previewImageSource}
+          renderBanner={() => renderBannerComposition("mobile")}
+          onGenerate={() => void handleGenerate(false)}
+          onCopy={() => void copyBannerToClipboard()}
+          onFullscreen={() => setIsPreviewOpen(true)}
+          onDownloadPng={() => void downloadImage("png")}
+          onDownloadJpg={() => void downloadImage("jpg")}
+          copyingBanner={copyingBanner}
+        />
+      </div>
+    ) : null}
+
+    <main className="hidden min-h-screen bg-[#f5f1ec] px-4 py-8 text-black md:block md:px-6 md:py-10">
       <div className="mx-auto max-w-7xl">
         {mode === "quick-ad" ? renderQuickPreview() : renderBrandMode()}
       </div>
