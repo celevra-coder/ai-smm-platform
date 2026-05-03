@@ -20,12 +20,12 @@ export default function MobileBannerComposition({
   phone,
 }: Props) {
   return (
-    <div className="relative aspect-square w-full overflow-hidden bg-neutral-900">
+    <div className="relative aspect-square w-full overflow-hidden bg-[#f5f1ec]">
       {imageUrl ? (
         <img
           src={imageUrl}
           alt="Banner"
-          className="absolute inset-0 h-full w-full object-contain bg-neutral-900"
+          className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-700" />
