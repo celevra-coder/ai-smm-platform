@@ -1147,7 +1147,7 @@ if (userError || !user) {
   // маха висящи фрази и предлози
   text = removeDanglingEnd(text);
 
-  return `${text.trim()}…`;
+  return text.trim();
 };
 
   const dedupeLines = (lines: string[]) => {
@@ -2337,10 +2337,10 @@ const renderBannerComposition = (
 
   const textAlign = getTextAlign();
   const textWrapClass = isExport
-    ? `max-w-[700px] ${textAlign === "center" ? "mx-auto text-center" : ""}`
-    : variant === "desktop"
-    ? `max-w-[560px] ${textAlign === "center" ? "mx-auto text-center" : ""}`
-    : `max-w-[320px] ${textAlign === "center" ? "mx-auto text-center" : ""}`;
+  ? `${logoUrl ? "max-w-[560px]" : "max-w-[700px]"} text-left`
+  : variant === "desktop"
+  ? `${logoUrl ? "max-w-[390px]" : "max-w-[560px]"} text-left`
+  : `max-w-[320px] ${textAlign === "center" ? "mx-auto text-center" : ""}`;
 
   return (
     <div className={rootClass}>
