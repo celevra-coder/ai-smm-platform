@@ -1539,11 +1539,22 @@ const handleContinueFromVideoSetup = async () => {
         isGenerating={isGenerating}
         isVideoGenerating={isVideoGenerating}
         isGeneratingVideoFrames={isGeneratingVideoFrames}
+        videoFrameOptions={videoFrameOptions}
+selectedVideoFrameUrl={selectedVideoFrameUrl}
+setSelectedVideoFrameUrl={setSelectedVideoFrameUrl}
+uploadedVideoImageUrl={uploadedVideoImageUrl}
+setUploadedVideoImageUrl={setUploadedVideoImageUrl}
+setUploadedVideoImageName={setUploadedVideoImageName}
+videoErrorText={videoErrorText}
+showVideoSetupModal={showVideoSetupModal}
+setShowVideoSetupModal={setShowVideoSetupModal}
+videoSetupMode={videoSetupMode}
+onContinueFromVideoSetup={handleContinueFromVideoSetup}
         isAdminUser={isAdminUser}
         useFakeVideo={useFakeVideo}
         renderBannerCard={() => renderBannerCard(false)}
         onCopyPostText={handleCopyPostText}
-        onGenerateCampaign={() => void handleGenerateAll(false)}
+        onGenerateCampaign={() => openVideoSetupModal("campaign")}
         onGenerateBanner={() => handleGenerateAll(false)}
         onDownloadBanner={handleDownloadBanner}
         onCopyBanner={handleCopyBanner}

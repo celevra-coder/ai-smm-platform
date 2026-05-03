@@ -12,6 +12,7 @@ type BrandProfile = {
 type Props = {
   brandName: string;
   selectedPostText: string;
+
   workspace: {
     brand_profile?: BrandProfile;
   };
@@ -42,6 +43,22 @@ type Props = {
   onImageUpload: (value: string) => void;
   onClearImage: () => void;
   onImageUsageModeChange: (value: "exact" | "elements" | "integrate") => void;
+
+  videoFrameOptions: string[];
+  selectedVideoFrameUrl: string;
+  setSelectedVideoFrameUrl: (value: string) => void;
+
+  uploadedVideoImageUrl: string;
+  setUploadedVideoImageUrl: (value: string) => void;
+  setUploadedVideoImageName: (value: string) => void;
+
+  videoErrorText: string;
+
+  showVideoSetupModal: boolean;
+  setShowVideoSetupModal: (value: boolean) => void;
+
+  videoSetupMode: "campaign" | "video";
+  onContinueFromVideoSetup: () => void;
 };
 
 export default function BrandStudioMobile({
@@ -70,6 +87,17 @@ export default function BrandStudioMobile({
   onImageUpload,
   onClearImage,
   onImageUsageModeChange,
+    videoFrameOptions,
+  selectedVideoFrameUrl,
+  setSelectedVideoFrameUrl,
+  uploadedVideoImageUrl,
+  setUploadedVideoImageUrl,
+  setUploadedVideoImageName,
+  videoErrorText,
+  showVideoSetupModal,
+  setShowVideoSetupModal,
+  videoSetupMode,
+  onContinueFromVideoSetup,
 }: Props) {
   return (
     <main className="min-h-screen bg-[#f5f1ec] px-3 py-4 text-black">
@@ -352,6 +380,66 @@ export default function BrandStudioMobile({
           </button>
         ) : null}
       </section>
+      {showVideoSetupModal ? (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
+    <div className="w-full max-w-md rounded-[24px] bg-white p-4">
+      
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-black">Избери кадър</h3>
+
+        <button
+          onClick={() => setShowVideoSetupModal(false)}
+          className="text-sm text-neutral-500"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div className="mt-4 space-y-3">
+        {isGeneratingVideoFrames ? (
+          <div className="flex flex-col items-center gap-3 py-10">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-black/15 border-t-black" />
+            <p className="text-sm text-neutral-500">Генерирам кадри...</p>
+          </div>
+        ) : (
+          videoFrameOptions.map((frame, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setSelectedVideoFrameUrl(frame);
+                setUploadedVideoImageUrl("");
+              }}
+              className={`w-full overflow-hidden rounded-2xl border ${
+                selectedVideoFrameUrl === frame
+                  ? "border-black"
+                  : "border-black/10"
+              }`}
+            >
+              <img
+                src={frame}
+                className="aspect-[9/16] w-full object-cover"
+              />
+            </button>
+          ))
+        )}
+      </div>
+
+      {videoErrorText ? (
+        <div className="mt-3 text-sm text-red-500">
+          {videoErrorText}
+        </div>
+      ) : null}
+
+      <button
+        onClick={onContinueFromVideoSetup}
+        disabled={!selectedVideoFrameUrl && !uploadedVideoImageUrl}
+        className="mt-4 w-full rounded-full bg-black py-3 text-sm font-bold text-white disabled:opacity-40"
+      >
+        Продължи
+      </button>
+    </div>
+  </div>
+) : null}
     </main>
   );
 }
