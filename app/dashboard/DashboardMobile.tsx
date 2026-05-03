@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 type ImageUsageMode = "auto" | "integrate" | "exact";
 
 type Props = {
@@ -19,6 +19,8 @@ type Props = {
   setExactText: (value: string) => void;
   extraText: string;
   setExtraText: (value: string) => void;
+  
+  previewRef: React.RefObject<HTMLDivElement>;
 
   logoUrl: string;
   logoFileName: string;
@@ -88,6 +90,7 @@ export default function DashboardMobile({
   message,
   generatedImageUrl,
   previewImageSource,
+  previewRef,
   renderBanner,
 
   onGenerate,
@@ -331,9 +334,10 @@ export default function DashboardMobile({
           ) : null}
         </div>
 
-        <div
-          className="mt-4 overflow-hidden rounded-[22px] border border-black/10 bg-[#f5f1ec]"
-        >
+       <div
+  ref={previewRef}
+  className="mt-4 overflow-hidden rounded-[22px] border border-black/10 bg-[#f5f1ec]"
+>
           {loading ? (
             <div className="flex aspect-square items-center justify-center p-6 text-center">
               <div>

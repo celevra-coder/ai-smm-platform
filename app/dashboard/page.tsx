@@ -85,6 +85,7 @@ function DashboardPageContent() {
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const brandLogoInputRef = useRef<HTMLInputElement | null>(null);
   const bannerPreviewRef = useRef<HTMLDivElement | null>(null);
+const mobileBannerPreviewRef = useRef<HTMLDivElement | null>(null);
 const exportBannerRef = useRef<HTMLDivElement | null>(null);
 
       const modeParam =
@@ -2914,7 +2915,15 @@ if (previewHeadline) {
   }
 };
 const getBannerExportNode = () => {
+  const isMobile =
+    typeof window !== "undefined" && window.innerWidth < 768;
+
+  if (isMobile && mobileBannerPreviewRef.current) {
+    return mobileBannerPreviewRef.current;
+  }
+
   if (bannerPreviewRef.current) return bannerPreviewRef.current;
+
   return null;
 };
 
@@ -3616,6 +3625,7 @@ const downloadImage = async (format: "png" | "jpg") => {
           message={message}
           generatedImageUrl={generatedImageUrl}
           previewImageSource={previewImageSource}
+          previewRef={mobileBannerPreviewRef}
           renderBanner={() => renderBannerComposition("mobile")}
           onGenerate={() => void handleGenerate(false)}
           onCopy={() => void copyBannerToClipboard()}
