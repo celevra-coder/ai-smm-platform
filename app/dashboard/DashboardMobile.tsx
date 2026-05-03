@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import MobileBannerComposition from "./MobileBannerComposition";
 type ImageUsageMode = "auto" | "integrate" | "exact";
 
 type Props = {
@@ -20,6 +21,11 @@ type Props = {
   extraText: string;
   setExtraText: (value: string) => void;
   previewRef: React.RefObject<HTMLDivElement | null>;
+  mobileBannerHeadline: string;
+mobileBannerSubtext: string;
+mobileBannerOfferBadge: string;
+mobileBannerSupportLines: string[];
+mobileBannerPhone: string;
 
   logoUrl: string;
   logoFileName: string;
@@ -90,6 +96,11 @@ export default function DashboardMobile({
   generatedImageUrl,
   previewImageSource,
   previewRef,
+  mobileBannerHeadline,
+mobileBannerSubtext,
+mobileBannerOfferBadge,
+mobileBannerSupportLines,
+mobileBannerPhone,
   renderBanner,
 
   onGenerate,
@@ -347,7 +358,15 @@ export default function DashboardMobile({
               </div>
             </div>
           ) : generatedImageUrl ? (
-            renderBanner()
+            <MobileBannerComposition
+  imageUrl={previewImageSource}
+  logoUrl={logoUrl}
+  headline={mobileBannerHeadline}
+  subtext={mobileBannerSubtext}
+  offerBadge={mobileBannerOfferBadge}
+  supportLines={mobileBannerSupportLines}
+  phone={mobileBannerPhone}
+/>
           ) : (
             <div className="flex aspect-square items-center justify-center p-6 text-center">
               <p className="text-sm font-bold text-neutral-500">

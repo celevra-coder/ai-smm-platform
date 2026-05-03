@@ -2918,13 +2918,11 @@ const getBannerExportNode = () => {
   const isMobile =
     typeof window !== "undefined" && window.innerWidth < 768;
 
-  if (isMobile && mobileBannerPreviewRef.current) {
+  if (isMobile) {
     return mobileBannerPreviewRef.current;
   }
 
-  if (bannerPreviewRef.current) return bannerPreviewRef.current;
-
-  return null;
+  return bannerPreviewRef.current;
 };
 
 const downloadImage = async (format: "png" | "jpg") => {
@@ -3627,6 +3625,11 @@ const downloadImage = async (format: "png" | "jpg") => {
           previewImageSource={previewImageSource}
           previewRef={mobileBannerPreviewRef}
           renderBanner={() => renderBannerComposition("mobile")}
+          mobileBannerHeadline={previewHeadline}
+mobileBannerSubtext={previewSubtext}
+mobileBannerOfferBadge={previewOfferBadge}
+mobileBannerSupportLines={previewSupportLines}
+mobileBannerPhone={previewPhone}
           onGenerate={() => void handleGenerate(false)}
           onCopy={() => void copyBannerToClipboard()}
           onFullscreen={() => setIsPreviewOpen(true)}

@@ -1,0 +1,81 @@
+"use client";
+
+type Props = {
+  imageUrl: string;
+  logoUrl: string;
+  headline: string;
+  subtext: string;
+  offerBadge: string;
+  supportLines: string[];
+  phone: string;
+};
+
+export default function MobileBannerComposition({
+  imageUrl,
+  logoUrl,
+  headline,
+  subtext,
+  offerBadge,
+  supportLines,
+  phone,
+}: Props) {
+  return (
+    <div className="relative aspect-square w-full overflow-hidden bg-neutral-900">
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt="Banner"
+          className="absolute inset-0 h-full w-full object-contain bg-neutral-900"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-700" />
+      )}
+
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/28 to-black/10" />
+
+      {logoUrl ? (
+        <div className="absolute right-3 top-3 z-20 rounded-2xl border border-white/15 bg-black/45 px-2.5 py-2 backdrop-blur-sm">
+          <img src={logoUrl} alt="Logo" className="h-[34px] w-auto object-contain" />
+        </div>
+      ) : null}
+
+      <div className="relative z-10 flex h-full flex-col justify-center px-6 pt-10 text-white">
+        <div className={logoUrl ? "max-w-[245px]" : "max-w-[315px]"}>
+          {headline ? (
+            <h3 className="text-[25px] font-black leading-[1.05] tracking-[-0.03em]">
+              {headline}
+            </h3>
+          ) : null}
+
+          {subtext ? (
+            <p className="mt-3 text-[14px] font-semibold leading-[1.28] text-white/90">
+              {subtext}
+            </p>
+          ) : null}
+
+          {offerBadge ? (
+            <div className="mt-4 inline-flex rounded-2xl bg-white/92 px-3.5 py-2 text-[13px] font-black text-neutral-950 shadow">
+              {offerBadge}
+            </div>
+          ) : null}
+
+          {supportLines.length ? (
+            <div className="mt-4 space-y-1.5">
+              {supportLines.slice(0, 2).map((line, index) => (
+                <p key={index} className="text-[12px] font-semibold leading-[1.25] text-white/90">
+                  ✔️ {line}
+                </p>
+              ))}
+            </div>
+          ) : null}
+
+          {phone ? (
+            <div className="mt-6 inline-flex rounded-2xl bg-black/75 px-3.5 py-2 text-[13px] font-black text-white">
+              📞 Обади се: {phone}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
