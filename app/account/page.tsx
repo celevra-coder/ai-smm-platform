@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
+import AccountMobile from "./AccountMobile";
 
 type Subscription = {
   credits: number | null;
@@ -314,7 +315,31 @@ const handleDeleteBrandProfile = async (profileId: string) => {
   }
 
   return (
-  <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-neutral-900 md:px-6 md:py-10">
+  <>
+    <div className="md:hidden">
+      <AccountMobile
+        email={email}
+        subscription={subscription}
+        isAdmin={isAdmin}
+        message={message}
+        brandProfiles={brandProfiles}
+        activeBrandId={activeBrandId}
+        calendarsByBrandId={calendarsByBrandId}
+        videoOrders={videoOrders}
+        onSelectBrand={(profile) => {
+          localStorage.setItem("active_brand_profile", JSON.stringify(profile));
+          localStorage.setItem("active_brand_user_id", email);
+          setActiveBrandId(profile.id);
+          setMessage(`Избран бизнес: ${profile.brand_name || "Без име"}`);
+        }}
+        onOpenLastCalendar={handleOpenLastCalendar}
+        onDeleteLastCalendar={handleDeleteLastCalendar}
+        onDeleteBrandProfile={handleDeleteBrandProfile}
+      />
+    </div>
+
+    <div className="hidden md:block">
+      <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-neutral-900 md:px-6 md:py-10">
     <div className="mx-auto max-w-7xl">
       <section className="mb-8 rounded-[32px] border border-black/10 bg-white p-6 shadow-[0_18px_60px_rgba(0,0,0,0.06)] md:p-8">
         <div className="flex flex-wrap items-start justify-between gap-6">
@@ -685,6 +710,8 @@ const handleDeleteBrandProfile = async (profileId: string) => {
         </div>
       </section>
     </div>
-  </main>
+        </main>
+    </div>
+  </>
 );
 }
