@@ -689,10 +689,20 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
         }, 100);
       }
     } catch (e) {
-      console.error(e);
-    } finally {
-      setIsGenerating(false);
-    }
+  console.error(e);
+
+  const message =
+    e instanceof Error
+      ? e.message
+      : "Възникна грешка при генериране на кампанията.";
+
+  setToastMessage(message);
+  setVideoErrorText(message);
+
+  setTimeout(() => setToastMessage(""), 3500);
+} finally {
+  setIsGenerating(false);
+}
   };
 
  const handleDownloadBanner = async () => {
