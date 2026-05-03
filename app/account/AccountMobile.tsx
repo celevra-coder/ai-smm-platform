@@ -170,124 +170,92 @@ export default function AccountMobile({
       </section>
 
       <section className="mt-3 rounded-[26px] bg-white p-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-[22px] font-black tracking-[-0.03em]">
-            Бизнеси
-          </h2>
+  <div className="flex items-start justify-between gap-3">
+    <div>
+      <h2 className="text-[22px] font-black tracking-[-0.03em]">
+        Бизнеси
+      </h2>
+      <p className="mt-1 text-xs leading-5 text-neutral-500">
+        Избери от брандовете си с кой бизнес искаш да работим.
+      </p>
+    </div>
 
-          <Link
-            href="/dashboard?mode=brand"
-            className="rounded-full bg-black px-4 py-2 text-xs font-bold text-white"
-          >
-            + Добави
-          </Link>
-        </div>
+    <Link
+      href="/dashboard?mode=brand"
+      className="shrink-0 rounded-full bg-black px-4 py-2 text-xs font-bold text-white"
+    >
+      + Добави
+    </Link>
+  </div>
 
-        <div className="mt-4 grid gap-3">
-          {brandProfiles.length ? (
-            brandProfiles.map((profile) => {
-              const isActive = activeBrandId === profile.id;
-              const savedCalendar = calendarsByBrandId[profile.id];
+  <div className="mt-4">
+    {brandProfiles.length ? (
+      <>
+        <select
+          value={activeBrandId}
+          onChange={(e) => {
+            const selected = brandProfiles.find(
+              (profile) => profile.id === e.target.value
+            );
 
-              return (
-                <details
-                  key={profile.id}
-                  className={`rounded-[22px] border p-4 ${
-                    isActive
-                      ? "border-black bg-[#e8ded1]"
-                      : "border-black/10 bg-[#fcfaf7]"
-                  }`}
-                >
-                  <summary className="flex cursor-pointer list-none items-center gap-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white">
-                      {profile.logo_url ? (
-                        <img
-                          src={profile.logo_url}
-                          alt="Logo"
-                          className="h-9 w-9 object-contain"
-                        />
-                      ) : (
-                        <span className="text-xs font-black text-neutral-400">
-                          AI
-                        </span>
-                      )}
-                    </div>
+            if (selected) {
+              onSelectBrand(selected);
+            }
+          }}
+          className="w-full rounded-[20px] border border-black/10 bg-[#fcfaf7] px-4 py-4 text-sm font-bold text-neutral-900 outline-none"
+        >
+          <option value="">Избери бизнес</option>
 
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-base font-black">
-                        {profile.brand_name || "Без име"}
-                      </p>
-                      <p className="mt-1 text-xs text-neutral-500">
-                        {isActive ? "Активен бизнес" : "Натисни за действия"}
-                      </p>
-                    </div>
-                  </summary>
+          {brandProfiles.map((profile) => (
+            <option key={profile.id} value={profile.id}>
+              {profile.brand_name || "Без име"}
+            </option>
+          ))}
+        </select>
 
-                  <p className="mt-3 line-clamp-3 text-sm leading-6 text-neutral-600">
-                    {profile.brand_description || "Няма описание."}
-                  </p>
+        {activeBrandId ? (
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Link
+              href={`/dashboard?mode=brand&brand_id=${activeBrandId}`}
+              className="rounded-2xl border border-black/10 bg-white px-3 py-3 text-center text-xs font-bold"
+            >
+              Редактирай
+            </Link>
 
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onSelectBrand(profile)}
-                      className="rounded-2xl bg-black px-3 py-3 text-xs font-bold text-white"
-                    >
-                      Избери
-                    </button>
+            {calendarsByBrandId[activeBrandId] ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const selected = brandProfiles.find(
+                    (profile) => profile.id === activeBrandId
+                  );
 
-                    <Link
-                      href={`/dashboard?mode=brand&brand_id=${profile.id}`}
-                      className="rounded-2xl border border-black/10 bg-white px-3 py-3 text-center text-xs font-bold"
-                    >
-                      Редактирай
-                    </Link>
-
-                    {savedCalendar ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => onOpenLastCalendar(profile)}
-                          className="rounded-2xl border border-black/10 bg-white px-3 py-3 text-xs font-bold"
-                        >
-                          Календар
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => onDeleteLastCalendar(profile.id)}
-                          className="rounded-2xl border border-red-200 bg-red-50 px-3 py-3 text-xs font-bold text-red-700"
-                        >
-                          Изтрий календар
-                        </button>
-                      </>
-                    ) : null}
-
-                    <button
-                      type="button"
-                      onClick={() => onDeleteBrandProfile(profile.id)}
-                      className="col-span-2 rounded-2xl border border-red-200 bg-red-50 px-3 py-3 text-xs font-bold text-red-700"
-                    >
-                      Изтрий бизнес
-                    </button>
-                  </div>
-                </details>
-              );
-            })
-          ) : (
-            <div className="rounded-[22px] border border-dashed border-black/10 bg-[#fcfaf7] p-5 text-center">
-              <p className="text-sm font-bold">Нямаш запазен бизнес.</p>
-
-              <Link
-                href="/dashboard?mode=brand"
-                className="mt-4 inline-flex rounded-2xl bg-black px-4 py-3 text-sm font-bold text-white"
+                  if (selected) {
+                    onOpenLastCalendar(selected);
+                  }
+                }}
+                className="rounded-2xl border border-black/10 bg-white px-3 py-3 text-xs font-bold"
               >
-                Добави бизнес
-              </Link>
-            </div>
-          )}
-        </div>
-      </section>
+                Календар
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+      </>
+    ) : (
+      <div className="rounded-[22px] border border-dashed border-black/10 bg-[#fcfaf7] p-5 text-center">
+        <p className="text-sm font-bold">Нямаш запазен бизнес.</p>
+
+        <Link
+          href="/dashboard?mode=brand"
+          className="mt-4 inline-flex rounded-2xl bg-black px-4 py-3 text-sm font-bold text-white"
+        >
+          Добави бизнес
+        </Link>
+      </div>
+    )}
+  </div>
+</section>
 
       <section className="mt-3 rounded-[26px] bg-white p-4">
         <div className="flex items-center justify-between gap-3">
