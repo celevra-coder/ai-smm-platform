@@ -1543,7 +1543,7 @@ const handleContinueFromVideoSetup = async () => {
         useFakeVideo={useFakeVideo}
         renderBannerCard={() => renderBannerCard(false)}
         onCopyPostText={handleCopyPostText}
-        onGenerateCampaign={() => openVideoSetupModal("campaign")}
+        onGenerateCampaign={() => void handleGenerateAll(false)}
         onGenerateBanner={() => handleGenerateAll(false)}
         onDownloadBanner={handleDownloadBanner}
         onCopyBanner={handleCopyBanner}
