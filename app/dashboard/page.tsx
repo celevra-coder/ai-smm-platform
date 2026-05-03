@@ -2431,10 +2431,10 @@ const renderBannerComposition = (
 {useCircularOfferBadge ? renderOfferBadge(large) : null}
 
           <div
-            className={`relative z-20 flex h-full items-center text-white ${
-             large ? "px-10 py-10 md:px-12" : "px-7 py-8"
-            }`}
-          >
+  className={`relative z-20 flex h-full items-center text-white ${
+    large ? "px-10 pt-20 pb-10 md:px-12" : "px-7 pt-14 pb-8"
+  }`}
+>
             <div className={textWrapClass}>
               {previewHeadline ? <h3 className={headlineClass}>{previewHeadline}</h3> : null}
               {previewSubtext ? <p className={subtextClass}>{previewSubtext}</p> : null}
