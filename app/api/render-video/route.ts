@@ -7,11 +7,10 @@ import path from "node:path";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
 const resolvedFfmpegPath =
   process.platform === "win32"
     ? path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg.exe")
-    : (ffmpegPath as string);
+    : path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg");
 
 ffmpeg.setFfmpegPath(resolvedFfmpegPath);
 async function downloadFile(url: string, outputPath: string) {
