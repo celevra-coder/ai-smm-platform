@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 type BrandProfile = {
   brand_name?: string;
@@ -381,7 +381,7 @@ export default function BrandStudioMobile({
         ) : null}
       </section>
       {showVideoSetupModal ? (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
+  <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-6 pb-24">
     <div className="w-full max-w-md rounded-[24px] bg-white p-4">
       
       <div className="flex items-center justify-between">
@@ -395,7 +395,7 @@ export default function BrandStudioMobile({
         </button>
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-4 max-h-[65vh] space-y-3 overflow-y-auto pr-1">
         {isGeneratingVideoFrames ? (
           <div className="flex flex-col items-center gap-3 py-10">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-black/15 border-t-black" />
@@ -430,13 +430,15 @@ export default function BrandStudioMobile({
         </div>
       ) : null}
 
-      <button
-        onClick={onContinueFromVideoSetup}
-        disabled={!selectedVideoFrameUrl && !uploadedVideoImageUrl}
-        className="mt-4 w-full rounded-full bg-black py-3 text-sm font-bold text-white disabled:opacity-40"
-      >
-        Продължи
-      </button>
+      <div className="sticky bottom-0 mt-4 bg-white pt-3">
+  <button
+    onClick={onContinueFromVideoSetup}
+    disabled={!selectedVideoFrameUrl && !uploadedVideoImageUrl}
+    className="w-full rounded-full bg-black py-3 text-sm font-bold text-white disabled:opacity-40"
+  >
+    Продължи
+  </button>
+</div>
     </div>
   </div>
 ) : null}
