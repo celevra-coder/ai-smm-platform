@@ -395,7 +395,7 @@ const outroTexts = [
     : "",
 
   safeBrandPhone
-    ? `drawtext=text='ТЕЛ: ${safeBrandPhone}':
+    ? `  drawtext=text='ТЕЛ\\: ${safeBrandPhone}':     
        fontfile=${localFontFile}:    
        fontcolor=#FFE7A8:
        fontsize=56:
@@ -413,7 +413,7 @@ const outroTexts = [
     : "",
 
   safeAddress
-    ? `drawtext=text='АДРЕС: ${safeAddress}':
+    ? `   drawtext=text='АДРЕС\\: ${safeAddress}':    
        fontfile=${localFontFile}:     
        fontcolor=white:
        fontsize=38:
