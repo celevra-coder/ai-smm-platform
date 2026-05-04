@@ -72,7 +72,7 @@ SPECIAL RULES FOR GEOPHYSICAL / UNDERGROUND WATER BUSINESSES:
 const safeFrameTypes = hasBodyPartRisk
   ? `
 MANDATORY SAFE FRAME STRUCTURE:
-Return exactly 3 scenes with this structure:
+Return exactly 2 scenes with this structure:
 1. Workspace/tools scene: salon table, tools, products, lamp, towels, clean setup. No visible detailed anatomy.
 2. Product/service environment scene: bottles, equipment, chair, mirror, treatment bed, premium interior. No visible detailed anatomy.
 3. Natural distance client/result scene: if needed, show a person or body area only from a wider natural distance, with the service context visible. No macro close-up.
@@ -138,7 +138,7 @@ IMAGE CONTENT:
 - No chaotic action.
 Return ONLY valid JSON.
 
-The JSON must be an array of exactly 3 strings.
+The JSON must be an array of exactly 2 strings.
 Each string must be one different detailed visual scene description in English.
 Be concrete, literal and realistic.
 
@@ -190,10 +190,9 @@ try {
 if (!visuals.length) {
   visuals = [visualRaw].filter(Boolean);
 }
+visuals = visuals.slice(0, 2);
 
-visuals = visuals.slice(0, 3);
-
-while (visuals.length < 3) {
+while (visuals.length < 2) {
   visuals.push(visuals[0] || "A realistic vertical commercial photo matching the exact business topic.");
 }
 const buildImagePrompt = (visual: string) => {
@@ -288,9 +287,7 @@ cartoon, animation, 3d render, cgi, unreal engine, fake, artificial, ai-looking,
 };
 
     const images: string[] = [];
-
-for (let i = 0; i < 3; i++) {
-  const generationRes = await fetch("https://api.openai.com/v1/images/generations", {
+for (let i = 0; i < 2; i++) {  const generationRes = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
