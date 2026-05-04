@@ -1453,38 +1453,53 @@ const handleGenerateVideoFrames = async () => {
   try {
     const supabase = createClient();
 
-    const { data, error } = await supabase.functions.invoke(
-      "generate-video-frames",
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const accessToken = session?.access_token;
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video-frames`,
       {
-        body: {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
           brand_profile: workspace.brand_profile || {},
           selected_post: workspace.selected_post || {},
-        },
+        }),
       }
     );
 
-    console.log("VIDEO FRAMES INVOKE:", { data, error });
+    const responseText = await response.text();
 
-    if (error) {
-  let details = "";
+    console.log("VIDEO FRAMES RAW RESPONSE:", {
+      status: response.status,
+      responseText,
+    });
 
-  try {
-    const context = (error as any).context;
-    if (context) {
-      details = await context.text();
+    let data: any = null;
+
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      throw new Error(
+        responseText || "Generate video frames returned non-JSON response."
+      );
     }
-  } catch {}
 
-  console.log("VIDEO FRAMES FUNCTION ERROR DETAILS:", {
-    message: error.message,
-    details,
-  });
-
-  setVideoErrorText(
-    details || error.message || "Генерирането на кадри не беше успешно."
-  );
-  return;
-}
+    if (!response.ok || !data?.success) {
+      throw new Error(
+        data?.error ||
+          data?.message ||
+          data?.details ||
+          "Генерирането на кадри не беше успешно."
+      );
+    }
 
     if (!Array.isArray(data?.images) || !data.images.length) {
       setVideoErrorText("Генерирането на кадри не върна изображения.");
@@ -1494,7 +1509,13 @@ const handleGenerateVideoFrames = async () => {
     setVideoFrameOptions(data.images.filter(Boolean));
   } catch (e) {
     console.error(e);
-    setVideoErrorText("Генерирането на кадри не беше успешно.");
+
+    const message =
+      e instanceof Error
+        ? e.message
+        : "Генерирането на кадри не беше успешно.";
+
+    setVideoErrorText(message);
   } finally {
     setIsGeneratingVideoFrames(false);
   }
