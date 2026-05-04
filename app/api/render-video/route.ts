@@ -439,7 +439,9 @@ const videoFilters = [
   ...outroTexts,
 ]
   .filter(Boolean)
+  .map((f) => f.replace(/\s+/g, " ").trim())
   .join(",");
+
 const filter = `[0:v]${videoFilters}[v]`;
 
   return new Promise<void>((resolve, reject) => {
