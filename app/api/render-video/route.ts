@@ -73,7 +73,7 @@ function renderVideoWithMusic({
   phone,
   address,
 }: {
-    inputPath: string;
+  inputPath: string;
   outputPath: string;
   musicPath: string;
   headline: string;
@@ -83,67 +83,41 @@ function renderVideoWithMusic({
   textColor: string;
   cta: string;
   website: string;
-     phone: string;
+  phone: string;
   address: string;
-}) {   
-const safe = (value: string) =>
+}) {
+  const subtitlePath = path.join(path.dirname(outputPath), "captions.ass");
+
+  const cleanText = (value: string) =>
     (value || "")
+      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+      .replace(/[•●▪◆►▶★☆]/g, "")
       .replace(/\s+/g, " ")
-      .trim()
+      .trim();
+
+  const assSafe = (value: string) =>
+    cleanText(value)
       .replace(/\\/g, "\\\\")
-      .replace(/:/g, "\\:")
-      .replace(/'/g, "\\'")
-      .replace(/%/g, "\\%")
-      .replace(/\n/g, " ");
-const ffmpegPathSafe = (value: string) =>
-  value
-    .replace(/\\/g, "/")
-    .replace(/:/g, "\\:")
-    .replace(/ /g, "\\ ");
+      .replace(/\{/g, "\\{")
+      .replace(/\}/g, "\\}");
 
-const localFontFile = ffmpegPathSafe(
-  path.join(process.cwd(), "public/fonts/PlayfairDisplay-BoldItalic.ttf")
-);
+  const assTime = (seconds: number) => {
+    const safeSeconds = Math.max(seconds, 0);
+    const h = Math.floor(safeSeconds / 3600);
+    const m = Math.floor((safeSeconds % 3600) / 60);
+    const s = Math.floor(safeSeconds % 60);
+    const cs = Math.floor((safeSeconds % 1) * 100);
 
-const visibleScenes = scenes;
-     const totalSceneDuration = visibleScenes.reduce(
-  (sum: number, scene: any) => sum + Math.max(scene?.duration_sec || 3, 1),
-  0
-);
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(
+      2,
+      "0"
+    )}.${String(cs).padStart(2, "0")}`;
+  };
 
-let cursor = 0;
-const drawTexts = visibleScenes.map((scene: any) => {
-  const rawDuration = Math.max(scene?.duration_sec || 3, 1);
-  const scaledDuration =
-    totalSceneDuration > 0
-      ? (rawDuration / totalSceneDuration) * Math.max(totalDurationSec - 2.4, 1)
-      : 3;
-
-  const start = cursor;
-  const end = cursor + scaledDuration;
-  cursor = end;
-
-    const rawText = (scene?.overlay_text || scene?.title || "")
-  .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
-  .replace(/[•●▪◆►▶★☆]/g, "")
-  .replace(/\s+/g, " ")
-  .trim();
-
-const offerMatch = rawText.match(/\d{1,3}\s?%|\d+\s?(лв|лева|eur|€)/i);
-
-const offerText = offerMatch ? offerMatch[0] : "";
-const cleanText = offerText
-  ? rawText.replace(offerText, "").trim()
-  : rawText;
-  const fade = 0.35;
-
-   const words = cleanText.split(" ").filter(Boolean); const lines: string[] = [];
-
-  if (rawText.length <= 30 || words.length <= 3) {
-    lines.push(rawText);
-  } else {
-     const maxCharsPerLine = rawText.length > 80 ? 18 : 22;   
-     let currentLine = "";
+  const splitLines = (value: string, maxCharsPerLine = 22) => {
+    const words = cleanText(value).split(" ").filter(Boolean);
+    const lines: string[] = [];
+    let currentLine = "";
 
     for (const word of words) {
       const candidate = currentLine ? `${currentLine} ${word}` : word;
@@ -157,292 +131,95 @@ const cleanText = offerText
     }
 
     if (currentLine) lines.push(currentLine);
-  }
 
-    const finalLines = lines.filter(Boolean);
+    return lines.slice(0, 8);
+  };
 
-  const safeLine1 = safe(finalLines[0] || "");
-  const safeLine2 = safe(finalLines[1] || "");
-  const safeLine3 = safe(finalLines[2] || "");
-  const safeLine4 = safe(finalLines[3] || "");
-  const safeLine5 = safe(finalLines[4] || "");
-  const safeLine6 = safe(finalLines[5] || "");
-  const safeLine7 = safe(finalLines[6] || "");
-  const safeLine8 = safe(finalLines[7] || "");
+  const dialogues: string[] = [];
+  const visibleScenes = scenes;
+  const totalSceneDuration = visibleScenes.reduce(
+    (sum: number, scene: any) => sum + Math.max(scene?.duration_sec || 3, 1),
+    0
+  );
 
-  const alphaExpr = `if(lt(t,${start}),0,if(lt(t,${start + fade}),(t-${start})/${fade},if(lt(t,${Math.max(
-    end - fade,
-    start + fade
-  )}),1,if(lt(t,${end}),(${end}-t)/${fade},0))))`;
+  let cursor = 0;
 
-  const offerSafe = safe(offerText);
+  for (const scene of visibleScenes) {
+    const rawDuration = Math.max(scene?.duration_sec || 3, 1);
+    const scaledDuration =
+      totalSceneDuration > 0
+        ? (rawDuration / totalSceneDuration) * Math.max(totalDurationSec - 2.4, 1)
+        : 3;
 
-if (offerSafe) {
-  return [
-    `drawtext=text='${offerSafe}':
-    fontfile=${localFontFile}:     
- fontcolor=#FFD700:
-     fontsize=72:
-     borderw=4:
-     bordercolor=black@0.85:
-     shadowcolor=black@0.9:
-     shadowx=3:
-     shadowy=3:
-     x=(w-text_w)/2:
-     y=h*0.32:
-     alpha='${alphaExpr}'`,
+    const start = cursor;
+    const end = cursor + scaledDuration;
+    cursor = end;
 
-    safeLine1
-      ? `drawtext=text='${safeLine1}':
-         fontfile=${localFontFile}:
-         fontcolor=${textColor}:
-         fontsize=42:
-         borderw=3:
-         bordercolor=black@0.6:
-         shadowcolor=black@0.8:
-         shadowx=2:
-         shadowy=2:
-         x=(w-text_w)/2:
-         y=h*0.44:
-         alpha='${alphaExpr}'`
-      : "",
-    safeLine2
-      ? `drawtext=text='${safeLine2}':
-         fontfile=${localFontFile}:   
-         fontcolor=${textColor}:
-         fontsize=36:
-         borderw=3:
-         bordercolor=black@0.58:
-         shadowcolor=black@0.78:
-         shadowx=2:
-         shadowy=2:
-         x=(w-text_w)/2:
-         y=h*0.50:
-         alpha='${alphaExpr}'`
-      : "",
-    safeLine3
-      ? `drawtext=text='${safeLine3}':
-         fontfile=${localFontFile}:
-         fontcolor=${textColor}:
-         fontsize=36:
-         borderw=3:
-         bordercolor=black@0.58:
-         shadowcolor=black@0.78:
-         shadowx=2:
-         shadowy=2:
-         x=(w-text_w)/2:
-         y=h*0.56:
-         alpha='${alphaExpr}'`
-      : "",
-  ]
-    .filter(Boolean)
-    .join(",");
-}
-const stackedLines = [
-  safeLine1,
-  safeLine2,
-  safeLine3,
-  safeLine4,
-  safeLine5,
-  safeLine6,
-  safeLine7,
-  safeLine8,
-].filter(Boolean);
+    const text = cleanText(scene?.overlay_text || scene?.title || "");
+    const lines = splitLines(text, text.length > 80 ? 18 : 22);
 
-if (stackedLines.length) {
-  const isMainPartScene =
-    (scene?.title || "").includes("MainPart");
-
-  const lineHeight =
-    stackedLines.length >= 6
-      ? 0.043
-      : stackedLines.length >= 4
-      ? 0.047
-      : 0.052;
-
-  const startY =
-    stackedLines.length >= 6
-      ? 0.30
-      : stackedLines.length >= 4
-      ? 0.33
-      : 0.36 - ((stackedLines.length - 1) * lineHeight) / 2;
-
-  return stackedLines
-    .map((line, index) => {
-      const isFirst = index === 0;
-      const fontFile = isFirst
-        ? "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"
-        : "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf";
-
-       const fontSize = isMainPartScene
-  ? stackedLines.length >= 6
-    ? isFirst
-      ? 30
-      : 28
-    : stackedLines.length >= 4
-    ? isFirst
-      ? 38
-      : 34
-    : isFirst
-    ? 48
-    : 40
-  : stackedLines.length >= 6
-  ? isFirst
-    ? 30
-    : 28
-  : stackedLines.length >= 4
-  ? isFirst
-    ? 40
-    : 36
-  : isFirst
-  ? 52
-  : 42;   
-  const y = startY + index * lineHeight;
-
-      return `drawtext=text='${line}':fontfile=${fontFile}:fontcolor=${textColor}:fontsize=${fontSize}:borderw=3:bordercolor=black@0.60:shadowcolor=black@0.80:shadowx=3:shadowy=3:x=(w-text_w)/2:y=h*${y.toFixed(3)}:alpha='${alphaExpr}'`;
-    })
-    .join(",");
-}
-
-return "";
-});
-
-
-  const safeBrandName = safe(brandName || headline || "Brand");
-const safeBrandPhone = safe(phone || "");
-const safeBrandAddress = safe(address || "");
-const brandStart = Math.max(totalDurationSec - 2.4, 0);
-
-const outroAlphaExpr = `if(lt(t,${brandStart}),0,if(lt(t,${brandStart + 0.3}),(t-${brandStart})/0.3,1))`;
-  const brandWords = safeBrandName.split(" ").filter(Boolean);
-
-const splitBrandName = (value: string) => {
-  const words = value.split(" ").filter(Boolean);
-
-  if (words.length <= 1) {
-    return { line1: value, line2: "" };
-  }
-
-  if (value.length <= 16) {
-    return { line1: value, line2: "" };
-  }
-
-  let bestIndex = 1;
-  let bestDiff = Number.POSITIVE_INFINITY;
-
-  for (let i = 1; i < words.length; i++) {
-    const left = words.slice(0, i).join(" ");
-    const right = words.slice(i).join(" ");
-    const diff = Math.abs(left.length - right.length);
-
-    if (diff < bestDiff) {
-      bestDiff = diff;
-      bestIndex = i;
+    if (lines.length) {
+      dialogues.push(
+        `Dialogue: 0,${assTime(start)},${assTime(end)},Main,,0,0,0,,${lines
+          .map(assSafe)
+          .join("\\N")}`
+      );
     }
   }
 
-  return {
-    line1: words.slice(0, bestIndex).join(" ").trim(),
-    line2: words.slice(bestIndex).join(" ").trim(),
-  };
-};
+  const brandStart = Math.max(totalDurationSec - 2.4, 0);
+  const brandParts = splitLines(brandName || headline || "Brand", 24);
 
-const { line1: brandLine1, line2: brandLine2 } = splitBrandName(safeBrandName);
+  if (brandParts.length) {
+    dialogues.push(
+      `Dialogue: 0,${assTime(brandStart)},${assTime(
+        totalDurationSec
+      )},Brand,,0,0,0,,${brandParts.map(assSafe).join("\\N")}`
+    );
+  }
 
-const longestBrandLine = Math.max(brandLine1.length, brandLine2.length);
+  if (phone) {
+    dialogues.push(
+      `Dialogue: 0,${assTime(brandStart)},${assTime(
+        totalDurationSec
+      )},Contact,,0,0,0,,${assSafe(`ТЕЛ: ${phone}`)}`
+    );
+  }
 
-const brandFontSize = brandLine2
-  ? longestBrandLine >= 18
-    ? 54
-    : longestBrandLine >= 14
-    ? 60
-    : 68
-  : safeBrandName.length >= 18
-  ? 68
-  : 84;
-const brandFontFile = localFontFile;
-const safeAddress = safe(address || "");
+  if (address) {
+    dialogues.push(
+      `Dialogue: 0,${assTime(brandStart)},${assTime(
+        totalDurationSec
+      )},Address,,0,0,0,,${assSafe(`АДРЕС: ${address}`)}`
+    );
+  }
 
-const outroTexts = [
-  brandLine1
-    ? `drawtext=text='${brandLine1}':
-       fontfile=${brandFontFile}:      
-       fontcolor=white:
-       fontsize=${brandFontSize}:
-       borderw=4:
-       bordercolor=black@0.68:
-       shadowcolor=black@0.88:
-       shadowx=3:
-       shadowy=3:
-       x=(w-text_w)/2:
-       y=${brandLine2 ? "h*0.28" : "h*0.32"}:
-       alpha='${outroAlphaExpr}'`
-    : "",
+  const assContent = `[Script Info]
+ScriptType: v4.00+
+PlayResX: 720
+PlayResY: 1280
+ScaledBorderAndShadow: yes
 
-  brandLine2
-    ? `drawtext=text='${brandLine2}':
-       fontfile=${brandFontFile}:
-       fontcolor=white:
-       fontsize=${brandFontSize}:
-       borderw=4:
-       bordercolor=black@0.68:
-       shadowcolor=black@0.88:
-       shadowx=3:
-       shadowy=3:
-       x=(w-text_w)/2:
-       y=h*0.38:
-       alpha='${outroAlphaExpr}'`
-    : "",
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Main,Arial,42,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,5,40,40,0,1
+Style: Brand,Arial,58,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,5,40,40,0,1
+Style: Contact,Arial,48,&H00A8E7FF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,5,40,40,0,1
+Style: Address,Arial,34,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,3,2,5,40,40,0,1
 
-  safeBrandPhone
-    ? `  drawtext=text='ТЕЛ\\: ${safeBrandPhone}':     
-       fontfile=${localFontFile}:    
-       fontcolor=#FFE7A8:
-       fontsize=56:
-       borderw=4:
-       bordercolor=black@0.82:
-       shadowcolor=black@0.95:
-       shadowx=4:
-       shadowy=4:
-       box=1:
-       boxcolor=black@0.42:
-       boxborderw=22:
-       x=(w-text_w)/2:
-       y=h*0.52:
-       alpha='${outroAlphaExpr}'`
-    : "",
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+${dialogues.join("\n")}
+`;
 
-  safeAddress
-    ? `   drawtext=text='АДРЕС\\: ${safeAddress}':    
-       fontfile=${localFontFile}:     
-       fontcolor=white:
-       fontsize=38:
-       borderw=3:
-       bordercolor=black@0.75:
-       shadowcolor=black@0.9:
-       shadowx=3:
-       shadowy=3:
-       box=1:
-       boxcolor=black@0.36:
-       boxborderw=18:
-       x=(w-text_w)/2:
-       y=h*0.64:
-       alpha='${outroAlphaExpr}'`
-    : "",
-].filter(Boolean);
-const videoFilters = [
-  "scale=720:1280:force_original_aspect_ratio=increase",
-  "crop=720:1280",
-  "setsar=1",
-  "format=yuv420p",
-  ...drawTexts,
-  ...outroTexts,
-]
-  .filter(Boolean)
-  .map((f) => f.replace(/\s+/g, " ").trim())
-  .join(",");
+  fs.writeFileSync(subtitlePath, assContent, "utf8");
 
-const filter = `[0:v]${videoFilters}[v]`;
+  const ffmpegPathSafe = (value: string) =>
+    value.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/ /g, "\\ ");
+
+  const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,format=yuv420p,subtitles='${ffmpegPathSafe(
+    subtitlePath
+  )}'[v]`;
 
   return new Promise<void>((resolve, reject) => {
     ffmpeg()
@@ -473,7 +250,6 @@ const filter = `[0:v]${videoFilters}[v]`;
       .save(outputPath);
   });
 }
-
 export async function POST(req: Request) {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "ai-smm-video-"));
   const inputPath = path.join(tempDir, "input.mp4");
