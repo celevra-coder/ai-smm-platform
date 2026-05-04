@@ -108,14 +108,18 @@ const safe = (value: string) =>
       .replace(/'/g, "\\'")
       .replace(/%/g, "\\%")
       .replace(/\n/g, " ");
+const ffmpegPathSafe = (value: string) =>
+  value
+    .replace(/\\/g, "/")
+    .replace(/:/g, "\\:")
+    .replace(/ /g, "\\ ");
 
-  const ffmpegPathSafe = (value: string) =>
-    value
-      .replace(/\\/g, "/")
-      .replace(/:/g, "\\:")
-      .replace(/ /g, "\\ ");
+const localFontFile = ffmpegPathSafe(
+  path.join(process.cwd(), "public/fonts/PlayfairDisplay-BoldItalic.ttf")
+);
+
 const visibleScenes = scenes;
-   const totalSceneDuration = visibleScenes.reduce(
+     const totalSceneDuration = visibleScenes.reduce(
   (sum: number, scene: any) => sum + Math.max(scene?.duration_sec || 3, 1),
   0
 );
@@ -189,8 +193,8 @@ const cleanText = offerText
 if (offerSafe) {
   return [
     `drawtext=text='${offerSafe}':
-     fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:
-     fontcolor=#FFD700:
+  fontfile=${localFontFile}       
+ fontcolor=#FFD700:
      fontsize=72:
      borderw=4:
      bordercolor=black@0.85:
@@ -203,7 +207,7 @@ if (offerSafe) {
 
     safeLine1
       ? `drawtext=text='${safeLine1}':
-         fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf:
+         fontfile=${localFontFile}
          fontcolor=${textColor}:
          fontsize=42:
          borderw=3:
@@ -217,7 +221,7 @@ if (offerSafe) {
       : "",
     safeLine2
       ? `drawtext=text='${safeLine2}':
-         fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:
+         fontfile=${localFontFile}
          fontcolor=${textColor}:
          fontsize=36:
          borderw=3:
@@ -231,7 +235,7 @@ if (offerSafe) {
       : "",
     safeLine3
       ? `drawtext=text='${safeLine3}':
-         fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:
+         fontfile=${localFontFile}
          fontcolor=${textColor}:
          fontsize=36:
          borderw=3:
@@ -369,10 +373,7 @@ const brandFontSize = brandLine2
   : safeBrandName.length >= 18
   ? 68
   : 84;
-
-const brandFontFile = ffmpegPathSafe(
-  path.join(process.cwd(), "public/fonts/PlayfairDisplay-BoldItalic.ttf")
-);
+const brandFontFile = localFontFile;
 const safeAddress = safe(address || "");
 
 const outroTexts = [
@@ -408,7 +409,7 @@ const outroTexts = [
 
   safeBrandPhone
     ? `drawtext=text='ТЕЛ: ${safeBrandPhone}':
-       fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:
+       fontfile=${localFontFile}
        fontcolor=#FFE7A8:
        fontsize=56:
        borderw=4:
@@ -426,7 +427,7 @@ const outroTexts = [
 
   safeAddress
     ? `drawtext=text='АДРЕС: ${safeAddress}':
-       fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:
+       fontfile=${localFontFile}
        fontcolor=white:
        fontsize=38:
        borderw=3:
