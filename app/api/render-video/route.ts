@@ -25,18 +25,6 @@ async function downloadFile(url: string, outputPath: string) {
   fs.writeFileSync(outputPath, Buffer.from(arrayBuffer));
 }
 
-function getVideoDurationSec(inputPath: string) {
-  return new Promise<number>((resolve, reject) => {
-    ffmpeg.ffprobe(inputPath, (error, metadata) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve(Number(metadata?.format?.duration) || 0);
-    });
-  });
-}
 function getMusicPath(style: string, duration: number) {
   const baseDir = path.join(process.cwd(), "public", "audio");
 
@@ -518,10 +506,8 @@ const selectedMusicPath = getMusicPath(musicStyle, totalDurationSec);
     console.log("RAW VIDEO URL FOR RENDER:", videoUrl);
 
 await downloadFile(videoUrl, inputPath);
-const realVideoDurationSec = await getVideoDurationSec(inputPath);
-const effectiveDurationSec = realVideoDurationSec || totalDurationSec;
+const effectiveDurationSec = totalDurationSec;
 
-console.log("REAL VIDEO DURATION:", realVideoDurationSec);
 console.log("EFFECTIVE VIDEO DURATION:", effectiveDurationSec);
 if (!fs.existsSync(selectedMusicPath)) {
   throw new Error(`Missing local music file: ${selectedMusicPath}`);
