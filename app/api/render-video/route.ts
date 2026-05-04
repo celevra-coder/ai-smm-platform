@@ -180,7 +180,7 @@ const cleanText = offerText
 if (offerSafe) {
   return [
     `drawtext=text='${offerSafe}':
-  fontfile=${localFontFile}       
+    fontfile=${localFontFile}:     
  fontcolor=#FFD700:
      fontsize=72:
      borderw=4:
@@ -194,7 +194,7 @@ if (offerSafe) {
 
     safeLine1
       ? `drawtext=text='${safeLine1}':
-         fontfile=${localFontFile}
+         fontfile=${localFontFile}:
          fontcolor=${textColor}:
          fontsize=42:
          borderw=3:
@@ -208,7 +208,7 @@ if (offerSafe) {
       : "",
     safeLine2
       ? `drawtext=text='${safeLine2}':
-         fontfile=${localFontFile}
+         fontfile=${localFontFile}:   
          fontcolor=${textColor}:
          fontsize=36:
          borderw=3:
@@ -222,7 +222,7 @@ if (offerSafe) {
       : "",
     safeLine3
       ? `drawtext=text='${safeLine3}':
-         fontfile=${localFontFile}
+         fontfile=${localFontFile}:
          fontcolor=${textColor}:
          fontsize=36:
          borderw=3:
@@ -396,7 +396,7 @@ const outroTexts = [
 
   safeBrandPhone
     ? `drawtext=text='ТЕЛ: ${safeBrandPhone}':
-       fontfile=${localFontFile}
+       fontfile=${localFontFile}:    
        fontcolor=#FFE7A8:
        fontsize=56:
        borderw=4:
@@ -414,7 +414,7 @@ const outroTexts = [
 
   safeAddress
     ? `drawtext=text='АДРЕС: ${safeAddress}':
-       fontfile=${localFontFile}
+       fontfile=${localFontFile}:     
        fontcolor=white:
        fontsize=38:
        borderw=3:
