@@ -228,14 +228,13 @@ const headlineMaxWidth = mobileExport ? "330px" : zoomed ? "280px" : "190px";
 const subtextFontSize = mobileExport ? "22px" : zoomed ? "18px" : "11px";
 const subtextMaxWidth = mobileExport ? "350px" : zoomed ? "300px" : "220px";
 
-  const phoneFontSize = mobileExport ? "18px" : zoomed ? "20px" : "10px";
-const phoneBottom = mobileExport ? "54px" : zoomed ? "52px" : "22px";
+  const phoneFontSize = mobileExport ? "20px" : zoomed ? "20px" : "10px";
+const phoneBottom = mobileExport ? "70px" : zoomed ? "52px" : "22px";
 const phonePadding = mobileExport
-  ? "8px 28px"
+  ? "10px 30px"
   : zoomed
   ? "7px 34px 21px 34px"
   : "6px 18px 8px 18px";
-
   const logoSize = zoomed ? "44px" : "30px";
   const logoPadding = zoomed ? "6px" : "4px";
   const logoTop = zoomed ? "16px" : "12px";
@@ -484,9 +483,7 @@ const phonePadding = mobileExport
             transform: "translateX(-50%)",
             zIndex: 6,
 
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            
             gap: zoomed ? "8px" : "5px",
 
             maxWidth: zoomed ? "340px" : "260px",
@@ -520,8 +517,10 @@ const phonePadding = mobileExport
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+alignItems: "center",
+justifyContent: "center",
+textAlign: "center",
+lineHeight: 1,
 
                 padding: phonePadding,
                 borderRadius: "999px",
