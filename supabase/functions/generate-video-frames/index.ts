@@ -43,6 +43,61 @@ serve(async (req) => {
 ]
   .filter(Boolean)
   .join("\n");
+const seasonalContextRules = (() => {
+  const lowerContext = context.toLowerCase();
+
+  const seasonMatches: string[] = [];
+
+  if (/пролет|пролетен|пролетна|spring|цветя|цъфтеж|зеленина/i.test(lowerContext)) {
+    seasonMatches.push("spring");
+  }
+
+  if (/лято|летен|лятна|summer|слънце|море|плаж|ваканция/i.test(lowerContext)) {
+    seasonMatches.push("summer");
+  }
+
+  if (/есен|есенен|есенна|autumn|fall|листа|тиква|златни цветове/i.test(lowerContext)) {
+    seasonMatches.push("autumn");
+  }
+
+  if (/зима|зимен|зимна|winter|сняг|студ|уют/i.test(lowerContext)) {
+    seasonMatches.push("winter");
+  }
+
+  if (/коледа|коледен|коледна|christmas|нова година|празничен|празнична/i.test(lowerContext)) {
+    seasonMatches.push("christmas / holiday season");
+  }
+
+  if (/великден|великденски|easter/i.test(lowerContext)) {
+    seasonMatches.push("easter");
+  }
+
+  if (/8 март|осми март|ден на жената|women'?s day/i.test(lowerContext)) {
+    seasonMatches.push("international women's day");
+  }
+
+  const uniqueSeasons = [...new Set(seasonMatches)];
+
+  if (!uniqueSeasons.length) return "";
+
+  return `
+SEASONAL / HOLIDAY CONTEXT RULES:
+- Detected seasonal or holiday context: ${uniqueSeasons.join(", ")}.
+- Keep the exact business, service and post topic as the main subject.
+- The season or holiday must be added only as atmosphere, styling, light, background details or contextual props.
+- Do NOT replace the business topic with a generic seasonal landscape.
+- Do NOT create random flowers, beaches, snow, gifts or decorations unless the actual service/business remains clearly visible.
+- The scene must still explain the service, workspace, product, process or result from the post.
+- For spring: use fresh natural light, greenery, flowers, soft bright atmosphere, spring workshop or seasonal interior details.
+- For summer: use warm sunlight, airy atmosphere, fresh colors, outdoor or bright interior context only if relevant.
+- For autumn: use warm tones, leaves, cozy materials, seasonal product styling or autumn light.
+- For winter: use soft cold light, cozy interior, snow seen outside only if relevant, winter atmosphere.
+- For Christmas / holiday season: use subtle festive lighting, tasteful decorations, wrapped details or warm holiday atmosphere without turning the image into a generic Christmas card.
+- For Easter: use soft spring colors, tasteful Easter details and fresh seasonal atmosphere without making eggs or decorations the main subject.
+- For International Women's Day: use elegant flowers or soft feminine seasonal styling only as secondary context.
+`;
+})();
+
 const isGeoWaterBusiness =
   /геофиз|гео физ|подземн[а-я\s]*вод|сондаж|сондиран|кладенец|водоизточник|хидрогеолог|земни пластове|подпочвен/i.test(
     context
@@ -103,7 +158,7 @@ const visualResponse = await openai.chat.completions.create({
       content: `
 You are an expert advertising visual director.
 
-Your job is to convert the provided brand and post text into THREE different realistic static visual scenes for video starting frames.
+Your job is to convert the provided brand and post text into TWO different realistic static visual scenes for video starting frames.
 
 CRITICAL RULES:
 - The image MUST match the exact business, service and topic from the user text.
@@ -149,6 +204,7 @@ Example format:
   "Scene description 3..."
 ]
 
+${seasonalContextRules}
 ${geoWaterRules}
 ${safeFrameTypes}
 
@@ -300,7 +356,17 @@ for (let i = 0; i < 2; i++) {  const generationRes = await fetch("https://api.op
     }),
   });
 
-  const generationData = await generationRes.json();
+    const generationText = await generationRes.text();
+
+  let generationData: any = null;
+
+  try {
+    generationData = JSON.parse(generationText);
+  } catch {
+    throw new Error(
+      `OpenAI image generation returned non-JSON response | status=${generationRes.status} | body=${generationText.slice(0, 500)}`
+    );
+  }
 
   let imageUrl = "";
 
