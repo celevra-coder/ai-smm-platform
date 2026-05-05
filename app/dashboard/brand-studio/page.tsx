@@ -761,9 +761,15 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
     document.body.removeChild(link);
 
     setTimeout(() => URL.revokeObjectURL(objectUrl), 3000);
-  } catch (error) {
+    } catch (error) {
     console.error("Download failed:", error);
-    alert("Изтеглянето не беше успешно");
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unknown download error";
+
+    alert(`Изтеглянето не беше успешно: ${message}`);
   }
 };
 const saveLastRealVideoUrl = (url: string) => {
