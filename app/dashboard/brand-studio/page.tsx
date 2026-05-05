@@ -718,32 +718,49 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
   try {
     const canvas = await html2canvas(sourceNode, {
       useCORS: true,
-      allowTaint: true,
       scale: 2,
       backgroundColor: "#f7f3ee",
     });
 
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        alert("Изтеглянето не беше успешно");
-        return;
-      }
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob((result) => resolve(result), "image/png");
+    });
 
-      const objectUrl = URL.createObjectURL(blob);
+    if (!blob) {
+      throw new Error("Canvas blob generation failed");
+    }
 
-      const link = document.createElement("a");
-      link.href = objectUrl;
-      link.download = `${(workspace.brand_profile?.brand_name || "banner")
-        .trim()
-        .replace(/\s+/g, "-")
-        .toLowerCase()}-banner.png`;
+    const fileName = `${(workspace.brand_profile?.brand_name || "banner")
+      .trim()
+      .replace(/\s+/g, "-")
+      .toLowerCase()}-banner.png`;
 
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    const file = new File([blob], fileName, { type: "image/png" });
 
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-    }, "image/png");
+    if (
+      navigator.canShare &&
+      navigator.canShare({ files: [file] }) &&
+      navigator.share
+    ) {
+      await navigator.share({
+        files: [file],
+        title: "AI SMM Studio банер",
+      });
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = objectUrl;
+    link.download = fileName;
+    link.target = "_blank";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 3000);
   } catch (error) {
     console.error("Download failed:", error);
     alert("Изтеглянето не беше успешно");
