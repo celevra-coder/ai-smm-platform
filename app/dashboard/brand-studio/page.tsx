@@ -218,9 +218,9 @@ const [isAdminUser, setIsAdminUser] = useState(false);
   }, [workspace]);
 
  const renderBannerCard = (zoomed = false, mobileExport = false) => {
-  const brandFontSize = zoomed ? "52px" : "34px";
-  const dividerWidth = zoomed ? "180px" : "140px";
-  const titleTop = zoomed ? "40px" : "26px";
+  const brandFontSize = mobileExport ? "50px" : zoomed ? "52px" : "34px";
+const dividerWidth = mobileExport ? "180px" : zoomed ? "180px" : "140px";
+const titleTop = mobileExport ? "34px" : zoomed ? "40px" : "26px";
 
   const headlineFontSize = mobileExport ? "18px" : zoomed ? "15px" : "10px";
 const headlineMaxWidth = mobileExport ? "330px" : zoomed ? "280px" : "190px";
@@ -750,7 +750,7 @@ const clone = exportNode;
   try {
     await new Promise<void>((resolve) => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => resolve());
+               setTimeout(() => resolve(), 300);
       });
     });
 
@@ -799,8 +799,12 @@ const clone = exportNode;
       error instanceof Error ? error.message : "Unknown download error";
 
     alert(`Изтеглянето не беше успешно: ${message}`);
-  } finally {
-    document.body.removeChild(exportWrapper);
+    } finally {
+    root.unmount();
+
+    if (document.body.contains(exportWrapper)) {
+      document.body.removeChild(exportWrapper);
+    }
   }
 };
 const saveLastRealVideoUrl = (url: string) => {
