@@ -9,6 +9,8 @@ import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import BrandStudioMobile from "./BrandStudioMobile";
 import { createRoot } from "react-dom/client";
+import BrandStudioDesktop from "./BrandStudioDesktop";
+
 
 
 type BrandProfile = {
@@ -1660,7 +1662,32 @@ const handleContinueFromVideoSetup = async () => {
 />
     </div>
 
-    <main className="hidden min-h-screen bg-[#f5f1ec] px-6 py-10 md:block">
+    <BrandStudioDesktop
+  brandName={brandName}
+  workspace={workspace}
+  selectedPostText={selectedPostText}
+  handleCopyPostText={handleCopyPostText}
+  openVideoSetupModal={openVideoSetupModal}
+  isGenerating={isGenerating}
+  isGeneratingVideoFrames={isGeneratingVideoFrames}
+  isVideoGenerating={isVideoGenerating}
+  handleGenerateAll={handleGenerateAll}
+  generatedBannerUrl={generatedBannerUrl}
+  setIsBannerZoomed={setIsBannerZoomed}
+  renderBannerCard={renderBannerCard}
+  handleDownloadBanner={handleDownloadBanner}
+  handleCopyBanner={handleCopyBanner}
+  uploadedImageUrl={uploadedImageUrl}
+  setUploadedImageUrl={setUploadedImageUrl}
+  imageUsageMode={imageUsageMode}
+  setImageUsageMode={setImageUsageMode}
+  setVideoDuration={setVideoDuration}
+  videoDuration={videoDuration}
+  generatedVideoUrl={generatedVideoUrl}
+  isAdminUser={isAdminUser}
+  useFakeVideo={useFakeVideo}
+  setUseFakeVideo={setUseFakeVideo}
+/>
             <div className="mx-auto max-w-5xl">
         
 
