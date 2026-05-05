@@ -716,30 +716,34 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
   }
 
   try {
-    const blob = await toBlob(sourceNode, {
-      cacheBust: true,
-      pixelRatio: 2,
+    const canvas = await html2canvas(sourceNode, {
+      useCORS: true,
+      allowTaint: true,
+      scale: 2,
       backgroundColor: "#f7f3ee",
     });
 
-    if (!blob) {
-      throw new Error("Download blob generation failed");
-    }
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        alert("Изтеглянето не беше успешно");
+        return;
+      }
 
-    const objectUrl = URL.createObjectURL(blob);
+      const objectUrl = URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
-    link.href = objectUrl;
-    link.download = `${(workspace.brand_profile?.brand_name || "banner")
-      .trim()
-      .replace(/\s+/g, "-")
-      .toLowerCase()}-banner.png`;
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = `${(workspace.brand_profile?.brand_name || "banner")
+        .trim()
+        .replace(/\s+/g, "-")
+        .toLowerCase()}-banner.png`;
 
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    }, "image/png");
   } catch (error) {
     console.error("Download failed:", error);
     alert("Изтеглянето не беше успешно");
