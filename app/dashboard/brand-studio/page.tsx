@@ -704,7 +704,7 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
 }
   };
 
- const handleDownloadBanner = async () => {
+  const handleDownloadBanner = async () => {
   if (!generatedBannerUrl) return;
 
   const sourceNode = bannerCardRef.current || bannerExportRef.current;
@@ -721,52 +721,33 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
       backgroundColor: "#f7f3ee",
     });
 
-    const blob = await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob((result) => resolve(result), "image/png");
-    });
+    const dataUrl = canvas.toDataURL("image/png");
 
-    if (!blob) {
-      throw new Error("Canvas blob generation failed");
-    }
+    const blob = await fetch(dataUrl).then((res) => res.blob());
 
-    const fileName = `${(workspace.brand_profile?.brand_name || "banner")
-      .trim()
-      .replace(/\s+/g, "-")
-      .toLowerCase()}-banner.png`;
-
-    const file = new File([blob], fileName, { type: "image/png" });
-
-    if (
-      navigator.canShare &&
-      navigator.canShare({ files: [file] }) &&
-      navigator.share
-    ) {
-      await navigator.share({
-        files: [file],
-        title: "AI SMM Studio банер",
-      });
-      return;
+    if (!blob || blob.size === 0) {
+      throw new Error("Empty banner blob");
     }
 
     const objectUrl = URL.createObjectURL(blob);
-    const link = document.createElement("a");
 
+    const link = document.createElement("a");
     link.href = objectUrl;
-    link.download = fileName;
-    link.target = "_blank";
+    link.download = `${(workspace.brand_profile?.brand_name || "banner")
+      .trim()
+      .replace(/\s+/g, "-")
+      .toLowerCase()}-banner.png`;
 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     setTimeout(() => URL.revokeObjectURL(objectUrl), 3000);
-    } catch (error) {
+  } catch (error) {
     console.error("Download failed:", error);
 
     const message =
-      error instanceof Error
-        ? error.message
-        : "Unknown download error";
+      error instanceof Error ? error.message : "Unknown download error";
 
     alert(`Изтеглянето не беше успешно: ${message}`);
   }
