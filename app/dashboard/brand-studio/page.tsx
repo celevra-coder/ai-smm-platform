@@ -1668,9 +1668,9 @@ onContinueFromVideoSetup={handleContinueFromVideoSetup}
 
             <div
   
-  className="mt-4 cursor-zoom-in overflow-hidden rounded-2xl text-sm"
+    className="mt-4 cursor-zoom-in overflow-hidden rounded-2xl text-sm"
   style={{ backgroundColor: "#f7f3ee", color: "rgba(0,0,0,0.5)" }}
-  onDoubleClick={() => generatedBannerUrl && setIsBannerZoomed(true)}
+  onClick={() => generatedBannerUrl && setIsBannerZoomed(true)}
 >
   <div className="mx-auto w-full max-w-[400px]">
     {renderBannerCard()}
@@ -1905,11 +1905,36 @@ onContinueFromVideoSetup={handleContinueFromVideoSetup}
   {renderBannerCard(true)}
 </div>
       </div>
-      {toastMessage ? (
+            {toastMessage ? (
   <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full bg-black px-5 py-3 text-sm font-semibold text-white shadow-lg">
     {toastMessage}
   </div>
 ) : null}
+
+{isBannerZoomed && generatedBannerUrl ? (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6"
+    onClick={() => setIsBannerZoomed(false)}
+  >
+    <div
+      className="relative w-full max-w-[520px]"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <button
+        type="button"
+        onClick={() => setIsBannerZoomed(false)}
+        className="absolute -right-3 -top-3 z-10 rounded-full bg-white px-4 py-2 text-sm font-bold text-black shadow-lg"
+      >
+        ✕
+      </button>
+
+      <div className="overflow-hidden rounded-[28px] bg-[#f7f3ee] shadow-2xl">
+        {renderBannerCard(true)}
+      </div>
+    </div>
+  </div>
+) : null}
+
 {showVideoSetupModal ? (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
     <div className="max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-[32px] bg-white p-6 shadow-2xl">
