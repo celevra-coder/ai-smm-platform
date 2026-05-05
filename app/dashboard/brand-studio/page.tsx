@@ -706,62 +706,40 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
   };
 
  const handleDownloadBanner = async () => {
-    if (!generatedBannerUrl) return;
+  if (!generatedBannerUrl) return;
 
   const exportRect = bannerExportRef.current?.getBoundingClientRect();
+
   const sourceNode =
     exportRect && exportRect.width > 0 && exportRect.height > 0
       ? bannerExportRef.current
       : bannerCardRef.current;
 
-  if (!sourceNode) return;
-
-  const rect = sourceNode.getBoundingClientRect();
-
-  const exportWrapper = document.createElement("div");
-  exportWrapper.style.position = "fixed";
-  exportWrapper.style.left = "-99999px";
-  exportWrapper.style.top = "0";
-  exportWrapper.style.width = `${Math.round(rect.width)}px`;
-  exportWrapper.style.height = `${Math.round(rect.height)}px`;
-  exportWrapper.style.background = "#f7f3ee";
-  exportWrapper.style.overflow = "hidden";
-  exportWrapper.style.zIndex = "-1";
-
-  const clone = sourceNode.cloneNode(true) as HTMLDivElement;
-  clone.style.width = "100%";
-  clone.style.height = "100%";
-  clone.style.margin = "0";
-  clone.style.transform = "none";
-
-  exportWrapper.appendChild(clone);
-  document.body.appendChild(exportWrapper);
+  if (!sourceNode) {
+    alert("Не намирам банера за сваляне.");
+    return;
+  }
 
   try {
-    const canvas = await html2canvas(exportWrapper, {
-      useCORS: true,
-      scale: 3,
+    const dataUrl = await toPng(sourceNode, {
+      cacheBust: true,
+      pixelRatio: 3,
       backgroundColor: "#f7f3ee",
-      scrollX: 0,
-      scrollY: 0,
-      width: Math.round(rect.width),
-      height: Math.round(rect.height),
-      windowWidth: Math.round(rect.width),
-      windowHeight: Math.round(rect.height),
     });
 
     const link = document.createElement("a");
-    link.href = canvas.toDataURL("image/png");
+    link.href = dataUrl;
     link.download = `${(workspace.brand_profile?.brand_name || "banner")
       .trim()
       .replace(/\s+/g, "-")
       .toLowerCase()}-banner.png`;
+
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   } catch (error) {
     console.error("Download failed:", error);
     alert("Download failed");
-  } finally {
-    document.body.removeChild(exportWrapper);
   }
 };
 const saveLastRealVideoUrl = (url: string) => {
@@ -1049,10 +1027,22 @@ useEffect(() => {
   generatedBannerPlan,
 ]);
 const handleCopyBanner = async () => {
-  if (!bannerCopyRef.current || !generatedBannerUrl) return;
+  if (!generatedBannerUrl) return;
+
+  const exportRect = bannerCopyRef.current?.getBoundingClientRect();
+
+  const sourceNode =
+    exportRect && exportRect.width > 0 && exportRect.height > 0
+      ? bannerCopyRef.current
+      : bannerCardRef.current;
+
+  if (!sourceNode) {
+    alert("Не намирам банера за копиране.");
+    return;
+  }
 
   try {
-    const blob = await toBlob(bannerCopyRef.current, {
+    const blob = await toBlob(sourceNode, {
       cacheBust: true,
       pixelRatio: 2,
       backgroundColor: "#f7f3ee",
