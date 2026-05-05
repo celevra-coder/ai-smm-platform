@@ -1557,46 +1557,46 @@ const handleContinueFromVideoSetup = async () => {
   <>
     <div className="md:hidden">
       <BrandStudioMobile
-        brandName={brandName}
-        selectedPostText={selectedPostText}
-        workspace={workspace}
-        generatedBannerUrl={generatedBannerUrl}
-        generatedVideoUrl={generatedVideoUrl}
-        uploadedImageUrl={uploadedImageUrl}
-        imageUsageMode={imageUsageMode}
-        videoDuration={videoDuration}
-        isGenerating={isGenerating}
-        isVideoGenerating={isVideoGenerating}
-        isGeneratingVideoFrames={isGeneratingVideoFrames}
-        videoFrameOptions={videoFrameOptions}
-selectedVideoFrameUrl={selectedVideoFrameUrl}
-setSelectedVideoFrameUrl={setSelectedVideoFrameUrl}
-uploadedVideoImageUrl={uploadedVideoImageUrl}
-setUploadedVideoImageUrl={setUploadedVideoImageUrl}
-setUploadedVideoImageName={setUploadedVideoImageName}
-videoErrorText={videoErrorText}
-showVideoSetupModal={showVideoSetupModal}
-setShowVideoSetupModal={setShowVideoSetupModal}
-videoSetupMode={videoSetupMode}
-onContinueFromVideoSetup={handleContinueFromVideoSetup}
-        isAdminUser={isAdminUser}
-        useFakeVideo={useFakeVideo}
-        renderBannerCard={() => renderBannerCard(false)}
-        onCopyPostText={handleCopyPostText}
-        onGenerateCampaign={() => openVideoSetupModal("campaign")}
-        onGenerateBanner={() => handleGenerateAll(false)}
-        onDownloadBanner={handleDownloadBanner}
-        onCopyBanner={handleCopyBanner}
-        onOpenVideoSetup={() => openVideoSetupModal("video")}
-        onVideoDurationChange={setVideoDuration}
-        onUseFakeVideoToggle={() => setUseFakeVideo((prev) => !prev)}
-        onImageUpload={setUploadedImageUrl}
-        onClearImage={() => {
-          setUploadedImageUrl("");
-          setImageUsageMode("integrate");
-        }}
-        onImageUsageModeChange={setImageUsageMode}
-      />
+  brandName={brandName}
+  selectedPostText={selectedPostText}
+  workspace={workspace}
+  generatedBannerUrl={generatedBannerUrl}
+  generatedVideoUrl={generatedVideoUrl}
+  uploadedImageUrl={uploadedImageUrl}
+  imageUsageMode={imageUsageMode}
+  videoDuration={videoDuration}
+  isGenerating={isGenerating}
+  isVideoGenerating={isVideoGenerating}
+  isGeneratingVideoFrames={isGeneratingVideoFrames}
+  isAdminUser={isAdminUser}
+  useFakeVideo={useFakeVideo}
+  renderBannerCard={() => renderBannerCard(false)}
+  onCopyPostText={handleCopyPostText}
+  onGenerateCampaign={() => openVideoSetupModal("campaign")}
+  onGenerateBanner={() => handleGenerateAll(false)}
+  onDownloadBanner={handleDownloadBanner}
+  onCopyBanner={handleCopyBanner}
+  onOpenVideoSetup={() => openVideoSetupModal("video")}
+  onVideoDurationChange={setVideoDuration}
+  onUseFakeVideoToggle={() => setUseFakeVideo((prev) => !prev)}
+  onImageUpload={setUploadedImageUrl}
+  onClearImage={() => {
+    setUploadedImageUrl("");
+    setImageUsageMode("integrate");
+  }}
+  onImageUsageModeChange={setImageUsageMode}
+  videoFrameOptions={videoFrameOptions}
+  selectedVideoFrameUrl={selectedVideoFrameUrl}
+  setSelectedVideoFrameUrl={setSelectedVideoFrameUrl}
+  uploadedVideoImageUrl={uploadedVideoImageUrl}
+  setUploadedVideoImageUrl={setUploadedVideoImageUrl}
+  setUploadedVideoImageName={setUploadedVideoImageName}
+  videoErrorText={videoErrorText}
+  showVideoSetupModal={showVideoSetupModal}
+  setShowVideoSetupModal={setShowVideoSetupModal}
+  videoSetupMode={videoSetupMode}
+  onContinueFromVideoSetup={handleContinueFromVideoSetup}
+/>
     </div>
 
     <main className="hidden min-h-screen bg-[#f5f1ec] px-6 py-10 md:block">
