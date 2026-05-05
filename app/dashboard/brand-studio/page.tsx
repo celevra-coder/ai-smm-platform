@@ -704,7 +704,7 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
 }
   };
 
-  const handleDownloadBanner = async () => {
+const handleDownloadBanner = async () => {
   if (!generatedBannerUrl) return;
 
   const sourceNode = bannerCardRef.current || bannerExportRef.current;
@@ -714,14 +714,49 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
     return;
   }
 
+  const exportWrapper = document.createElement("div");
+  exportWrapper.style.position = "fixed";
+  exportWrapper.style.left = "-99999px";
+  exportWrapper.style.top = "0";
+  exportWrapper.style.width = "400px";
+  exportWrapper.style.height = "500px";
+  exportWrapper.style.background = "#f7f3ee";
+  exportWrapper.style.overflow = "hidden";
+
+  const clone = sourceNode.cloneNode(true) as HTMLDivElement;
+  clone.style.width = "400px";
+  clone.style.height = "500px";
+  clone.style.maxWidth = "400px";
+  clone.style.margin = "0";
+  clone.style.transform = "none";
+
+  exportWrapper.appendChild(clone);
+  document.body.appendChild(exportWrapper);
+
   try {
-    const canvas = await html2canvas(sourceNode, {
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => resolve());
+      });
+    });
+
+    const canvas = await html2canvas(exportWrapper, {
       useCORS: true,
       scale: 2,
       backgroundColor: "#f7f3ee",
+      width: 400,
+      height: 500,
+      windowWidth: 400,
+      windowHeight: 500,
+      scrollX: 0,
+      scrollY: 0,
     });
 
     const dataUrl = canvas.toDataURL("image/png");
+
+    if (!dataUrl || dataUrl === "data:,") {
+      throw new Error("Empty banner export");
+    }
 
     const blob = await fetch(dataUrl).then((res) => res.blob());
 
@@ -750,6 +785,8 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
       error instanceof Error ? error.message : "Unknown download error";
 
     alert(`Изтеглянето не беше успешно: ${message}`);
+  } finally {
+    document.body.removeChild(exportWrapper);
   }
 };
 const saveLastRealVideoUrl = (url: string) => {
