@@ -706,9 +706,16 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
   };
 
  const handleDownloadBanner = async () => {
-  if (!bannerExportRef.current || !generatedBannerUrl) return;
+    if (!generatedBannerUrl) return;
 
-  const sourceNode = bannerExportRef.current;
+  const exportRect = bannerExportRef.current?.getBoundingClientRect();
+  const sourceNode =
+    exportRect && exportRect.width > 0 && exportRect.height > 0
+      ? bannerExportRef.current
+      : bannerCardRef.current;
+
+  if (!sourceNode) return;
+
   const rect = sourceNode.getBoundingClientRect();
 
   const exportWrapper = document.createElement("div");
