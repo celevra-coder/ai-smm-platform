@@ -8,6 +8,7 @@ import { toPng } from "html-to-image";
 import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
 import BrandStudioMobile from "./BrandStudioMobile";
+import { createRoot } from "react-dom/client";
 
 
 type BrandProfile = {
@@ -216,16 +217,16 @@ const [isAdminUser, setIsAdminUser] = useState(false);
     );
   }, [workspace]);
 
- const renderBannerCard = (zoomed = false) => {
+ const renderBannerCard = (zoomed = false, mobileExport = false) => {
   const brandFontSize = zoomed ? "52px" : "34px";
   const dividerWidth = zoomed ? "180px" : "140px";
   const titleTop = zoomed ? "40px" : "26px";
 
-  const headlineFontSize = zoomed ? "15px" : "10px";
-  const headlineMaxWidth = zoomed ? "280px" : "190px";
+  const headlineFontSize = mobileExport ? "18px" : zoomed ? "15px" : "10px";
+const headlineMaxWidth = mobileExport ? "330px" : zoomed ? "280px" : "190px";
 
-  const subtextFontSize = zoomed ? "18px" : "11px";
-  const subtextMaxWidth = zoomed ? "300px" : "220px";
+const subtextFontSize = mobileExport ? "22px" : zoomed ? "18px" : "11px";
+const subtextMaxWidth = mobileExport ? "350px" : zoomed ? "300px" : "220px";
 
   const phoneFontSize = zoomed ? "20px" : "10px";
   const phoneBottom = zoomed ? "52px" : "22px";
@@ -341,7 +342,7 @@ const [isAdminUser, setIsAdminUser] = useState(false);
                         <div
         className="absolute inset-x-0 px-5 text-center"
         style={{
-  top: "55%",
+  top: mobileExport ? "50%" : "55%",
   transform: "translateY(-50%)",
   color: "#ffffff",
 }}
@@ -723,7 +724,16 @@ const handleDownloadBanner = async () => {
   exportWrapper.style.background = "#f7f3ee";
   exportWrapper.style.overflow = "hidden";
 
-  const clone = sourceNode.cloneNode(true) as HTMLDivElement;
+  const exportNode = document.createElement("div");
+exportNode.style.width = "400px";
+exportNode.style.height = "500px";
+exportNode.style.background = "#f7f3ee";
+exportNode.style.overflow = "hidden";
+
+const root = createRoot(exportNode);
+root.render(renderBannerCard(false, true) as React.ReactElement);
+
+const clone = exportNode;
   clone.style.width = "400px";
   clone.style.height = "500px";
   clone.style.maxWidth = "400px";
