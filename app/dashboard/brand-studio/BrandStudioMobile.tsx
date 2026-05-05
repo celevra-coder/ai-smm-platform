@@ -1,4 +1,5 @@
  "use client";
+ import { useState } from "react";
 
 type BrandProfile = {
   brand_name?: string;
@@ -99,6 +100,8 @@ export default function BrandStudioMobile({
   videoSetupMode,
   onContinueFromVideoSetup,
 }: Props) {
+  const [isBannerZoomed, setIsBannerZoomed] = useState(false);
+
   return (
     <main className="min-h-screen bg-[#f5f1ec] px-3 py-4 text-black">
       <section className="rounded-[26px] bg-white p-4 shadow-sm">
@@ -196,7 +199,10 @@ export default function BrandStudioMobile({
           </button>
         </div>
 
-        <div className="mt-4 overflow-hidden rounded-[22px] bg-[#f7f3ee]">
+                <div
+          className="mt-4 cursor-zoom-in overflow-hidden rounded-[22px] bg-[#f7f3ee]"
+          onDoubleClick={() => generatedBannerUrl && setIsBannerZoomed(true)}
+        >
           {renderBannerCard()}
         </div>
 
@@ -439,6 +445,30 @@ export default function BrandStudioMobile({
     Продължи
   </button>
 </div>
+    </div>
+  </div>
+) : null}
+
+{isBannerZoomed && generatedBannerUrl ? (
+  <div
+    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4"
+    onClick={() => setIsBannerZoomed(false)}
+  >
+    <div
+      className="relative w-full max-w-[430px]"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <button
+        type="button"
+        onClick={() => setIsBannerZoomed(false)}
+        className="absolute -right-2 -top-2 z-10 rounded-full bg-white px-3 py-2 text-sm font-black text-black shadow-lg"
+      >
+        ✕
+      </button>
+
+      <div className="overflow-hidden rounded-[28px] bg-[#f7f3ee] shadow-2xl">
+        {renderBannerCard()}
+      </div>
     </div>
   </div>
 ) : null}
