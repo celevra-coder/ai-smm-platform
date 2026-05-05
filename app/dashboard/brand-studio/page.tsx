@@ -2218,7 +2218,7 @@ const handleContinueFromVideoSetup = async () => {
     </div>
   </div>
 ) : null}
-        </main>
+        
   </>
 );
 }
