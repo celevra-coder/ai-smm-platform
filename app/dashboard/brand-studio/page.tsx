@@ -300,12 +300,11 @@ const [isAdminUser, setIsAdminUser] = useState(false);
     
 
       <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.18), transparent)",
-        }}
-      />
+  className="absolute inset-0"
+  style={{
+    background: "rgba(0,0,0,0.25)",
+  }}
+/>
 
             <div
   className="absolute inset-x-0 px-5 pt-2 text-center"
