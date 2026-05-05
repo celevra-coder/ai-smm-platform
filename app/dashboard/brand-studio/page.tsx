@@ -782,9 +782,9 @@ const clone = exportNode;
     const link = document.createElement("a");
     link.href = objectUrl;
     link.download = `${(workspace.brand_profile?.brand_name || "banner")
-      .trim()
-      .replace(/\s+/g, "-")
-      .toLowerCase()}-banner.png`;
+  .trim()
+  .replace(/\s+/g, "-")
+  .toLowerCase()}-banner-${Date.now()}.png`;
 
     document.body.appendChild(link);
     link.click();
