@@ -228,9 +228,13 @@ const headlineMaxWidth = mobileExport ? "330px" : zoomed ? "280px" : "190px";
 const subtextFontSize = mobileExport ? "22px" : zoomed ? "18px" : "11px";
 const subtextMaxWidth = mobileExport ? "350px" : zoomed ? "300px" : "220px";
 
-  const phoneFontSize = zoomed ? "20px" : "10px";
-  const phoneBottom = zoomed ? "52px" : "22px";
-  const phonePadding = zoomed ? "7px 34px 21px 34px" : "6px 18px 8px 18px";
+  const phoneFontSize = mobileExport ? "18px" : zoomed ? "20px" : "10px";
+const phoneBottom = mobileExport ? "54px" : zoomed ? "52px" : "22px";
+const phonePadding = mobileExport
+  ? "8px 28px"
+  : zoomed
+  ? "7px 34px 21px 34px"
+  : "6px 18px 8px 18px";
 
   const logoSize = zoomed ? "44px" : "30px";
   const logoPadding = zoomed ? "6px" : "4px";
@@ -476,7 +480,7 @@ const subtextMaxWidth = mobileExport ? "350px" : zoomed ? "300px" : "220px";
           style={{
             position: "absolute",
             left: "50%",
-            bottom: zoomed ? "46px" : "20px",
+            bottom: phoneBottom,
             transform: "translateX(-50%)",
             zIndex: 6,
 
@@ -519,10 +523,10 @@ const subtextMaxWidth = mobileExport ? "350px" : zoomed ? "300px" : "220px";
                 alignItems: "center",
                 justifyContent: "center",
 
-                padding: zoomed ? "7px 30px" : "5px 16px",
+                padding: phonePadding,
                 borderRadius: "999px",
                 fontWeight: 800,
-                fontSize: zoomed ? "19px" : "11px",
+                fontSize: phoneFontSize,
                 color: "#ffffff",
                 whiteSpace: "nowrap",
 
