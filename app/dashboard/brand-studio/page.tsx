@@ -708,12 +708,7 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
  const handleDownloadBanner = async () => {
   if (!generatedBannerUrl) return;
 
-  const exportRect = bannerExportRef.current?.getBoundingClientRect();
-
-  const sourceNode =
-    exportRect && exportRect.width > 0 && exportRect.height > 0
-      ? bannerExportRef.current
-      : bannerCardRef.current;
+  const sourceNode = bannerCardRef.current || bannerExportRef.current;
 
   if (!sourceNode) {
     alert("Не намирам банера за сваляне.");
@@ -721,14 +716,20 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
   }
 
   try {
-    const dataUrl = await toPng(sourceNode, {
+    const blob = await toBlob(sourceNode, {
       cacheBust: true,
-      pixelRatio: 3,
+      pixelRatio: 2,
       backgroundColor: "#f7f3ee",
     });
 
+    if (!blob) {
+      throw new Error("Download blob generation failed");
+    }
+
+    const objectUrl = URL.createObjectURL(blob);
+
     const link = document.createElement("a");
-    link.href = dataUrl;
+    link.href = objectUrl;
     link.download = `${(workspace.brand_profile?.brand_name || "banner")
       .trim()
       .replace(/\s+/g, "-")
@@ -737,9 +738,11 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
   } catch (error) {
     console.error("Download failed:", error);
-    alert("Download failed");
+    alert("Изтеглянето не беше успешно");
   }
 };
 const saveLastRealVideoUrl = (url: string) => {
@@ -1029,12 +1032,7 @@ useEffect(() => {
 const handleCopyBanner = async () => {
   if (!generatedBannerUrl) return;
 
-  const exportRect = bannerCopyRef.current?.getBoundingClientRect();
-
-  const sourceNode =
-    exportRect && exportRect.width > 0 && exportRect.height > 0
-      ? bannerCopyRef.current
-      : bannerCardRef.current;
+  const sourceNode = bannerCardRef.current || bannerCopyRef.current;
 
   if (!sourceNode) {
     alert("Не намирам банера за копиране.");
@@ -1052,17 +1050,22 @@ const handleCopyBanner = async () => {
       throw new Error("Copy blob generation failed");
     }
 
-    await navigator.clipboard.write([
-      new ClipboardItem({
-        "image/png": blob,
-      }),
-    ]);
+    if (navigator.clipboard && "ClipboardItem" in window) {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "image/png": blob,
+        }),
+      ]);
 
-    setToastMessage("Банерът е копиран");
-    setTimeout(() => setToastMessage(""), 2000);
+      setToastMessage("Банерът е копиран");
+      setTimeout(() => setToastMessage(""), 2000);
+      return;
+    }
+
+    throw new Error("Clipboard image copy is not supported on this device.");
   } catch (error) {
     console.error("Copy failed:", error);
-    alert("Копирането не беше успешно");
+    alert("Копирането на изображение не се поддържа от този браузър. Използвай бутона Свали.");
   }
 };
 const handleGenerateVideo = async (bannerUrlOverride?: string) => {
