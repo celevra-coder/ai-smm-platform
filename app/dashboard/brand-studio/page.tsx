@@ -1161,43 +1161,49 @@ videoCreditWasSpent = true;
         throw new Error("Missing request_id from generate-video.");
       }
 
-            for (let i = 0; i < 120; i++) {
-  await new Promise((r) => setTimeout(r, 5000));
+            for (let i = 0; i < 40; i++) {
+  await new Promise((r) => setTimeout(r, 4000));
 
-        const statusRes = await fetch(
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video-status?request_id=${requestId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`
-            },
-          }
-        );
-
-        const statusData = await statusRes.json().catch(() => null);
-
-        if (statusData?.status === "FAILED" || statusData?.status === "ERROR") {
-  throw new Error(
-    statusData?.error ||
-      statusData?.details ||
-      "FAL върна грешка при генериране на видео."
+  const statusRes = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video-status?request_id=${requestId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
   );
-}
-        if (statusData?.status === "FAILED" || statusData?.status === "ERROR") {
-  throw new Error(
-    statusData?.error ||
-      statusData?.details ||
-      "FAL върна грешка при генериране на видео."
-  );
-}
 
-        rawVideoUrl =
-          statusData?.video?.url ||
-          statusData?.video_url ||
-          statusData?.fal_response?.video?.url ||
-          "";
+  const statusData = await statusRes.json().catch(() => null);
 
-        if (rawVideoUrl) break;
-      }
+  console.log("VIDEO STATUS:", statusData);
+
+  if (!statusData) continue;
+
+  if (statusData.status === "COMPLETED") {
+    rawVideoUrl =
+      statusData?.video?.url ||
+      statusData?.video_url ||
+      statusData?.fal_response?.video?.url ||
+      "";
+
+    if (rawVideoUrl) break;
+  }
+
+  if (
+    statusData.status === "FAILED" ||
+    statusData.status === "ERROR" ||
+    statusData.status === "CANCELLED"
+  ) {
+    throw new Error(
+      statusData?.error ||
+        statusData?.details ||
+        "Video generation failed"
+    );
+  }
+}
+if (!rawVideoUrl) {
+  throw new Error("FAL не върна видео (засече се или timeout)");
+}
 
             if (!rawVideoUrl) {
         throw new Error(
@@ -1527,7 +1533,9 @@ const openVideoSetupModal = async (mode: "campaign" | "video") => {
 
   setSelectedVideoFrameUrl("");
 
+  if (!useFakeVideo) {
   await handleGenerateVideoFrames();
+}
 };
 
 const handleContinueFromVideoSetup = async () => {
@@ -2049,11 +2057,11 @@ onContinueFromVideoSetup={handleContinueFromVideoSetup}
             type="button"
             onClick={handleContinueFromVideoSetup}
             disabled={
-              isGenerating ||
-              isVideoGenerating ||
-              isGeneratingVideoFrames ||
-              (!selectedVideoFrameUrl && !uploadedVideoImageUrl)
-            }
+  isGenerating ||
+  isVideoGenerating ||
+  isGeneratingVideoFrames ||
+  (!useFakeVideo && !selectedVideoFrameUrl && !uploadedVideoImageUrl)
+}
             className="mt-5 w-full rounded-full bg-black px-6 py-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
           >
             {videoSetupMode === "campaign"

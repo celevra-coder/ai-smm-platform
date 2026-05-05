@@ -13,6 +13,7 @@ const resolvedFfmpegPath =
     : path.join(process.cwd(), "node_modules", "ffmpeg-static", "ffmpeg");
 
 ffmpeg.setFfmpegPath(resolvedFfmpegPath);
+console.log("FFMPEG PATH:", resolvedFfmpegPath);
 async function downloadFile(url: string, outputPath: string) {
   const response = await fetch(url);
 
@@ -132,7 +133,7 @@ function renderVideoWithMusic({
 
     if (currentLine) lines.push(currentLine);
 
-    return lines.slice(0, 8);
+    return lines.slice(0, 12);
   };
 
   const dialogues: string[] = [];
@@ -154,47 +155,61 @@ function renderVideoWithMusic({
     const start = cursor;
     const end = cursor + scaledDuration;
     cursor = end;
+let text = cleanText(scene?.overlay_text || scene?.title || "");
 
-    const text = cleanText(scene?.overlay_text || scene?.title || "");
-    const lines = splitLines(text, text.length > 80 ? 18 : 22);
+if (totalDurationSec <= 5) {
+  const sentences = text.split(/[.!?]/).filter(Boolean);
 
-    if (lines.length) {
-      dialogues.push(
-        `Dialogue: 0,${assTime(start)},${assTime(end)},Main,,0,0,0,,${lines
-          .map(assSafe)
-          .join("\\N")}`
-      );
-    }
+  text = sentences[0] || "";
+
+  if (text.length < 40 && sentences[1]) {
+    text = text + ". " + sentences[1];
   }
+}
+const lines = splitLines(text, 22);
+
+if (lines.length) {
+  dialogues.push(
+    `Dialogue: 0,${assTime(start)},${assTime(end)},Main,,0,0,0,,{\\an5\\fs38\\pos(360,640)}${lines
+      .map(assSafe)
+      .join("\\N")}`
+  );
+}
+     }
 
   const brandStart = Math.max(totalDurationSec - 2.4, 0);
   const brandParts = splitLines(brandName || headline || "Brand", 24);
+if (brandParts.length) {
+  dialogues.push(
+    `Dialogue: 0,${assTime(brandStart)},${assTime(
+      totalDurationSec
+    )},Brand,,0,0,0,,{\\an5\\fnTimes New Roman\\b1\\i1\\fs82\\pos(360,460)}${brandParts
+      .map(assSafe)
+      .join("\\N")}`
+  );
+}
 
-  if (brandParts.length) {
-    dialogues.push(
-      `Dialogue: 0,${assTime(brandStart)},${assTime(
-        totalDurationSec
-      )},Brand,,0,0,0,,${brandParts.map(assSafe).join("\\N")}`
-    );
-  }
+if (phone) {
+  dialogues.push(
+    `Dialogue: 0,${assTime(brandStart)},${assTime(
+      totalDurationSec
+    )},Contact,,0,0,0,,{\\an5\\fs48\\pos(360,680)}${assSafe(`ТЕЛ: ${phone}`)}`
+  );
+}
 
-  if (phone) {
-    dialogues.push(
-      `Dialogue: 0,${assTime(brandStart)},${assTime(
-        totalDurationSec
-      )},Contact,,0,0,0,,${assSafe(`ТЕЛ: ${phone}`)}`
-    );
-  }
+if (address) {
+  const formattedAddress =
+    address.length > 25
+      ? address.replace(/,\s*/g, "\\N")
+      : `АДРЕС: ${address}`;
 
-  if (address) {
-    dialogues.push(
-      `Dialogue: 0,${assTime(brandStart)},${assTime(
-        totalDurationSec
-      )},Address,,0,0,0,,${assSafe(`АДРЕС: ${address}`)}`
-    );
-  }
-
-  const assContent = `[Script Info]
+  dialogues.push(
+    `Dialogue: 0,${assTime(brandStart)},${assTime(
+      totalDurationSec
+    )},Address,,0,0,0,,{\\an5\\fs30\\pos(360,800)}${assSafe(formattedAddress)}`
+  );
+}
+    const assContent = `[Script Info]
 ScriptType: v4.00+
 PlayResX: 720
 PlayResY: 1280
@@ -202,11 +217,10 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Main,Arial,42,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,5,40,40,0,1
-Style: Brand,Arial,58,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,5,40,40,0,1
-Style: Contact,Arial,48,&H00A8E7FF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,5,40,40,0,1
-Style: Address,Arial,34,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,3,2,5,40,40,0,1
-
+Style: Main,Arial,36,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,5,56,56,0,1
+Style: Brand,Times New Roman,64,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,1,0,0,100,100,0,0,1,4,2,8,40,40,240,1
+Style: Contact,Arial,42,&H00A8E7FF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,2,40,40,180,1
+Style: Address,Arial,30,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,3,2,2,40,40,110,1
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 ${dialogues.join("\n")}
@@ -216,12 +230,8 @@ ${dialogues.join("\n")}
 
   const ffmpegPathSafe = (value: string) =>
     value.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/ /g, "\\ ");
-
-  const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,ass='${ffmpegPathSafe(
-  subtitlePath
-)}',format=yuv420p[v]`;
-
-  return new Promise<void>((resolve, reject) => {
+const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,subtitles=filename='${ffmpegPathSafe(subtitlePath)}',format=yuv420p[v]`;
+    return new Promise<void>((resolve, reject) => {
     ffmpeg()
       .input(inputPath)
       .input(musicPath)
