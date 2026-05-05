@@ -1664,6 +1664,7 @@ const handleContinueFromVideoSetup = async () => {
     </div>
 
     <main className="hidden min-h-screen bg-[#f5f1ec] px-6 py-10 md:block">
+      
             <div className="mx-auto max-w-5xl">
         
 
