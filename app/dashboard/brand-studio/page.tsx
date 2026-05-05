@@ -1619,6 +1619,7 @@ const handleContinueFromVideoSetup = async () => {
   return (
   <>
     <div className="md:hidden">
+      
       <BrandStudioMobile
   brandName={brandName}
   selectedPostText={selectedPostText}
@@ -1662,32 +1663,7 @@ const handleContinueFromVideoSetup = async () => {
 />
     </div>
 
-    <BrandStudioDesktop
-  brandName={brandName}
-  workspace={workspace}
-  selectedPostText={selectedPostText}
-  handleCopyPostText={handleCopyPostText}
-  openVideoSetupModal={openVideoSetupModal}
-  isGenerating={isGenerating}
-  isGeneratingVideoFrames={isGeneratingVideoFrames}
-  isVideoGenerating={isVideoGenerating}
-  handleGenerateAll={handleGenerateAll}
-  generatedBannerUrl={generatedBannerUrl}
-  setIsBannerZoomed={setIsBannerZoomed}
-  renderBannerCard={renderBannerCard}
-  handleDownloadBanner={handleDownloadBanner}
-  handleCopyBanner={handleCopyBanner}
-  uploadedImageUrl={uploadedImageUrl}
-  setUploadedImageUrl={setUploadedImageUrl}
-  imageUsageMode={imageUsageMode}
-  setImageUsageMode={setImageUsageMode}
-  setVideoDuration={setVideoDuration}
-  videoDuration={videoDuration}
-  generatedVideoUrl={generatedVideoUrl}
-  isAdminUser={isAdminUser}
-  useFakeVideo={useFakeVideo}
-  setUseFakeVideo={setUseFakeVideo}
-/>
+    <main className="hidden min-h-screen bg-[#f5f1ec] px-6 py-10 md:block">
             <div className="mx-auto max-w-5xl">
         
 
@@ -2186,6 +2162,7 @@ const handleContinueFromVideoSetup = async () => {
     </div>
   </div>
 ) : null}
+      
 {showPaywallModal ? (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
     <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
@@ -2218,7 +2195,7 @@ const handleContinueFromVideoSetup = async () => {
     </div>
   </div>
 ) : null}
-        
+      </main>  
   </>
 );
 }
