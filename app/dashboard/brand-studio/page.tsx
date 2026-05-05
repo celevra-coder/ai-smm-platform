@@ -1631,7 +1631,7 @@ const handleContinueFromVideoSetup = async () => {
   isGeneratingVideoFrames={isGeneratingVideoFrames}
   isAdminUser={isAdminUser}
   useFakeVideo={useFakeVideo}
-  renderBannerCard={() => renderBannerCard(false)}
+  renderBannerCard={() => renderBannerCard(false, true)}
   onCopyPostText={handleCopyPostText}
   onGenerateCampaign={() => openVideoSetupModal("campaign")}
   onGenerateBanner={() => handleGenerateAll(false)}
