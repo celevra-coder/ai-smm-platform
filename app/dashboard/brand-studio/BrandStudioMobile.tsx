@@ -1,6 +1,7 @@
  "use client";
  import { useState } from "react";
 import BrandStudioMobileVideo from "./BrandStudioMobileVideo";
+import { useRef } from "react";
 
 type BrandProfile = {
   brand_name?: string;
@@ -104,6 +105,7 @@ onGenerateVideoFrames,
 onContinueFromVideoSetup,
 }: Props) {
   const [isBannerZoomed, setIsBannerZoomed] = useState(false);
+  const bannerCardRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <main className="min-h-screen bg-[#f5f1ec] px-3 py-4 text-black">
@@ -206,7 +208,9 @@ onContinueFromVideoSetup,
           className="mt-4 cursor-zoom-in overflow-hidden rounded-[22px] bg-[#f7f3ee]"
           onDoubleClick={() => generatedBannerUrl && setIsBannerZoomed(true)}
         >
-          {renderBannerCard()}
+          <div ref={bannerCardRef}>
+  {renderBannerCard()}
+</div>
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2">

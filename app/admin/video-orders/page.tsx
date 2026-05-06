@@ -47,7 +47,20 @@ export default function AdminVideoOrdersPage() {
   const [revisions, setRevisions] = useState<Revision[]>([]);
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
   const [generationLogs, setGenerationLogs] = useState<GenerationLog[]>([]);
-  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+    const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [openEmojiForMessageId, setOpenEmojiForMessageId] = useState<string | null>(null);
+
+  const emojis = [
+  "😊","🙂","😁","😎","😍","😘","😇","🥰",
+  "🔥","✨","💥","⭐","🌟",
+  "❤️","🧡","💛","💚","💙","💜","🖤","🤍",
+  "🙏","👏","👍","👎","🤝",
+  "💡","🎯","📌","📈","📊",
+  "📸","🎥","🎬","🎶",
+  "😐","😕","😞","😢","😭",
+  "😡","😠","🤯","😤",
+  "❗","❓","⚠️"
+];
   const [activeTab, setActiveTab] = useState<"orders" | "revisions" | "messages" | "generations">("orders");
   const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [newRevisionsCount, setNewRevisionsCount] = useState(0);
@@ -436,18 +449,53 @@ if (contactError) console.error(contactError);
                   </div>
                 ) : null}
 
-                <textarea
-                  value={replyDrafts[msg.id] || ""}
-                  onChange={(e) =>
-                    setReplyDrafts((current) => ({
-                      ...current,
-                      [msg.id]: e.target.value,
-                    }))
-                  }
-                  placeholder="Напиши отговор към потребителя..."
-                  className="mt-4 w-full rounded-2xl border border-black/10 bg-[#faf8f6] p-4 text-sm outline-none"
-                  rows={4}
-                />
+                                <div className="relative mt-4">
+                  <textarea
+                    value={replyDrafts[msg.id] || ""}
+                    onChange={(e) =>
+                      setReplyDrafts((current) => ({
+                        ...current,
+                        [msg.id]: e.target.value,
+                      }))
+                    }
+                    placeholder="Напиши отговор към потребителя..."
+                    className="w-full rounded-2xl border border-black/10 bg-[#faf8f6] p-4 pr-12 text-sm outline-none"
+                    rows={4}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenEmojiForMessageId((current) =>
+                        current === msg.id ? null : msg.id
+                      )
+                    }
+                    className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-xl shadow-sm"
+                  >
+                    😊
+                  </button>
+
+                  {openEmojiForMessageId === msg.id ? (
+                    <div className="absolute bottom-14 right-0 z-20 grid grid-cols-6 gap-2 rounded-2xl border bg-white p-3 shadow-xl">
+                      {emojis.map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => {
+                            setReplyDrafts((current) => ({
+                              ...current,
+                              [msg.id]: `${current[msg.id] || ""}${emoji}`,
+                            }));
+                            setOpenEmojiForMessageId(null);
+                          }}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl text-xl hover:bg-[#f5f1ec]"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
 
                 <button
                   type="button"

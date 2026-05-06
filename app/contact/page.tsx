@@ -57,7 +57,20 @@ export default function ContactPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [fileName, setFileName] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [successMessage, setSuccessMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  const emojis = [
+  "😊","🙂","😁","😎","😍","😘","😇","🥰",
+  "🔥","✨","💥","⭐","🌟",
+  "❤️","🧡","💛","💚","💙","💜","🖤","🤍",
+  "🙏","👏","👍","👎","🤝",
+  "💡","🎯","📌","📈","📊",
+  "📸","🎥","🎬","🎶",
+  "😐","😕","😞","😢","😭",
+  "😡","😠","🤯","😤",
+  "❗","❓","⚠️"
+];
   
 
   const handleSubmit = async () => {
@@ -123,13 +136,41 @@ export default function ContactPage() {
           Имаш въпрос преди поръчка или нещо не е ясно? Пиши ни.
         </p>
 
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Напиши въпроса си..."
-          className="mt-4 w-full rounded-[20px] border p-4"
-          rows={6}
-        />
+                <div className="relative mt-4">
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Напиши въпроса си..."
+            className="w-full rounded-[20px] border p-4 pr-12"
+            rows={6}
+          />
+
+          <button
+            type="button"
+            onClick={() => setShowEmojiPicker((v) => !v)}
+            className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-[#f5f1ec] text-xl"
+          >
+            😊
+          </button>
+
+          {showEmojiPicker ? (
+            <div className="absolute bottom-14 right-0 z-20 grid grid-cols-6 gap-2 rounded-2xl border bg-white p-3 shadow-xl">
+              {emojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => {
+                    setMessage((prev) => `${prev}${emoji}`);
+                    setShowEmojiPicker(false);
+                  }}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl text-xl hover:bg-[#f5f1ec]"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
 
         <input
           type="file"
