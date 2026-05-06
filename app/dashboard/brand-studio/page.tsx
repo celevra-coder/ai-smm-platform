@@ -1596,6 +1596,7 @@ const handleContinueFromVideoSetup = async () => {
   showVideoSetupModal={showVideoSetupModal}
   setShowVideoSetupModal={setShowVideoSetupModal}
   videoSetupMode={videoSetupMode}
+  onGenerateVideoFrames={handleGenerateVideoFrames}
   onContinueFromVideoSetup={handleContinueFromVideoSetup}
 />
     </div>

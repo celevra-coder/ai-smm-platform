@@ -59,6 +59,7 @@ type Props = {
   setShowVideoSetupModal: (value: boolean) => void;
 
   videoSetupMode: "campaign" | "video";
+  onGenerateVideoFrames: () => void;
   onContinueFromVideoSetup: () => void;
 };
 
@@ -98,6 +99,7 @@ export default function BrandStudioMobile({
   showVideoSetupModal,
   setShowVideoSetupModal,
   videoSetupMode,
+  onGenerateVideoFrames,
   onContinueFromVideoSetup,
 }: Props) {
   const [isBannerZoomed, setIsBannerZoomed] = useState(false);
@@ -402,34 +404,101 @@ export default function BrandStudioMobile({
       </div>
 
       <div className="mt-4 max-h-[65vh] space-y-3 overflow-y-auto pr-1">
-        {isGeneratingVideoFrames ? (
-          <div className="flex flex-col items-center gap-3 py-10">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-black/15 border-t-black" />
-            <p className="text-sm text-neutral-500">Генерирам кадри...</p>
-          </div>
-        ) : (
-          videoFrameOptions.map((frame, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setSelectedVideoFrameUrl(frame);
-                setUploadedVideoImageUrl("");
-              }}
-              className={`w-full overflow-hidden rounded-2xl border ${
-                selectedVideoFrameUrl === frame
-                  ? "border-black"
-                  : "border-black/10"
-              }`}
-            >
-              <img
-                src={frame}
-                className="aspect-[9/16] w-full object-cover"
-              />
-            </button>
-          ))
-        )}
-      </div>
+  {isGeneratingVideoFrames ? (
+    <div className="flex flex-col items-center gap-3 py-10">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-black/15 border-t-black" />
+      <p className="text-sm text-neutral-500">Генерирам кадри...</p>
+    </div>
+  ) : videoFrameOptions.length === 0 ? (
+    <div className="rounded-2xl bg-[#f7f3ee] p-4 text-center">
+      <p className="text-sm leading-6 text-neutral-500">
+        Генерирай кадри за видеото или качи свое изображение.
+      </p>
 
+      <button
+        type="button"
+        onClick={onGenerateVideoFrames}
+        className="mt-4 w-full rounded-full bg-black px-5 py-3 text-sm font-bold text-white"
+      >
+        ✨ Генерирай кадри
+      </button>
+    </div>
+  ) : (
+    videoFrameOptions.map((frame, i) => (
+      <button
+        key={i}
+        onClick={() => {
+          setSelectedVideoFrameUrl(frame);
+          setUploadedVideoImageUrl("");
+        }}
+        className={`w-full overflow-hidden rounded-2xl border ${
+          selectedVideoFrameUrl === frame
+            ? "border-black ring-4 ring-black"
+            : "border-black/10"
+        }`}
+      >
+        <img
+          src={frame}
+          className="aspect-[9/16] w-full object-cover"
+        />
+      </button>
+    ))
+  )}
+</div>
+<div className="mt-4 rounded-2xl bg-[#f7f3ee] p-3">
+  <p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-400">
+    Или качи свое изображение
+  </p>
+
+  <div className="mt-3 flex min-h-[160px] items-center justify-center overflow-hidden rounded-2xl bg-white text-center text-xs text-neutral-400">
+    {uploadedVideoImageUrl ? (
+      <img
+        src={uploadedVideoImageUrl}
+        alt="Uploaded video image"
+        className="max-h-[260px] w-full object-contain"
+      />
+    ) : (
+      "Няма качено изображение"
+    )}
+  </div>
+
+  <div className="mt-3 grid grid-cols-2 gap-2">
+    <label className="flex cursor-pointer items-center justify-center rounded-full bg-black px-4 py-3 text-sm font-bold text-white">
+      Качи
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+
+          reader.onloadend = () => {
+            setUploadedVideoImageUrl(reader.result as string);
+            setUploadedVideoImageName(file.name);
+            setSelectedVideoFrameUrl("");
+          };
+
+          reader.readAsDataURL(file);
+        }}
+        className="hidden"
+      />
+    </label>
+
+    <button
+      type="button"
+      onClick={() => {
+        setUploadedVideoImageUrl("");
+        setUploadedVideoImageName("");
+      }}
+      disabled={!uploadedVideoImageUrl}
+      className="rounded-full border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 disabled:opacity-40"
+    >
+      Премахни
+    </button>
+  </div>
+</div>
       {videoErrorText ? (
         <div className="mt-3 text-sm text-red-500">
           {videoErrorText}
