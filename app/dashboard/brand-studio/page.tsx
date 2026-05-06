@@ -146,9 +146,10 @@ const [videoUiSource, setVideoUiSource] = useState<"desktop" | "mobile">("deskto
 const [isAdminUser, setIsAdminUser] = useState(false);
   
   const bannerCardRef = useRef<HTMLDivElement | null>(null);
-  const bannerExportRef = useRef<HTMLDivElement | null>(null);
-  const bannerCopyRef = useRef<HTMLDivElement | null>(null);
-  const bannerSectionRef = useRef<HTMLDivElement | null>(null);
+const bannerExportRef = useRef<HTMLDivElement | null>(null);
+const bannerCopyRef = useRef<HTMLDivElement | null>(null);
+const bannerSectionRef = useRef<HTMLDivElement | null>(null);
+const mobileBannerExportRef = useRef<HTMLDivElement | null>(null);
   
 
   const [workspace, setWorkspace] = useState<VideoWorkspacePayload>({
@@ -718,11 +719,13 @@ if (generateVideoAfterBanner) {
 }
   };
 
-const handleDownloadBanner = async () => {
+const handleDownloadBanner = async (source: "desktop" | "mobile" = "desktop") => {
   if (!generatedBannerUrl) return;
 
   const sourceNode =
-    bannerSectionRef.current || bannerCardRef.current || bannerExportRef.current;
+  source === "mobile"
+    ? mobileBannerExportRef.current
+    : bannerSectionRef.current || bannerCardRef.current || bannerExportRef.current;
 
   if (!sourceNode) {
     alert("Не намирам банера за сваляне.");
@@ -1610,7 +1613,7 @@ const handleContinueFromVideoSetup = async () => {
   onCopyPostText={handleCopyPostText}
   onGenerateCampaign={() => openVideoSetupModal("campaign", "mobile")}
   onGenerateBanner={() => handleGenerateAll(false)}
-  onDownloadBanner={handleDownloadBanner}
+  onDownloadBanner={() => handleDownloadBanner("mobile")}
   onCopyBanner={handleCopyBanner}
   onOpenVideoSetup={() => openVideoSetupModal("video", "mobile")}
   onVideoDurationChange={setVideoDuration}
@@ -1634,6 +1637,27 @@ const handleContinueFromVideoSetup = async () => {
   onGenerateVideoFrames={handleGenerateVideoFrames}
   onContinueFromVideoSetup={handleContinueFromVideoSetup}
 />
+
+      <div
+        style={{
+          position: "fixed",
+          left: "-99999px",
+          top: "0",
+          width: "400px",
+          height: "500px",
+          pointerEvents: "none",
+          opacity: 1,
+          overflow: "hidden",
+          background: "#f7f3ee",
+        }}
+      >
+        <div
+          ref={mobileBannerExportRef}
+          style={{ width: "400px", height: "500px", background: "#f7f3ee" }}
+        >
+          {generatedBannerUrl ? renderBannerCard(false, true) : null}
+        </div>
+      </div>
     </div>
 
     <main className="hidden min-h-screen bg-[#f5f1ec] px-6 py-10 md:block">
