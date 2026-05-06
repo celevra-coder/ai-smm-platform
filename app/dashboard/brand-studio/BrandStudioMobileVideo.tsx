@@ -84,9 +84,16 @@ export default function BrandStudioMobileVideo({
                 Генериране на видео...
               </p>
             </div>
-          ) : (
-            "Преглед на видеото"
-          )}
+                    ) : (
+            <div className="px-6 text-center">
+              <p className="text-sm font-black text-neutral-600">
+                Видеото още не е генерирано
+              </p>
+              <p className="mt-2 text-xs leading-5 text-neutral-400">
+                Натисни „Генерирай“, избери кадър или качи изображение, после продължи към създаване на видео.
+              </p>
+            </div>
+                    )}
         </div>
 
         {generatedVideoUrl ? (
