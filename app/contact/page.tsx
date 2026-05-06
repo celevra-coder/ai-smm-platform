@@ -126,7 +126,10 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5f1ec] p-6">
+        <main
+      onClick={() => setShowEmojiPicker(false)}
+      className="min-h-screen bg-[#f5f1ec] p-6"
+    >
       <div className="mx-auto max-w-2xl rounded-[28px] bg-white p-6">
         <h1 className="text-2xl font-black">Свържи се с нас</h1>
         
@@ -145,16 +148,22 @@ export default function ContactPage() {
             rows={6}
           />
 
-          <button
+                    <button
             type="button"
-            onClick={() => setShowEmojiPicker((v) => !v)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowEmojiPicker((v) => !v);
+            }}
             className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-[#f5f1ec] text-xl"
           >
             😊
           </button>
 
           {showEmojiPicker ? (
-            <div className="absolute bottom-14 right-0 z-20 grid grid-cols-6 gap-2 rounded-2xl border bg-white p-3 shadow-xl">
+                        <div
+              onClick={(e) => e.stopPropagation()}
+              className="absolute bottom-14 right-0 z-20 grid grid-cols-6 gap-2 rounded-2xl border bg-white p-3 shadow-xl"
+            >
               {emojis.map((emoji) => (
                 <button
                   key={emoji}

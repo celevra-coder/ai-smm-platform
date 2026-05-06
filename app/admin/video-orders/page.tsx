@@ -274,7 +274,10 @@ if (contactError) console.error(contactError);
   }
 
   return (
-    <main className="min-h-screen bg-[#f5f1ec] p-10">
+        <main
+      onClick={() => setOpenEmojiForMessageId(null)}
+      className="min-h-screen bg-[#f5f1ec] p-10"
+    >
       <div className="mb-8">
         <h1 className="text-4xl font-black">Админ панел</h1>
 
@@ -463,20 +466,24 @@ if (contactError) console.error(contactError);
                     rows={4}
                   />
 
-                  <button
+                                    <button
                     type="button"
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setOpenEmojiForMessageId((current) =>
                         current === msg.id ? null : msg.id
-                      )
-                    }
+                      );
+                    }}
                     className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-xl shadow-sm"
                   >
                     😊
                   </button>
 
                   {openEmojiForMessageId === msg.id ? (
-                    <div className="absolute bottom-14 right-0 z-20 grid grid-cols-6 gap-2 rounded-2xl border bg-white p-3 shadow-xl">
+                                        <div
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute bottom-14 right-0 z-20 grid grid-cols-6 gap-2 rounded-2xl border bg-white p-3 shadow-xl"
+                    >
                       {emojis.map((emoji) => (
                         <button
                           key={emoji}
