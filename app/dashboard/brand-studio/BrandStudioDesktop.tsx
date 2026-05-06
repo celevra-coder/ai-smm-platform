@@ -1,12 +1,20 @@
 "use client";
 
 import type { RefObject, ReactNode } from "react";
+import BrandStudioDesktopBanner from "./BrandStudioDesktopBanner";
+import { toPng } from "html-to-image";
 
 type Props = {
   brandName: string;
   brandDescription?: string;
   selectedPostText: string;
   onCopyPostText: () => void;
+  onOpenBannerZoom: () => void;
+  businessAddress?: string;
+phone?: string;
+generatedBannerPlan: any;
+logoUrl?: string;
+
 
   isGenerating: boolean;
   isVideoGenerating: boolean;
@@ -23,7 +31,7 @@ type Props = {
   setUploadedImageUrl: (value: string) => void;
   imageUsageMode: "exact" | "elements" | "integrate";
   setImageUsageMode: (value: "exact" | "elements" | "integrate") => void;
-  bannerSectionRef: RefObject<HTMLElement | null>;
+  bannerSectionRef: RefObject<HTMLDivElement | null>;
 
   generatedVideoUrl: string;
   videoDuration: 5 | 10;
@@ -45,7 +53,8 @@ export default function BrandStudioDesktop({
   isGeneratingVideoFrames,
   onGenerateCampaign,
   generatedBannerUrl,
-  renderBannerCard,
+generatedBannerPlan,
+renderBannerCard,
   onGenerateBanner,
   onDownloadBanner,
   onCopyBanner,
@@ -54,6 +63,7 @@ export default function BrandStudioDesktop({
   imageUsageMode,
   setImageUsageMode,
   bannerSectionRef,
+  
   generatedVideoUrl,
   videoDuration,
   setVideoDuration,
@@ -61,8 +71,19 @@ export default function BrandStudioDesktop({
   isAdminUser,
   useFakeVideo,
   setUseFakeVideo,
+  onOpenBannerZoom,
+  businessAddress,
+phone,
+logoUrl,
 }: Props) {
+    // DESKTOP banner data (временно - ще стане независим от mobile)
+const hasBanner = !!generatedBannerUrl;
   const isBusy = isGenerating || isVideoGenerating || isGeneratingVideoFrames;
+  const headlineText =
+  generatedBannerPlan?.headline?.trim() ||
+  selectedPostText.split(/[.!?]/)[0];
+
+const subtextText = generatedBannerPlan?.subtext?.trim() || "";
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -101,7 +122,7 @@ export default function BrandStudioDesktop({
         </div>
 
         <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-black/80">
-          {selectedPostText}
+          {headlineText}
         </p>
       </div>
 
@@ -109,7 +130,7 @@ export default function BrandStudioDesktop({
         <button
           onClick={onGenerateCampaign}
           disabled={isBusy}
-          className="rounded-full bg-black px-6 py-4 font-semibold text-white"
+          className="rounded-full border border-black/15 bg-white px-6 py-4 font-semibold text-black transition hover:scale-[1.02] hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-white disabled:hover:text-black"
         >
           {isBusy ? "Генериране..." : "🚀 Генерирай цялата кампания"}
         </button>
@@ -125,15 +146,40 @@ export default function BrandStudioDesktop({
           </p>
 
           <div
-            className="mt-4 cursor-zoom-in overflow-hidden rounded-2xl text-sm"
-            style={{ backgroundColor: "#f7f3ee", color: "rgba(0,0,0,0.5)" }}
-          >
-            <div className="mx-auto w-full max-w-[400px]">
-              {renderBannerCard()}
-            </div>
-          </div>
+  className="mt-4 cursor-zoom-in overflow-hidden rounded-2xl text-sm"
+  style={{ backgroundColor: "#f7f3ee", color: "rgba(0,0,0,0.5)" }}
+  onClick={onOpenBannerZoom}
+>
+           <div className="relative mx-auto w-full max-w-[400px]">
+  {hasBanner ? (
+    <div ref={bannerSectionRef}>
+      <BrandStudioDesktopBanner
+        generatedBannerUrl={generatedBannerUrl}
+        brandName={brandName}
+        headlineText={headlineText}
+        subtextText={subtextText}
+        phone={phone}
+        logoUrl={logoUrl}
+      />
+    </div>
+  ) : (
+    <div className="flex aspect-[4/5] items-center justify-center rounded-2xl border border-black/10 bg-[#f7f3ee] text-sm text-black/45">
+  {isGenerating ? (
+    <div className="flex flex-col items-center gap-3 text-center">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-black/15 border-t-black" />
+      <div className="text-sm font-semibold text-black/55">
+        Генериране на банер...
+      </div>
+    </div>
+  ) : (
+    "Няма генериран банер"
+  )}
+</div>
+  )}
+</div>
+</div>
 
-          <div className="mt-4 flex justify-center gap-3">
+<div className="mt-4 flex justify-center gap-3">
             <button
               type="button"
               onClick={onGenerateBanner}
@@ -144,22 +190,22 @@ export default function BrandStudioDesktop({
             </button>
 
             <button
-              type="button"
-              onClick={onDownloadBanner}
-              disabled={!generatedBannerUrl}
-              className="rounded-full bg-black px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              ⬇ Изтегли
-            </button>
+  type="button"
+  onClick={onDownloadBanner}
+  disabled={!generatedBannerUrl || isGenerating}
+  className="rounded-full border border-black/15 bg-white px-5 py-2 text-sm font-semibold text-black transition hover:bg-black hover:text-white hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-black disabled:hover:scale-100"
+>
+  ⬇ Изтегли
+</button>
 
             <button
-              type="button"
-              onClick={onCopyBanner}
-              disabled={!generatedBannerUrl}
-              className="rounded-full border border-black/15 bg-white px-5 py-2 text-sm font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              📋 Копирай
-            </button>
+  type="button"
+  onClick={onCopyBanner}
+  disabled={!generatedBannerUrl || isGenerating}
+  className="rounded-full border border-black/15 bg-white px-5 py-2 text-sm font-semibold text-black transition hover:scale-[1.02] hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-white disabled:hover:text-black"
+>
+  📋 Копирай
+</button>
           </div>
 
           <div className="mt-6 rounded-2xl border border-black/10 bg-[#f7f3ee] p-4">

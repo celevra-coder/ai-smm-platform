@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import BrandStudioMobile from "./BrandStudioMobile";
 import { createRoot } from "react-dom/client";
 import BrandStudioDesktop from "./BrandStudioDesktop";
+import BrandStudioDesktopBanner from "./BrandStudioDesktopBanner";
 
 
 
@@ -146,7 +147,8 @@ const [isAdminUser, setIsAdminUser] = useState(false);
   const bannerCardRef = useRef<HTMLDivElement | null>(null);
   const bannerExportRef = useRef<HTMLDivElement | null>(null);
   const bannerCopyRef = useRef<HTMLDivElement | null>(null);
-  const bannerSectionRef = useRef<HTMLElement | null>(null);
+  const bannerSectionRef = useRef<HTMLDivElement | null>(null);
+  
 
   const [workspace, setWorkspace] = useState<VideoWorkspacePayload>({
     source: "manual",
@@ -713,86 +715,31 @@ setPendingBrandBannerBgUrl(nextBannerUrl);
 const handleDownloadBanner = async () => {
   if (!generatedBannerUrl) return;
 
-  const sourceNode = bannerCardRef.current || bannerExportRef.current;
+  const sourceNode =
+    bannerSectionRef.current || bannerCardRef.current || bannerExportRef.current;
 
   if (!sourceNode) {
     alert("Не намирам банера за сваляне.");
     return;
   }
 
-  const exportWrapper = document.createElement("div");
-  exportWrapper.style.position = "fixed";
-  exportWrapper.style.left = "-99999px";
-  exportWrapper.style.top = "0";
-  exportWrapper.style.width = "400px";
-  exportWrapper.style.height = "500px";
-  exportWrapper.style.background = "#f7f3ee";
-  exportWrapper.style.overflow = "hidden";
-
-  const exportNode = document.createElement("div");
-exportNode.style.width = "400px";
-exportNode.style.height = "500px";
-exportNode.style.background = "#f7f3ee";
-exportNode.style.overflow = "hidden";
-
-const root = createRoot(exportNode);
-root.render(renderBannerCard(false, true) as React.ReactElement);
-
-const clone = exportNode;
-  clone.style.width = "400px";
-  clone.style.height = "500px";
-  clone.style.maxWidth = "400px";
-  clone.style.margin = "0";
-  clone.style.transform = "none";
-
-  exportWrapper.appendChild(clone);
-  document.body.appendChild(exportWrapper);
-
   try {
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-               setTimeout(() => resolve(), 300);
-      });
-    });
-
-    const canvas = await html2canvas(exportWrapper, {
-      useCORS: true,
-      scale: 2,
+    const dataUrl = await toPng(sourceNode, {
+      cacheBust: true,
+      pixelRatio: 2,
       backgroundColor: "#f7f3ee",
-      width: 400,
-      height: 500,
-      windowWidth: 400,
-      windowHeight: 500,
-      scrollX: 0,
-      scrollY: 0,
     });
-
-    const dataUrl = canvas.toDataURL("image/png");
-
-    if (!dataUrl || dataUrl === "data:,") {
-      throw new Error("Empty banner export");
-    }
-
-    const blob = await fetch(dataUrl).then((res) => res.blob());
-
-    if (!blob || blob.size === 0) {
-      throw new Error("Empty banner blob");
-    }
-
-    const objectUrl = URL.createObjectURL(blob);
 
     const link = document.createElement("a");
-    link.href = objectUrl;
+    link.href = dataUrl;
     link.download = `${(workspace.brand_profile?.brand_name || "banner")
-  .trim()
-  .replace(/\s+/g, "-")
-  .toLowerCase()}-banner-${Date.now()}.png`;
+      .trim()
+      .replace(/\s+/g, "-")
+      .toLowerCase()}-banner-${Date.now()}.png`;
 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
-    setTimeout(() => URL.revokeObjectURL(objectUrl), 3000);
   } catch (error) {
     console.error("Download failed:", error);
 
@@ -800,12 +747,6 @@ const clone = exportNode;
       error instanceof Error ? error.message : "Unknown download error";
 
     alert(`Изтеглянето не беше успешно: ${message}`);
-    } finally {
-    root.unmount();
-
-    if (document.body.contains(exportWrapper)) {
-      document.body.removeChild(exportWrapper);
-    }
   }
 };
 const saveLastRealVideoUrl = (url: string) => {
@@ -1095,7 +1036,8 @@ useEffect(() => {
 const handleCopyBanner = async () => {
   if (!generatedBannerUrl) return;
 
-  const sourceNode = bannerCardRef.current || bannerCopyRef.current;
+  const sourceNode =
+  bannerSectionRef.current || bannerCardRef.current || bannerCopyRef.current;
 
   if (!sourceNode) {
     alert("Не намирам банера за копиране.");
@@ -1593,12 +1535,7 @@ const openVideoSetupModal = async (mode: "campaign" | "video") => {
   setVideoSetupMode(mode);
   setShowVideoSetupModal(true);
   setVideoErrorText("");
-
   setSelectedVideoFrameUrl("");
-
-  if (!useFakeVideo) {
-  await handleGenerateVideoFrames();
-}
 };
 
 const handleContinueFromVideoSetup = async () => {
@@ -1674,7 +1611,8 @@ const handleContinueFromVideoSetup = async () => {
   isGeneratingVideoFrames={isGeneratingVideoFrames}
   onGenerateCampaign={() => openVideoSetupModal("campaign")}
   generatedBannerUrl={generatedBannerUrl}
-  renderBannerCard={() => renderBannerCard(false, false)}
+generatedBannerPlan={generatedBannerPlan}
+renderBannerCard={() => renderBannerCard(false, false)}
   onGenerateBanner={() => handleGenerateAll(false)}
   onDownloadBanner={handleDownloadBanner}
   onCopyBanner={handleCopyBanner}
@@ -1684,12 +1622,17 @@ const handleContinueFromVideoSetup = async () => {
   setImageUsageMode={setImageUsageMode}
   bannerSectionRef={bannerSectionRef}
   generatedVideoUrl={generatedVideoUrl}
+  
   videoDuration={videoDuration}
   setVideoDuration={setVideoDuration}
   onGenerateVideo={() => openVideoSetupModal("video")}
   isAdminUser={isAdminUser}
   useFakeVideo={useFakeVideo}
   setUseFakeVideo={setUseFakeVideo}
+  onOpenBannerZoom={() => generatedBannerUrl && setIsBannerZoomed(true)}
+  businessAddress={workspace.brand_profile?.business_address}
+phone={workspace.brand_profile?.phone}
+logoUrl={workspace.brand_profile?.logo_url}
 />
   
       
@@ -1728,7 +1671,7 @@ const handleContinueFromVideoSetup = async () => {
     onClick={() => setIsBannerZoomed(false)}
   >
     <div
-      className="relative w-full max-w-[520px]"
+  className="relative w-full max-w-[400px]"
       onClick={(event) => event.stopPropagation()}
     >
       <button
@@ -1739,8 +1682,18 @@ const handleContinueFromVideoSetup = async () => {
         ✕
       </button>
 
-      <div className="overflow-hidden rounded-[28px] bg-[#f7f3ee] shadow-2xl">
-        {renderBannerCard(true)}
+      <div className="overflow-hidden rounded-2xl bg-[#f7f3ee] shadow-2xl">
+        <BrandStudioDesktopBanner
+  generatedBannerUrl={generatedBannerUrl}
+  brandName={brandName}
+  headlineText={
+    generatedBannerPlan?.headline?.trim() ||
+    selectedPostText.split(/[.!?]/)[0]
+  }
+  subtextText={generatedBannerPlan?.subtext?.trim() || ""}
+  phone={workspace.brand_profile?.phone}
+  logoUrl={workspace.brand_profile?.logo_url}
+/>
       </div>
     </div>
   </div>
@@ -1770,14 +1723,28 @@ const handleContinueFromVideoSetup = async () => {
 
       <div className="mt-6">
         {isGeneratingVideoFrames ? (
-          <div className="flex min-h-[360px] flex-col items-center justify-center gap-3 rounded-3xl bg-[#f7f3ee] text-center">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-black/15 border-t-black" />
-            <p className="text-sm font-semibold text-black/60">
-              Генериране на 3 кадъра...
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-3">
+  <div className="flex min-h-[360px] flex-col items-center justify-center gap-3 rounded-3xl bg-[#f7f3ee] text-center">
+    <div className="h-12 w-12 animate-spin rounded-full border-4 border-black/15 border-t-black" />
+    <p className="text-sm font-semibold text-black/60">
+      Генериране на кадри...
+    </p>
+  </div>
+) : videoFrameOptions.length === 0 ? (
+  <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-3xl bg-[#f7f3ee] text-center">
+    <p className="max-w-md text-sm leading-6 text-black/55">
+      Можеш да генерираш кадри за видеото или да качиш свое изображение отдолу.
+    </p>
+
+    <button
+      type="button"
+      onClick={handleGenerateVideoFrames}
+      className="rounded-full border border-black/15 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:scale-[1.02] hover:bg-black hover:text-white"
+    >
+      ✨ Генерирай кадри
+    </button>
+  </div>
+) : (
+  <div className="grid gap-4 md:grid-cols-3">
             {videoFrameOptions.map((frameUrl, index) => (
               <button
                 key={`${frameUrl}-${index}`}
