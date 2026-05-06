@@ -143,6 +143,7 @@ const [pendingBrandBannerBgUrl, setPendingBrandBannerBgUrl] = useState("");
 const [showVideoSetupModal, setShowVideoSetupModal] = useState(false);
 const [videoSetupMode, setVideoSetupMode] = useState<"campaign" | "video">("video");
 const [videoUiSource, setVideoUiSource] = useState<"desktop" | "mobile">("desktop");
+const [mobileVideoText, setMobileVideoText] = useState("");
 const [isAdminUser, setIsAdminUser] = useState(false);
   
   const bannerCardRef = useRef<HTMLDivElement | null>(null);
@@ -1248,7 +1249,13 @@ if (!rawVideoUrl) {
       workspace.selected_post?.raw_text,
       generatedPostText
     );
-    const videoHeadlineText = (
+    const mobileVideoTextClean =
+  videoUiSource === "mobile"
+    ? mobileVideoText.replace(/\s+/g, " ").trim()
+    : "";
+
+const videoHeadlineText = (
+  mobileVideoTextClean ||
   generatedBannerPlan?.headline ||
   workspace.selected_post?.headline ||
   workspace.selected_post?.caption ||
@@ -1259,6 +1266,7 @@ if (!rawVideoUrl) {
   .trim();
 
 const videoSubtextText = (
+  mobileVideoTextClean ||
   generatedBannerPlan?.subtext ||
   workspace.selected_post?.caption ||
   workspace.selected_post?.raw_text ||
@@ -1619,7 +1627,9 @@ const handleContinueFromVideoSetup = async () => {
   setShowVideoSetupModal={setShowVideoSetupModal}
   videoSetupMode={videoSetupMode}
   onGenerateVideoFrames={handleGenerateVideoFrames}
-  onContinueFromVideoSetup={handleContinueFromVideoSetup}
+  mobileVideoText={mobileVideoText}
+setMobileVideoText={setMobileVideoText}
+onContinueFromVideoSetup={handleContinueFromVideoSetup}
 />
     </div>
 

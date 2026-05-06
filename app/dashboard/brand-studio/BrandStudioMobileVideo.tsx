@@ -24,9 +24,12 @@ type Props = {
   videoErrorText: string;
 
   showVideoSetupModal: boolean;
-  setShowVideoSetupModal: (value: boolean) => void;
+setShowVideoSetupModal: (value: boolean) => void;
 
-  onGenerateVideoFrames: () => void;
+mobileVideoText: string;
+setMobileVideoText: (value: string) => void;
+
+onGenerateVideoFrames: () => void;
   onContinueFromVideoSetup: () => void;
 };
 
@@ -48,8 +51,10 @@ export default function BrandStudioMobileVideo({
   setUploadedVideoImageName,
   videoErrorText,
   showVideoSetupModal,
-  setShowVideoSetupModal,
-  onGenerateVideoFrames,
+setShowVideoSetupModal,
+mobileVideoText,
+setMobileVideoText,
+onGenerateVideoFrames,
   onContinueFromVideoSetup,
 }: Props) {
   return (
@@ -259,6 +264,19 @@ export default function BrandStudioMobileVideo({
                   Премахни
                 </button>
               </div>
+            </div>
+
+                        <div className="mt-4 rounded-2xl bg-[#f7f3ee] p-3">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-400">
+                Текст във видеото
+              </p>
+
+              <textarea
+                value={mobileVideoText}
+                onChange={(e) => setMobileVideoText(e.target.value)}
+                placeholder="Напиши точния текст, който искаш да се вижда във видеото."
+                className="mt-3 min-h-[96px] w-full resize-none rounded-2xl border border-black/10 bg-white p-3 text-sm font-semibold text-black outline-none"
+              />
             </div>
 
             {videoErrorText ? (

@@ -60,8 +60,10 @@ type Props = {
   setShowVideoSetupModal: (value: boolean) => void;
 
   videoSetupMode: "campaign" | "video";
-  onGenerateVideoFrames: () => void;
-  onContinueFromVideoSetup: () => void;
+mobileVideoText: string;
+setMobileVideoText: (value: string) => void;
+onGenerateVideoFrames: () => void;
+onContinueFromVideoSetup: () => void;
 };
 
 export default function BrandStudioMobile({
@@ -100,8 +102,10 @@ export default function BrandStudioMobile({
   showVideoSetupModal,
   setShowVideoSetupModal,
   videoSetupMode,
-  onGenerateVideoFrames,
-  onContinueFromVideoSetup,
+mobileVideoText,
+setMobileVideoText,
+onGenerateVideoFrames,
+onContinueFromVideoSetup,
 }: Props) {
   const [isBannerZoomed, setIsBannerZoomed] = useState(false);
 
@@ -333,7 +337,9 @@ export default function BrandStudioMobile({
         showVideoSetupModal={showVideoSetupModal}
         setShowVideoSetupModal={setShowVideoSetupModal}
         onGenerateVideoFrames={onGenerateVideoFrames}
-        onContinueFromVideoSetup={onContinueFromVideoSetup}
+        mobileVideoText={mobileVideoText}
+setMobileVideoText={setMobileVideoText}
+onContinueFromVideoSetup={onContinueFromVideoSetup}
       />
 
 {isBannerZoomed && generatedBannerUrl ? (
