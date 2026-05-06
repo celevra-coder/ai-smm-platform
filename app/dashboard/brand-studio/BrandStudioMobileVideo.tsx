@@ -26,8 +26,7 @@ type Props = {
   showVideoSetupModal: boolean;
 setShowVideoSetupModal: (value: boolean) => void;
 
-mobileVideoText: string;
-setMobileVideoText: (value: string) => void;
+
 
 onGenerateVideoFrames: () => void;
   onContinueFromVideoSetup: () => void;
@@ -52,8 +51,7 @@ export default function BrandStudioMobileVideo({
   videoErrorText,
   showVideoSetupModal,
 setShowVideoSetupModal,
-mobileVideoText,
-setMobileVideoText,
+
 onGenerateVideoFrames,
   onContinueFromVideoSetup,
 }: Props) {
@@ -266,18 +264,7 @@ onGenerateVideoFrames,
               </div>
             </div>
 
-                        <div className="mt-4 rounded-2xl bg-[#f7f3ee] p-3">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-400">
-                Текст във видеото
-              </p>
-
-              <textarea
-                value={mobileVideoText}
-                onChange={(e) => setMobileVideoText(e.target.value)}
-                placeholder="Напиши точния текст, който искаш да се вижда във видеото."
-                className="mt-3 min-h-[96px] w-full resize-none rounded-2xl border border-black/10 bg-white p-3 text-sm font-semibold text-black outline-none"
-              />
-            </div>
+                        
 
             {videoErrorText ? (
               <div className="mt-3 text-sm text-red-500">
