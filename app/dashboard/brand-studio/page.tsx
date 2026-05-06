@@ -227,7 +227,7 @@ const [isAdminUser, setIsAdminUser] = useState(false);
 const dividerWidth = mobileExport ? "180px" : zoomed ? "180px" : "140px";
 const titleTop = mobileExport ? "34px" : zoomed ? "40px" : "26px";
 
- const headlineFontSize = mobileExport ? "9px" : zoomed ? "15px" : "10px";
+ const headlineFontSize = mobileExport ? "12px" : zoomed ? "15px" : "10px";
 const headlineMaxWidth = mobileExport ? "260px" : zoomed ? "280px" : "190px";
 
 const subtextFontSize = mobileExport ? "16px" : zoomed ? "18px" : "11px";
@@ -459,7 +459,7 @@ const phonePadding = mobileExport
                   style={{
                     color: "rgba(255,255,255,0.95)",
                     textShadow: "0 2px 6px rgba(0,0,0,0.55)",
-                    fontSize: subtextFontSize,
+                    fontSize: mobileExport ? "15px" : subtextFontSize,
 
                     lineHeight: 1.4,
                     maxWidth: subtextMaxWidth,

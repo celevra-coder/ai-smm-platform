@@ -692,52 +692,46 @@ ${compactOffer}
 }
 const finalPrompt = videoImageUrl
   ? `
-Cinematic vertical 9:16 commercial video.
+Vertical 9:16 realistic image-to-video animation.
+Use the uploaded image as the exact visual source.
+Preserve the same scene, same subject, same composition, same environment, same colors, and same visual identity.
 
-Use the uploaded image as the starting visual reference, not as a frozen photo.
-Create a meaningful short advertising video that develops naturally from this image.
+Animate only with subtle realistic camera motion and natural movement:
+- slow camera push-in
+- gentle side glide
+- slight depth movement
+- realistic light movement
+- natural environmental motion if already implied by the image
 
-The video must stay in the same business category, same visual mood, same service context and same realistic world as the uploaded image.
+Do not add new graphic elements.
+Do not add advertising elements.
+Do not add promotional layouts.
+Do not add banners.
+Do not add signs.
+Do not add posters.
+Do not add labels.
+Do not add text.
+Do not add fake text.
+Do not add readable or unreadable words.
+Do not add letters.
+Do not add numbers.
+Do not add typography.
+Do not add slogans.
+Do not add subtitles.
+Do not add captions.
+Do not add logo.
+Do not add watermark.
 
-Business context: ${visualContext}.
-AI visual brief: ${aiVideoVisualInstruction}
-Visual direction: ${visualDirection}.
+All text overlays will be added later by the app.
+The generated video must be clean visual footage only.
 
-Video structure:
-- Start from the uploaded image style and subject.
-- Add realistic commercial motion that makes sense for the business.
-- Show a small sequence of believable visual moments inside the same service environment.
-- For 5 seconds: create one clear meaningful micro-story, not just a hand/object moving back and forth.
-- For 10 seconds: create several related visual moments with natural camera movement, service atmosphere, product/environment detail, and a clear advertising feeling.
-- Keep the brand/service/product as the main topic.
-- Motion must feel intentional: camera glide, reveal, product/detail focus, environment detail, natural human/service atmosphere only if appropriate.
-- Avoid repetitive loop motion.
-- Avoid a single object moving forward and backward.
-- Avoid random hand waving or pointless body movement.
-- Avoid frozen-photo parallax only.
-
-Allowed:
-- subtle scene development within the same business environment
-- camera push-in, side glide, reveal, rack focus, detail shot feeling
-- natural light movement
-- realistic object/environment motion
-- natural people only if they fit the uploaded image and business context
-
-Forbidden:
-- no unrelated industry
-- no random new location
-- no chaotic scene changes
-- no fake UI
-- no text
-- no logo
-- no watermark
-- no surreal objects
-- no distorted anatomy
-- no repetitive back-and-forth movement
-- no pointless hand movement
-- no object floating or morphing
-
-Make it feel like a premium short social media ad, not like a still image being slightly animated.
+Avoid changing the business category, location, product, or main subject.
+Avoid inventing new objects.
+Avoid chaotic motion.
+Avoid morphing.
+Avoid distorted anatomy.
+Avoid fake UI.
+Avoid any written content anywhere in the frame.
 `
   : `
 Vertical 9:16 realistic commercial video.
@@ -814,7 +808,7 @@ const wanInput = {
   prompt: finalPrompt,
 negative_prompt: [
   videoImageUrl
-? "new unrelated location, different business category, changing topic, unrelated industry, invented object, unrelated product, unrelated tools, fake UI, text, words, letters, numbers, symbols, typography, title, caption, subtitle, logo, watermark, label, signage, split-screen, collage, distorted anatomy, extra limbs, deformed hands, floating objects, morphing objects, repetitive back and forth motion, pointless hand waving, frozen photo parallax only"
+? "new unrelated location, different business category, changing topic, unrelated industry, invented object, unrelated product, unrelated tools, fake UI, text, written text, readable text, fake text, gibberish text, words, letters, numbers, symbols, typography, title, title card, caption, subtitle, slogan, advertising text, promotional text, logo, watermark, label, signage, sign, poster, banner, billboard, packaging text, interface text, overlay text, split-screen, collage, distorted anatomy, extra limbs, deformed hands, floating objects, morphing objects, repetitive back and forth motion, pointless hand waving, frozen photo parallax only"
       : "text, words, letters, numbers, symbols, typography, title, title card, caption, subtitle, slogan, signage, sign, label, logo, watermark, poster, billboard, packaging text, interface text, control panel, split-screen, collage, storyboard, triptych, fantasy, futuristic devices, fake machines, excavator, bulldozer, construction vehicle, decorative water feature, canal, trench, hole in ground, pit, excavation",
   videoImageUrl ? "" : categoryNegativePrompt,
   videoImageUrl ? "" : aiVideoNegativeInstruction,
