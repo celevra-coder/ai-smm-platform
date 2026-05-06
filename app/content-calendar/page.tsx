@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-browser";
+import ContentCalendarMobile from "./ContentCalendarMobile";
 
 export default function ContentCalendarPage() {
   const router = useRouter();
@@ -248,9 +249,69 @@ setIsCalendarSaved(false);
     router.push("/content-posts");
   };
 
+    const handleSaveCalendar = async () => {
+    try {
+      const supabase = createClient();
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user || !calendarItems.length) return;
+
+      await supabase.from("content_calendars").insert({
+        user_id: user.id,
+        brand_profile_id: activeBrandId,
+        business_type: businessType,
+        specific_services: specificServices,
+        platform,
+        period,
+        frequency,
+        tone,
+        notes,
+        items: calendarItems,
+      });
+
+      setIsCalendarSaved(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-neutral-900 md:px-6 md:py-10">
-      <div className="mx-auto max-w-6xl">
+            <ContentCalendarMobile
+        businessType={businessType}
+        setBusinessType={setBusinessType}
+        specificServices={specificServices}
+        setSpecificServices={setSpecificServices}
+        platform={platform}
+        setPlatform={setPlatform}
+        period={period}
+        setPeriod={setPeriod}
+        frequency={frequency}
+        setFrequency={setFrequency}
+        tone={tone}
+        setTone={setTone}
+        notes={notes}
+        setNotes={setNotes}
+        calendarItems={calendarItems}
+        isGeneratingCalendar={isGeneratingCalendar}
+        isCalendarSaved={isCalendarSaved}
+        promoRedirectMessage={promoRedirectMessage}
+        calendarHelperMessage={calendarHelperMessage}
+        onGenerateCalendar={handleGenerateCalendar}
+        onSaveCalendar={handleSaveCalendar}
+        onClearCalendar={() => {
+          setCalendarItems([]);
+          setPromoRedirectMessage("");
+          setCalendarHelperMessage("");
+          setIsCalendarSaved(false);
+        }}
+        onWritePost={handleWritePost}
+      />
+
+      <div className="mx-auto hidden max-w-6xl md:block">
         
 
                 <section className="rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] md:p-8">
