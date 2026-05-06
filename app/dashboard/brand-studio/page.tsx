@@ -227,11 +227,11 @@ const [isAdminUser, setIsAdminUser] = useState(false);
 const dividerWidth = mobileExport ? "180px" : zoomed ? "180px" : "140px";
 const titleTop = mobileExport ? "34px" : zoomed ? "40px" : "26px";
 
-  const headlineFontSize = mobileExport ? "18px" : zoomed ? "15px" : "10px";
-const headlineMaxWidth = mobileExport ? "330px" : zoomed ? "280px" : "190px";
+ const headlineFontSize = mobileExport ? "9px" : zoomed ? "15px" : "10px";
+const headlineMaxWidth = mobileExport ? "260px" : zoomed ? "280px" : "190px";
 
-const subtextFontSize = mobileExport ? "22px" : zoomed ? "18px" : "11px";
-const subtextMaxWidth = mobileExport ? "350px" : zoomed ? "300px" : "220px";
+const subtextFontSize = mobileExport ? "16px" : zoomed ? "18px" : "11px";
+const subtextMaxWidth = mobileExport ? "310px" : zoomed ? "300px" : "220px";
 
   const phoneFontSize = mobileExport ? "20px" : zoomed ? "20px" : "10px";
 const phoneBottom = mobileExport ? "70px" : zoomed ? "52px" : "22px";
@@ -325,7 +325,7 @@ const phonePadding = mobileExport
       color: "#ffffff",
       fontFamily: '"Times New Roman", Georgia, serif',
       fontStyle: "italic",
-      fontSize: brandFontSize,
+      fontSize: mobileExport ? "28px" : brandFontSize,
       lineHeight: 1,
       letterSpacing: "0.6px",
       textShadow:
@@ -437,18 +437,22 @@ const phonePadding = mobileExport
               ) : null}
 
               <div
-                style={{
-                  color: "#ffffff",
-                  textShadow: "0 2px 6px rgba(0,0,0,0.55)",
-                  fontSize: headlineFontSize,
-                  fontWeight: 700,
-                  lineHeight: 1.35,
-                  maxWidth: headlineMaxWidth,
-                  margin: "0 auto",
-                }}
-              >
-                {cleanHeadline}
-              </div>
+  style={{
+    color: "#ffffff",
+    textShadow: "0 2px 6px rgba(0,0,0,0.55)",
+    fontSize: headlineFontSize,
+    fontWeight: 700,
+    lineHeight: mobileExport ? 1.05 : 1.35,
+    maxWidth: headlineMaxWidth,
+    margin: "0 auto",
+    display: "-webkit-box",
+    WebkitLineClamp: mobileExport ? 3 : undefined,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+  }}
+>
+  {cleanHeadline}
+</div>
 
               {[...normalLines, ...locationLines, ...dateLines].length ? (
                 <div
@@ -456,6 +460,7 @@ const phonePadding = mobileExport
                     color: "rgba(255,255,255,0.95)",
                     textShadow: "0 2px 6px rgba(0,0,0,0.55)",
                     fontSize: subtextFontSize,
+
                     lineHeight: 1.4,
                     maxWidth: subtextMaxWidth,
                     margin: "10px auto 0 auto",
@@ -1282,12 +1287,20 @@ const videoSubtextText = (
       splitVideoText(mainVideoTextSource);
 
     console.log("RENDER REQUEST DEBUG", {
-      videoDuration,
-      useFakeVideo,
-      brandName: workspace.brand_profile?.brand_name || "",
-              phone: workspace.brand_profile?.phone || "",
-        address: workspace.brand_profile?.business_address || "",
-    });
+  videoUiSource,
+  videoDuration,
+  useFakeVideo,
+  brandName: workspace.brand_profile?.brand_name || "",
+  phone: workspace.brand_profile?.phone || "",
+  address: workspace.brand_profile?.business_address || "",
+  videoHeadlineText,
+  videoSubtextText,
+  shortOfferText,
+  mainVideoTextPart1,
+  mainVideoTextPart2,
+  selectedPostText,
+  generatedBannerPlan,
+});
 
     const musicFolder = /luxury|лукс|premium|скъп|елегант/i.test(
   [
