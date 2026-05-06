@@ -228,14 +228,14 @@ const mobileBannerExportRef = useRef<HTMLDivElement | null>(null);
 const dividerWidth = mobileExport ? "180px" : zoomed ? "180px" : "140px";
 const titleTop = mobileExport ? "34px" : zoomed ? "40px" : "26px";
 
- const headlineFontSize = mobileExport ? "12px" : zoomed ? "15px" : "10px";
+ const headlineFontSize = mobileExport ? "19px" : zoomed ? "15px" : "10px";
 const headlineMaxWidth = mobileExport ? "260px" : zoomed ? "280px" : "190px";
 
-const subtextFontSize = mobileExport ? "16px" : zoomed ? "18px" : "11px";
-const subtextMaxWidth = mobileExport ? "310px" : zoomed ? "300px" : "220px";
+const subtextFontSize = mobileExport ? "24px" : zoomed ? "18px" : "11px";
+const subtextMaxWidth = mobileExport ? "270px" : zoomed ? "300px" : "220px";
 
-  const phoneFontSize = mobileExport ? "20px" : zoomed ? "20px" : "10px";
-const phoneBottom = mobileExport ? "70px" : zoomed ? "52px" : "22px";
+  const phoneFontSize = mobileExport ? "24px" : zoomed ? "20px" : "10px";
+const phoneBottom = mobileExport ? "95px" : zoomed ? "52px" : "22px";
 const phonePadding = mobileExport
   ? "10px 30px"
   : zoomed
@@ -326,7 +326,9 @@ const phonePadding = mobileExport
       color: "#ffffff",
       fontFamily: '"Times New Roman", Georgia, serif',
       fontStyle: "italic",
-      fontSize: mobileExport ? "28px" : brandFontSize,
+      fontSize: mobileExport ? "34px" : brandFontSize,
+      maxWidth: mobileExport ? "300px" : "100%",
+margin: "0 auto",
       lineHeight: 1,
       letterSpacing: "0.6px",
       textShadow:
@@ -461,17 +463,22 @@ const phonePadding = mobileExport
                     color: "rgba(255,255,255,0.95)",
                     textShadow: "0 2px 6px rgba(0,0,0,0.55)",
                     fontSize: mobileExport ? "15px" : subtextFontSize,
+                    
 
                     lineHeight: 1.4,
-                    maxWidth: subtextMaxWidth,
-                    margin: "10px auto 0 auto",
+                    maxWidth: mobileExport ? "270px" : subtextMaxWidth,
+                    margin: mobileExport ? "18px auto 0 auto" : "10px auto 0 auto",
                   }}
                 >
                   {[...normalLines, ...locationLines, ...dateLines].map(
                     (line: string, index: number) => (
                       <div
                         key={`${line}-${index}`}
-                        style={{ marginTop: index === 0 ? 0 : "6px" }}
+                        style={{
+  marginTop: index === 0 ? 0 : mobileExport ? "12px" : "6px",
+  paddingLeft: mobileExport ? "6px" : "0",
+  paddingRight: mobileExport ? "6px" : "0",
+}}
                       >
                         {line}
                       </div>
@@ -509,7 +516,8 @@ const phonePadding = mobileExport
                 fontSize: zoomed ? "15px" : "10px",
                 lineHeight: 1.25,
                 color: "#ffffff",
-                textAlign: "center",
+                textAlign: mobileExport ? "center" : "center",
+textWrap: "balance",
                 maxWidth: "100%",
 
                 background: "rgba(0,0,0,0.38)",
