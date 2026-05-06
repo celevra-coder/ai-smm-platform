@@ -94,7 +94,18 @@ export default function BrandStudioMobileVideo({
               </p>
             </div>
                     )}
-        </div>
+                </div>
+
+        {!generatedVideoUrl && (selectedVideoFrameUrl || uploadedVideoImageUrl) ? (
+          <div className="mt-3 rounded-[18px] bg-[#f7f3ee] px-4 py-3 text-center">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-neutral-400">
+              Избран кадър за видеото
+            </p>
+            <p className="mt-1 text-sm font-black text-neutral-700">
+              {uploadedVideoImageUrl ? "Качено изображение" : "AI генериран кадър"}
+            </p>
+          </div>
+        ) : null}
 
         {generatedVideoUrl ? (
           <a
