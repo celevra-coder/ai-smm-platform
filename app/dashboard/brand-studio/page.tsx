@@ -1247,6 +1247,25 @@ if (!rawVideoUrl) {
       workspace.selected_post?.raw_text,
       generatedPostText
     );
+    const videoHeadlineText = (
+  generatedBannerPlan?.headline ||
+  workspace.selected_post?.headline ||
+  workspace.selected_post?.caption ||
+  selectedPostText ||
+  ""
+)
+  .replace(/\s+/g, " ")
+  .trim();
+
+const videoSubtextText = (
+  generatedBannerPlan?.subtext ||
+  workspace.selected_post?.caption ||
+  workspace.selected_post?.raw_text ||
+  selectedPostText ||
+  ""
+)
+  .replace(/\s+/g, " ")
+  .trim();
 
     const mainVideoTextSource = (
       generatedBannerPlan?.subtext ||
@@ -1304,8 +1323,8 @@ const generatedMusicUrl = `/audio/${musicFolder}/${musicDurationFolder}/${random
       body: JSON.stringify({
         videoUrl: rawVideoUrl,
         bannerUrl: bannerSource,
-        headline: generatedBannerPlan?.headline || "",
-        subtext: generatedBannerPlan?.subtext || "",
+        headline: videoHeadlineText,
+subtext: videoSubtextText,
         brandName: workspace.brand_profile?.brand_name || "",
                 phone: workspace.brand_profile?.phone || "",
         address: workspace.brand_profile?.business_address || "",
@@ -1340,14 +1359,12 @@ const generatedMusicUrl = `/audio/${musicFolder}/${musicDurationFolder}/${random
           title: "ShortMessage",
           overlay_text: (() => {
             const text = (
-              generatedBannerPlan?.headline ||
-              workspace.selected_post?.headline ||
-              generatedBannerPlan?.subtext ||
-              workspace.selected_post?.caption ||
-              workspace.selected_post?.raw_text ||
-              shortOfferText ||
-              ""
-            )
+  videoHeadlineText ||
+  videoSubtextText ||
+  shortOfferText ||
+  selectedPostText ||
+  ""
+)
               .replace(/\s+/g, " ")
               .trim();
 
