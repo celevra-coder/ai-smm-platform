@@ -682,20 +682,20 @@ if (!creditRes.ok || !creditData?.success) {
             const nextBannerUrl =
         bannerData?.banner_url || bannerData?.image_url || "";
 
-      setGeneratedBannerUrl(nextBannerUrl);
-setGeneratedBannerPlan(bannerData?.plan || null);
+     const nextBannerPlan = bannerData?.plan || null;
+
+setGeneratedBannerUrl(nextBannerUrl);
+setGeneratedBannerPlan(nextBannerPlan);
 setGeneratedVideoUrl("");
-
-
 
 setPendingBrandBannerLogId(bannerData?.generation_log_id || "");
 setPendingBrandBannerBgUrl(nextBannerUrl);
 
-            if (generateVideoAfterBanner) {
-        setTimeout(() => {
-          handleGenerateVideo();
-        }, 100);
-      }
+if (generateVideoAfterBanner) {
+  setTimeout(() => {
+    handleGenerateVideo(nextBannerUrl);
+  }, 100);
+}
     } catch (e) {
   console.error(e);
 
