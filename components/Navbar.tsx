@@ -153,8 +153,12 @@ const handleLogout = async () => {
   return (
     <header className="relative flex w-full flex-wrap items-center justify-between gap-3 rounded-[2rem] border border-white/70 bg-white/75 px-4 py-3 shadow-[0_10px_35px_rgba(0,0,0,0.05)] backdrop-blur sm:flex-nowrap sm:rounded-full sm:px-5">
       <Link href="/" className="flex items-center gap-3">
-  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-950 text-sm font-bold text-white">
-    AI
+    <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-white">
+    <img
+      src="/logo.png"
+      alt="SMM Creative Studio"
+      className="h-full w-full object-cover"
+    />
   </div>
   <div>
     <p className="text-sm font-semibold tracking-wide text-neutral-900">
