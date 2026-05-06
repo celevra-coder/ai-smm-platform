@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
 import Navbar from "@/components/Navbar";
+import HomePageMobile from "./HomePageMobile";
 
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -47,6 +48,9 @@ export default function HomePage() {
         <div className="absolute bottom-[-120px] left-[18%] h-[300px] w-[300px] rounded-full bg-[#ddd0c3] blur-3xl" />
       </div>
 
+            <HomePageMobile handleProtectedClick={handleProtectedClick} />
+
+      <div className="hidden sm:block">
       <section className="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 lg:px-8">
        
 
@@ -363,6 +367,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+            </div>
       {showAuthModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
     <div className="w-full max-w-md rounded-2xl bg-white p-5 text-center shadow-xl sm:p-6">
