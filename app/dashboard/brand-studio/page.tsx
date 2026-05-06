@@ -142,6 +142,7 @@ const [pendingBrandBannerLogId, setPendingBrandBannerLogId] = useState("");
 const [pendingBrandBannerBgUrl, setPendingBrandBannerBgUrl] = useState("");
 const [showVideoSetupModal, setShowVideoSetupModal] = useState(false);
 const [videoSetupMode, setVideoSetupMode] = useState<"campaign" | "video">("video");
+const [videoUiSource, setVideoUiSource] = useState<"desktop" | "mobile">("desktop");
 const [isAdminUser, setIsAdminUser] = useState(false);
   
   const bannerCardRef = useRef<HTMLDivElement | null>(null);
@@ -1548,8 +1549,12 @@ const handleGenerateVideoFrames = async () => {
     setIsGeneratingVideoFrames(false);
   }
 };
-const openVideoSetupModal = async (mode: "campaign" | "video") => {
+const openVideoSetupModal = async (
+  mode: "campaign" | "video",
+  source: "desktop" | "mobile" = "desktop"
+) => {
   setVideoSetupMode(mode);
+  setVideoUiSource(source);
   setShowVideoSetupModal(true);
   setVideoErrorText("");
   setSelectedVideoFrameUrl("");
@@ -1590,11 +1595,11 @@ const handleContinueFromVideoSetup = async () => {
   useFakeVideo={useFakeVideo}
   renderBannerCard={() => renderBannerCard(false, true)}
   onCopyPostText={handleCopyPostText}
-  onGenerateCampaign={() => openVideoSetupModal("campaign")}
+  onGenerateCampaign={() => openVideoSetupModal("campaign", "mobile")}
   onGenerateBanner={() => handleGenerateAll(false)}
   onDownloadBanner={handleDownloadBanner}
   onCopyBanner={handleCopyBanner}
-  onOpenVideoSetup={() => openVideoSetupModal("video")}
+  onOpenVideoSetup={() => openVideoSetupModal("video", "mobile")}
   onVideoDurationChange={setVideoDuration}
   onUseFakeVideoToggle={() => setUseFakeVideo((prev) => !prev)}
   onImageUpload={setUploadedImageUrl}
