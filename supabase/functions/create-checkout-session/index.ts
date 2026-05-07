@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std/http/server.ts";
-import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createSign } from "node:crypto";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,24 +10,20 @@ const corsHeaders = {
 
 const plans: Record<
   string,
-  { credits: number; amount: number; name: string }
+  { credits: number; amount: string; name: string }
 > = {
-  starter: {
-    credits: 150,
-    amount: 1500,
-    name: "Starter пакет - 150 кредита",
-  },
-  growth: {
-    credits: 300,
-    amount: 2500,
-    name: "Growth пакет - 300 кредита",
-  },
-  pro: {
-    credits: 400,
-    amount: 3000,
-    name: "Pro пакет - 400 кредита",
-  },
+  starter: { credits: 150, amount: "15.00", name: "Starter пакет - 150 кредита" },
+  growth: { credits: 300, amount: "25.00", name: "Growth пакет - 300 кредита" },
+  pro: { credits: 400, amount: "30.00", name: "Pro пакет - 400 кредита" },
 };
+
+function signPostData(postData: Record<string, string>, privateKey: string) {
+  const concatenated = btoa(Object.values(postData).join("-"));
+  const signer = createSign("RSA-SHA256");
+  signer.update(concatenated);
+  signer.end();
+  return signer.sign(privateKey, "base64");
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -37,7 +33,6 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => null);
     const planKey = body?.plan;
-
     const selectedPlan = plans[planKey];
 
     if (!selectedPlan) {
@@ -47,12 +42,15 @@ serve(async (req) => {
       });
     }
 
-    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
     const siteUrl = Deno.env.get("SITE_URL");
+    const myposConfigB64 = Deno.env.get("MYPOS_CONFIG_B64");
+    const myposCheckoutUrl = Deno.env.get("MYPOS_CHECKOUT_URL");
 
-    if (!stripeSecretKey || !siteUrl) {
-      throw new Error("Missing STRIPE_SECRET_KEY or SITE_URL");
+    if (!siteUrl || !myposConfigB64 || !myposCheckoutUrl) {
+      throw new Error("Missing myPOS configuration");
     }
+
+    const config = JSON.parse(atob(myposConfigB64));
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -74,41 +72,49 @@ serve(async (req) => {
       });
     }
 
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: "2024-12-18.acacia",
-    });
+    const orderId = `${planKey}_${user.id}_${Date.now()}`;
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      client_reference_id: user.id,
-      customer_email: user.email || undefined,
-      success_url: `${siteUrl}/dashboard?payment=success`,
-      cancel_url: `${siteUrl}/pricing?payment=cancelled`,
-      metadata: {
-        user_id: user.id,
-        plan: planKey,
-        credits: String(selectedPlan.credits),
-      },
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: "eur",
-            unit_amount: selectedPlan.amount,
-            product_data: {
-              name: selectedPlan.name,
-            },
-          },
-        },
-      ],
-    });
+    const fields: Record<string, string> = {
+      IPCmethod: "IPCPurchase",
+      IPCVersion: "1.4",
+      IPCLanguage: "BG",
+      SID: String(config.sid),
+      WalletNumber: String(config.cn),
+      Amount: selectedPlan.amount,
+      Currency: "EUR",
+      OrderID: orderId,
+      URL_OK: `${siteUrl}/dashboard?payment=success`,
+      URL_Cancel: `${siteUrl}/pricing?payment=cancelled`,
+      URL_Notify: `${siteUrl}/api/mypos/webhook`,
+      CardTokenRequest: "0",
+      KeyIndex: String(config.idx),
+      PaymentParametersRequired: "2",
+      PaymentMethod: "1",
+      CustomerEmail: user.email || "",
+      Note: selectedPlan.name,
+      Source: "SMM Creative Studio",
+      CartItems: "1",
+      Article_1: selectedPlan.name,
+      Quantity_1: "1",
+      Price_1: selectedPlan.amount,
+      Currency_1: "EUR",
+      Amount_1: selectedPlan.amount,
+    };
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    fields.Signature = signPostData(fields, config.pk);
+
+    return new Response(
+      JSON.stringify({
+        action: myposCheckoutUrl,
+        fields,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
-    console.error("CREATE CHECKOUT ERROR:", error);
+    console.error("CREATE MYPOS CHECKOUT ERROR:", error);
 
     return new Response(
       JSON.stringify({
