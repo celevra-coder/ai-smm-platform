@@ -85,7 +85,7 @@ serve(async (req) => {
       OrderID: orderId,
       URL_OK: `${siteUrl}/dashboard?payment=success`,
       URL_Cancel: `${siteUrl}/pricing?payment=cancelled`,
-      URL_Notify: `${siteUrl}/api/mypos/webhook`,
+      URL_Notify: `${Deno.env.get("SUPABASE_URL")}/functions/v1/mypos-webhook`,
       CardTokenRequest: "0",
       KeyIndex: String(config.idx),
       PaymentParametersRequired: "2",
