@@ -112,14 +112,24 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
 
   const data = await res.json();
 
-  if (!res.ok || !data?.url) {
-    alert("Грешка при плащане.");
-    console.error(data);
-    return;
-  }
+  if (!res.ok || !data?.action || !data?.fields) {
+  throw new Error(data?.error || "Неуспешно създаване на плащане.");
+}
 
-  // 3. redirect към Stripe
-  window.location.href = data.url;
+const form = document.createElement("form");
+form.method = "POST";
+form.action = data.action;
+
+Object.entries(data.fields).forEach(([key, value]) => {
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = key;
+  input.value = String(value);
+  form.appendChild(input);
+});
+
+document.body.appendChild(form);
+form.submit();
 };
 
   return (
