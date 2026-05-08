@@ -344,11 +344,51 @@ setOrderFiles(filesMap);
             >
               <h2 className="text-xl font-black">{order.service_title}</h2>
 
-              <p className="mt-2 text-sm text-neutral-600">
-                {order.price_eur}€ • {order.status} • {order.payment_status}
-              </p>
+<p className="mt-2 text-xs text-neutral-500">
+  Поръчка ID: {order.id}
+</p>
 
-              <p className="mt-3 text-sm">{order.description}</p>
+<p className="mt-1 text-xs text-neutral-500">
+  Създадена: {new Date(order.created_at).toLocaleString()}
+</p>
+
+<p className="mt-2 text-sm text-neutral-600">
+  {order.price_eur}€ • статус:{" "}
+  <span className="font-bold">
+    {order.status === "delivered"
+      ? "Готово/изпратено"
+      : order.status === "in_progress"
+      ? "В процес"
+      : order.status === "paid"
+      ? "Платено — чака обработка"
+      : order.status}
+  </span>{" "}
+  • плащане: {order.payment_status}
+</p>
+
+<p className="mt-3 text-sm">{order.description}</p>
+
+{order.final_video_url ? (
+  <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4">
+    <p className="text-sm font-bold text-green-800">
+      ✅ Готовото видео вече е качено към клиента
+    </p>
+
+    <a
+      href={order.final_video_url}
+      target="_blank"
+      className="mt-2 inline-flex rounded-full bg-green-700 px-4 py-2 text-xs font-bold text-white"
+    >
+      Отвори изпратеното видео
+    </a>
+  </div>
+) : (
+  <div className="mt-4 rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
+    <p className="text-sm font-bold text-yellow-800">
+      ⏳ Все още няма изпратено готово видео към клиента
+    </p>
+  </div>
+)}
               {orderFiles[order.id]?.length ? (
   <div className="mt-4 rounded-2xl border bg-[#f8f5f1] p-4">
     <p className="text-xs font-bold uppercase text-neutral-500">
