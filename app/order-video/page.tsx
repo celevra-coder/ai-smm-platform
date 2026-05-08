@@ -47,7 +47,7 @@ const services = [
 export default function OrderVideoPage() {
   const [selectedService, setSelectedService] = useState(services[0].id);
   const [description, setDescription] = useState("");
-  const [fileName, setFileName] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 const [isOrdering, setIsOrdering] = useState(false);
 const orderFormRef = useRef<HTMLElement | null>(null);
 
@@ -93,13 +93,47 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
     .select()
     .single();
 
-  if (error || !order) {
+    if (error || !order) {
     alert("Грешка при създаване на поръчка.");
     console.error(error);
     return;
   }
 
-        // 2. викаме PayPal checkout функцията
+  if (selectedFiles.length > 0) {
+    for (const file of selectedFiles) {
+      const filePath = `video-order-files/${order.id}/${Date.now()}-${file.name}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("videos")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error("VIDEO ORDER FILE UPLOAD ERROR:", uploadError);
+        throw new Error("Грешка при качване на файл.");
+      }
+
+      const { data: publicFile } = supabase.storage
+        .from("videos")
+        .getPublicUrl(filePath);
+
+      const { error: fileRecordError } = await supabase
+        .from("video_order_files")
+        .insert({
+          order_id: order.id,
+          user_id: user.id,
+          file_url: publicFile.publicUrl,
+          file_name: file.name,
+          file_type: file.type,
+        });
+
+      if (fileRecordError) {
+        console.error("VIDEO ORDER FILE RECORD ERROR:", fileRecordError);
+        throw new Error("Грешка при запис на файл към поръчката.");
+      }
+    }
+  }
+
+    // 2. викаме PayPal checkout функцията
   const accessToken = (await supabase.auth.getSession()).data.session?.access_token;
 
   const res = await fetch(
@@ -273,21 +307,25 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
 
                 <label className="mt-6 inline-flex cursor-pointer rounded-full bg-black px-6 py-3 text-sm font-bold text-white transition hover:opacity-90">
                   Качи файл
-                  <input
+                                    <input
                     type="file"
                     accept="video/*,image/*"
+                    multiple
                     className="hidden"
                     onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) setFileName(file.name);
+                      const files = Array.from(e.target.files || []);
+                      setSelectedFiles(files);
                     }}
                   />
                 </label>
 
-                {fileName ? (
-                  <p className="mt-4 text-xs font-medium text-neutral-500">
-                    Качен файл: {fileName}
-                  </p>
+                                {selectedFiles.length > 0 ? (
+                  <div className="mt-4 space-y-1 text-left text-xs font-medium text-neutral-500">
+                    <p>Качени файлове:</p>
+                    {selectedFiles.map((file) => (
+                      <p key={`${file.name}-${file.size}`}>• {file.name}</p>
+                    ))}
+                  </div>
                 ) : null}
               </div>
 
