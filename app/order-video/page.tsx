@@ -7,7 +7,7 @@ const services = [
   {
     id: "video-edit",
     title: "Обработка на готово видео",
-    price: "10€",
+    price: "1€",
     meta: "Видео до 60 сек. • срок: до 3 работни дни",
     video: "/videos/video-edit.mp4",
     description:
