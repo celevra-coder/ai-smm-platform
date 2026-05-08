@@ -357,13 +357,14 @@ setOrderFiles(filesMap);
     <div className="mt-2 space-y-2">
       {orderFiles[order.id].map((file) => (
         <a
-          key={file.id}
-          href={file.file_url}
-          target="_blank"
-          className="block text-sm font-bold text-blue-600 underline"
-        >
-          📎 {file.file_name || "Файл"}
-        </a>
+  key={file.id}
+  href={file.file_url}
+  target="_blank"
+  download={file.file_name || true}
+  className="inline-flex rounded-full bg-black px-4 py-2 text-sm font-bold text-white transition hover:opacity-90"
+>
+  Свали файл: {file.file_name || "Файл"}
+</a>
       ))}
     </div>
   </div>
