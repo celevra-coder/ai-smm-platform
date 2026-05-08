@@ -50,7 +50,7 @@ export default function PricingPage() {
       }
 
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-checkout-session`,
+                `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-paypal-checkout`,
         {
           method: "POST",
           headers: {
@@ -64,24 +64,11 @@ export default function PricingPage() {
 
       const data = await res.json().catch(() => null);
 
-            if (!res.ok || !data?.action || !data?.fields) {
+                  if (!res.ok || !data?.url) {
         throw new Error(data?.error || "Неуспешно създаване на плащане.");
       }
 
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = data.action;
-
-      Object.entries(data.fields).forEach(([key, value]) => {
-        const input = document.createElement("input");
-        input.type = "hidden";
-        input.name = key;
-        input.value = String(value);
-        form.appendChild(input);
-      });
-
-      document.body.appendChild(form);
-      form.submit();
+      window.location.href = data.url;
     } catch (error) {
       console.error(error);
       setErrorMessage("Не успяхме да отворим плащането. Опитай отново.");
@@ -142,7 +129,7 @@ export default function PricingPage() {
                 disabled={loadingPlan === plan.key}
                 className="mt-6 w-full rounded-[20px] bg-neutral-950 px-5 py-3 text-[15px] font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loadingPlan === plan.key ? "Отварям..." : "Купи пакет"}
+                                {loadingPlan === plan.key ? "Отварям..." : "Купи с PayPal / карта"}
               </button>
             </div>
           ))}
