@@ -63,7 +63,7 @@ const [showPassword, setShowPassword] = useState(false);
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm border">
         <h1 className="text-2xl font-bold mb-2">Вход</h1>
         <p className="text-sm text-gray-500 mb-6">
-          Влез в платформата си
+          Влез в платформата 
         </p>
         
         <form onSubmit={handleLogin} className="space-y-4">
