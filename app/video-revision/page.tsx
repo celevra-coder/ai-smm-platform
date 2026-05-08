@@ -47,11 +47,12 @@ function VideoRevisionPageContent() {
       fileUrl = data.publicUrl;
     }
 
-    const { error } = await supabase.from("video_revisions").insert({
+        const { error } = await supabase.from("video_revisions").insert({
       order_id: orderId,
       user_id: user.id,
       message,
       file_url: fileUrl,
+      status: "pending",
     });
 
     if (error) {
