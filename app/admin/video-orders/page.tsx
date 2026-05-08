@@ -66,6 +66,7 @@ export default function AdminVideoOrdersPage() {
   const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [newRevisionsCount, setNewRevisionsCount] = useState(0);
   const [loading, setLoading] = useState(true);
+const [deliveryFiles, setDeliveryFiles] = useState<Record<string, File | null>>({});
 
   const loadOrders = async () => {
     const supabase = createClient();
@@ -116,7 +117,7 @@ if (logsError) {
 
 if (contactError) console.error(contactError);
 
-    setOrders((ordersData || []).filter((order) => order.payment_status === "paid"));
+    setOrders(ordersData || []);
     const filesMap: Record<string, any[]> = {};
 
 (filesData || []).forEach((file) => {
@@ -211,10 +212,10 @@ setOrderFiles(filesMap);
     const publicUrl = data.publicUrl;
 
     const { error: updateError } = await supabase
-      .from("video_orders")
-      .update({
-        final_video_url: publicUrl,
-        status: "delivered",
+      .from("video_orders").update({
+  final_video_url: publicUrl,
+  status: "delivered",
+  user_notified: false,
         updated_at: new Date().toISOString(),
       })
       .eq("id", orderId);
@@ -394,16 +395,42 @@ setOrderFiles(filesMap);
                 </button>
               </div>
 
-              <div className="mt-4">
-                <input
-                  type="file"
-                  accept="video/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void handleUpload(order.id, file);
-                  }}
-                />
-              </div>
+              <div className="mt-4 rounded-2xl border border-black/10 bg-[#faf8f6] p-4">
+  <p className="text-xs font-bold uppercase text-neutral-500">
+    Изпращане на готово видео към клиента
+  </p>
+
+  <input
+    type="file"
+    accept="video/*"
+    onChange={(e) => {
+      const file = e.target.files?.[0] || null;
+
+      setDeliveryFiles((current) => ({
+        ...current,
+        [order.id]: file,
+      }));
+    }}
+    className="mt-3 block text-sm"
+  />
+
+  <button
+    type="button"
+    onClick={() => {
+      const file = deliveryFiles[order.id];
+
+      if (!file) {
+        alert("Първо избери готовото видео.");
+        return;
+      }
+
+      void handleUpload(order.id, file);
+    }}
+    className="mt-3 rounded-full bg-black px-5 py-2 text-sm font-bold text-white"
+  >
+    Изпрати готовото видео
+  </button>
+</div>
 
               <div className="mt-4 space-y-3">
                 {revisions
