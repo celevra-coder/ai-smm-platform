@@ -342,7 +342,8 @@ const handleDeleteBrandProfile = async (profileId: string) => {
         activeBrandId={activeBrandId}
         calendarsByBrandId={calendarsByBrandId}
         videoOrders={videoOrders}
-        onSelectBrand={(profile) => {
+showVideoReady={showVideoReady}
+onSelectBrand={(profile) => {
           localStorage.setItem("active_brand_profile", JSON.stringify(profile));
           localStorage.setItem("active_brand_user_id", email);
           setActiveBrandId(profile.id);

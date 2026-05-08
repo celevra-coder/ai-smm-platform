@@ -25,7 +25,8 @@ type VideoOrder = {
   status: string;
   payment_status: string;
   final_video_url: string | null;
-  created_at: string;
+user_notified: boolean | null;
+created_at: string;
 };
 
 type BrandProfile = {
@@ -48,7 +49,8 @@ type AccountMobileProps = {
   activeBrandId: string;
   calendarsByBrandId: Record<string, SavedCalendar>;
   videoOrders: VideoOrder[];
-  onSelectBrand: (profile: BrandProfile) => void;
+showVideoReady: boolean;
+onSelectBrand: (profile: BrandProfile) => void;
   onOpenLastCalendar: (profile: BrandProfile) => void;
   onDeleteLastCalendar: (profileId: string) => void;
   onDeleteBrandProfile: (profileId: string) => void;
@@ -63,7 +65,8 @@ export default function AccountMobile({
   activeBrandId,
   calendarsByBrandId,
   videoOrders,
-  onSelectBrand,
+showVideoReady,
+onSelectBrand,
   onOpenLastCalendar,
   onDeleteLastCalendar,
   onDeleteBrandProfile,
@@ -134,11 +137,17 @@ export default function AccountMobile({
         ))}
       </section>
 
-      {message ? (
-        <div className="mt-3 rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700">
-          {message}
-        </div>
-      ) : null}
+      {showVideoReady ? (
+  <div className="mt-3 rounded-[18px] border border-green-200 bg-green-50 px-4 py-3 text-xs font-bold text-green-800">
+    🎉 Видеото ти е готово!
+  </div>
+) : null}
+
+{message ? (
+  <div className="mt-3 rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700">
+    {message}
+  </div>
+) : null}
 
       <section className="mt-3 rounded-[26px] bg-white p-4">
         <h2 className="text-[22px] font-black tracking-[-0.03em]">
@@ -281,8 +290,29 @@ export default function AccountMobile({
                 <summary className="cursor-pointer list-none">
                   <p className="text-base font-black">{order.service_title}</p>
                   <p className="mt-1 text-xs text-neutral-500">
-                    {order.price_eur}€ • {order.status}
-                  </p>
+  {order.price_eur}€ •{" "}
+  <span
+    className={`rounded-full px-2 py-1 text-[10px] font-bold ${
+      order.status === "pending_payment"
+        ? "bg-gray-200 text-gray-700"
+        : order.status === "paid"
+        ? "bg-blue-100 text-blue-700"
+        : order.status === "in_progress"
+        ? "bg-yellow-100 text-yellow-700"
+        : order.status === "delivered"
+        ? "bg-green-200 text-green-900"
+        : "bg-gray-100 text-gray-600"
+    }`}
+  >
+    {order.status === "delivered"
+      ? "Готово"
+      : order.status === "in_progress"
+      ? "В процес"
+      : order.status === "paid"
+      ? "Платено"
+      : "Чака плащане"}
+  </span>
+</p>
                 </summary>
 
                 <p className="mt-3 text-sm leading-6 text-neutral-600">
@@ -297,12 +327,23 @@ export default function AccountMobile({
                       className="max-h-[260px] w-full rounded-[18px] bg-black object-contain"
                     />
 
-                    <Link
-                      href={`/video-revision?order_id=${order.id}`}
-                      className="mt-3 inline-flex rounded-full border border-black/15 bg-white px-4 py-3 text-xs font-bold"
-                    >
-                      Искам корекция
-                    </Link>
+                    <div className="mt-3 flex flex-wrap gap-2">
+  <a
+    href={order.final_video_url}
+    download
+    target="_blank"
+    className="inline-flex rounded-full bg-black px-4 py-3 text-xs font-bold text-white"
+  >
+    ⬇ Свали видеото
+  </a>
+
+  <Link
+    href={`/video-revision?order_id=${order.id}`}
+    className="inline-flex rounded-full border border-black/15 bg-white px-4 py-3 text-xs font-bold"
+  >
+    Искам корекция
+  </Link>
+</div>
                   </div>
                 ) : null}
               </details>
