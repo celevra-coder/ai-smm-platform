@@ -8,15 +8,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const plans: Record<
-  string,
-  { credits: number; amount: string; name: string }
-> = {
-  starter: { credits: 150, amount: "15.00", name: "Starter пакет - 150 кредита" },
-  growth: { credits: 300, amount: "25.00", name: "Growth пакет - 300 кредита" },
-  pro: { credits: 400, amount: "30.00", name: "Pro пакет - 400 кредита" },
-};
+const plans = {
+starter: { credits: 150, amount: "15.00" },
+  growth: { credits: 300, amount: "25.00" },
+  pro: { credits: 400, amount: "30.00" },
 
+  };
 function signPostData(postData: Record<string, string>, privateKey: string) {
 const orderedKeys = Object.keys(postData).filter((k) => k !== "Signature");
 
