@@ -195,40 +195,52 @@ setOrderFiles(filesMap);
     window.dispatchEvent(new Event("notifications-updated"));
   };
   const handleUpload = async (orderId: string, file: File) => {
-    const supabase = createClient();
-    const filePath = `videos/${orderId}-${Date.now()}.mp4`;
+  const supabase = createClient();
 
-    const { error: uploadError } = await supabase.storage
-      .from("videos")
-      .upload(filePath, file);
+  const fileExtension = file.name.split(".").pop() || "mp4";
+  const filePath = `delivered/${orderId}-${Date.now()}.${fileExtension}`;
 
-    if (uploadError) {
-      alert("Грешка при качване");
-      console.error(uploadError);
-      return;
-    }
+  const { error: uploadError } = await supabase.storage
+    .from("videos")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: true,
+      contentType: file.type || "video/mp4",
+    });
 
-    const { data } = supabase.storage.from("videos").getPublicUrl(filePath);
-    const publicUrl = data.publicUrl;
+  if (uploadError) {
+    console.error("ADMIN READY VIDEO UPLOAD ERROR:", uploadError);
+    alert(`Грешка при качване: ${uploadError.message}`);
+    return;
+  }
 
-    const { error: updateError } = await supabase
-      .from("video_orders").update({
-  final_video_url: publicUrl,
-  status: "delivered",
-  user_notified: false,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", orderId);
+  const { data } = supabase.storage.from("videos").getPublicUrl(filePath);
+  const publicUrl = data.publicUrl;
 
-    if (updateError) {
-      alert("Грешка при запис");
-      console.error(updateError);
-      return;
-    }
+  if (!publicUrl) {
+    alert("Файлът е качен, но не успяхме да вземем public URL.");
+    return;
+  }
 
-    alert("Видео качено успешно");
-    await loadOrders();
-  };
+  const { error: updateError } = await supabase
+    .from("video_orders")
+    .update({
+      final_video_url: publicUrl,
+      status: "delivered",
+      user_notified: false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", orderId);
+
+  if (updateError) {
+    console.error("ADMIN READY VIDEO UPDATE ERROR:", updateError);
+    alert(`Грешка при запис към поръчката: ${updateError.message}`);
+    return;
+  }
+
+  alert("Готовото видео е изпратено към клиента.");
+  await loadOrders();
+};
 
     const updateOrderStatus = async (orderId: string, status: string) => {
     const supabase = createClient();
