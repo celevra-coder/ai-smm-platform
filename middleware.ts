@@ -55,10 +55,10 @@ let user = null;
 try {
   const res = await Promise.race([
     supabase.auth.getUser(),
-    new Promise((resolve) => setTimeout(() => resolve(null), 1500)),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
   ]);
 
-  if (res && typeof res === "object" && "data" in res) {
+  if (res) {
     user = res.data.user;
   }
 } catch (e) {
