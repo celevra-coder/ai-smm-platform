@@ -27,7 +27,8 @@ type VideoOrder = {
   status: string;
   payment_status: string;
   final_video_url: string | null;
-  created_at: string;
+user_notified: boolean | null;
+created_at: string;
 };
 type BrandProfile = {
   id: string;
@@ -53,6 +54,7 @@ export default function AccountPage() {
     const [isAdmin, setIsAdmin] = useState(false);
   const [calendarsByBrandId, setCalendarsByBrandId] = useState<Record<string, SavedCalendar>>({});
   const [videoOrders, setVideoOrders] = useState<VideoOrder[]>([]);
+const [showVideoReady, setShowVideoReady] = useState(false);
 
   useEffect(() => {
     const loadAccount = async () => {
@@ -94,7 +96,7 @@ if (user.id === ADMIN_ID) {
       setSubscription(subscriptionData || null);
       const { data: videoOrdersData, error: videoOrdersError } = await supabase
   .from("video_orders")
-  .select("id,service_title,price_eur,description,status,payment_status,final_video_url,created_at")
+  .select("id,service_title,price_eur,description,status,payment_status,final_video_url,user_notified,created_at")
   .eq("user_id", user.id)
   .order("created_at", { ascending: false });
 
@@ -103,6 +105,20 @@ if (videoOrdersError) {
 }
 
 setVideoOrders(videoOrdersData || []);
+
+const hasNewVideo = (videoOrdersData || []).some(
+  (order) => order.status === "delivered" && order.user_notified === false
+);
+
+if (hasNewVideo) {
+  setShowVideoReady(true);
+
+  await supabase
+    .from("video_orders")
+    .update({ user_notified: true })
+    .eq("user_id", user.id)
+    .eq("user_notified", false);
+}
 
       const { data: profilesData, error: profilesError } = await supabase
         .from("brand_profiles")
@@ -418,11 +434,11 @@ const handleDeleteBrandProfile = async (profileId: string) => {
         </div>
       </section>
 
-      {message ? (
-        <div className="mb-6 rounded-[20px] border border-red-200 bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">
-          {message}
-        </div>
-      ) : null}
+      {showVideoReady ? (
+  <div className="mb-6 rounded-[20px] border border-green-200 bg-green-50 px-5 py-4 text-sm font-bold text-green-800">
+    🎉 Видеото ти е готово!
+  </div>
+) : null}
 
       <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
         <div className="rounded-[32px] border border-black/10 bg-white p-6 shadow-[0_18px_60px_rgba(0,0,0,0.06)]">
@@ -649,7 +665,7 @@ const handleDeleteBrandProfile = async (profileId: string) => {
                     <p className="mt-2 text-sm text-neutral-600">
                       {order.price_eur}€ • статус:{" "}
                       <span
-  className={`font-bold px-3 py-1 rounded-full text-xs ${
+  className={`rounded-full px-3 py-1 text-xs font-bold ${
     order.status === "pending_payment"
       ? "bg-gray-200 text-gray-700"
       : order.status === "paid"
@@ -657,11 +673,17 @@ const handleDeleteBrandProfile = async (profileId: string) => {
       : order.status === "in_progress"
       ? "bg-yellow-100 text-yellow-700"
       : order.status === "delivered"
-      ? "bg-green-100 text-green-700"
-      : ""
+      ? "bg-green-200 text-green-900"
+      : "bg-gray-100 text-gray-600"
   }`}
 >
-  {order.status}
+ {order.status === "delivered"
+  ? "Готово"
+  : order.status === "in_progress"
+  ? "В процес"
+  : order.status === "paid"
+  ? "Платено"
+  : "Чака плащане"}
 </span>
                     </p>
 
@@ -682,6 +704,14 @@ const handleDeleteBrandProfile = async (profileId: string) => {
                       controls
                       className="max-h-[360px] w-full rounded-[22px] bg-black object-contain"
                     />
+                    <a
+  href={order.final_video_url}
+  download
+  target="_blank"
+  className="mt-3 inline-flex rounded-full bg-black px-5 py-2 text-sm font-bold text-white"
+>
+  ⬇ Свали видеото
+</a>
 
                     <Link
                       href={`/video-revision?order_id=${order.id}`}
