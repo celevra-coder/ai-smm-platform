@@ -18,13 +18,22 @@ const plans: Record<
 };
 
 function signPostData(postData: Record<string, string>, privateKey: string) {
-  const concatenated = btoa(Object.values(postData).join("-"));
+  const raw = Object.values(postData).join("-");
+  const bytes = new TextEncoder().encode(raw);
+
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  const concatenated = btoa(binary);
+
   const signer = createSign("RSA-SHA256");
   signer.update(concatenated);
   signer.end();
+
   return signer.sign(privateKey, "base64");
 }
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
