@@ -48,35 +48,27 @@ export default function OrderVideoPage() {
   const [selectedService, setSelectedService] = useState(services[0].id);
   const [description, setDescription] = useState("");
   const [fileName, setFileName] = useState("");
-const [loading, setLoading] = useState(false);
-const [pressed, setPressed] = useState(false);
-const orderFormRef = useRef<HTMLElement | null>(null);
+  const orderFormRef = useRef<HTMLElement | null>(null);
 
   const selected = services.find((service) => service.id === selectedService);
   const handleOrder = async () => {
-  try {
-    setPressed(true);
-    setLoading(true);
-
-    const supabase = createClient();
+  const supabase = createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-  alert("Трябва да влезеш в акаунта си.");
-  throw new Error("no_user");
-}
+    alert("Трябва да влезеш в акаунта си.");
+    return;
+  }
 
-if (!description.trim()) {
-  alert("Моля опиши видеото.");
-  throw new Error("no_description");
-}
+  if (!description.trim()) {
+    alert("Моля опиши видеото.");
+    return;
+  }
 
-if (!selected) {
-  throw new Error("no_service");
-}
+  if (!selected) return;
 
 const priceNumber = parseFloat(selected.price.replace("€", ""));
 
@@ -138,13 +130,6 @@ Object.entries(data.fields).forEach(([key, value]) => {
 
 document.body.appendChild(form);
 form.submit();
-  } catch (error) {
-    console.error(error);
-    alert("Не успяхме да отворим плащането. Опитай отново.");
-  } finally {
-    setLoading(false);
-    setPressed(false);
-  }
 };
 
   return (
@@ -327,26 +312,10 @@ form.submit();
 
 <button
   type="button"
-  onMouseDown={() => setPressed(true)}
-  onMouseUp={() => setPressed(false)}
-  onMouseLeave={() => setPressed(false)}
-  onTouchStart={() => setPressed(true)}
   onClick={handleOrder}
-  disabled={loading}
-  className={`mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-5 text-base font-black text-white shadow-xl transition duration-150 disabled:cursor-not-allowed disabled:opacity-60 ${
-    pressed || loading
-      ? "scale-[0.96] bg-green-700 shadow-green-900/30"
-      : "bg-black shadow-black/20 hover:scale-[1.03] hover:bg-neutral-800 hover:shadow-2xl active:scale-[0.96]"
-  }`}
+  className="mt-5 w-full rounded-full bg-black px-6 py-4 text-sm font-black text-white transition hover:opacity-90"
 >
-  {loading ? (
-    <>
-      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-      Отварям плащането...
-    </>
-  ) : (
-    <>🎬 Продължи към плащане – {selected?.price}</>
-  )}
+  Поръчай видео – {selected?.price}
 </button>
             </div>
           </div>
