@@ -74,7 +74,7 @@ export default function AdminVideoOrdersPage() {
       .select("*")
       .order("created_at", { ascending: false });
 
-        if (ordersError) console.error("ADMIN VIDEO ORDERS LOAD ERROR:", ordersError);
+            if (ordersError) console.error("ADMIN VIDEO ORDERS LOAD ERROR:", ordersError);
 
     console.log("ADMIN VIDEO ORDERS DEBUG:", {
       count: ordersData?.length,
@@ -116,7 +116,7 @@ if (logsError) {
 
 if (contactError) console.error(contactError);
 
-    setOrders(ordersData || []);
+        setOrders((ordersData || []).filter((order) => order.payment_status === "paid"));
     setRevisions(revisionsData || []);
     setContactRequests(contactData || []);
     if (!logsError && logsData) {
