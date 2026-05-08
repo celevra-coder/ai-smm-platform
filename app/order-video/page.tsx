@@ -48,10 +48,16 @@ export default function OrderVideoPage() {
   const [selectedService, setSelectedService] = useState(services[0].id);
   const [description, setDescription] = useState("");
   const [fileName, setFileName] = useState("");
-  const orderFormRef = useRef<HTMLElement | null>(null);
+const [isOrdering, setIsOrdering] = useState(false);
+const orderFormRef = useRef<HTMLElement | null>(null);
 
   const selected = services.find((service) => service.id === selectedService);
-  const handleOrder = async () => {
+    const handleOrder = async () => {
+  if (isOrdering) return;
+
+  setIsOrdering(true);
+
+  try {
   const supabase = createClient();
 
   const {
@@ -93,7 +99,7 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
     return;
   }
 
-  // 2. викаме Stripe функцията
+    // 2. викаме myPOS checkout функцията
   const accessToken = (await supabase.auth.getSession()).data.session?.access_token;
 
   const res = await fetch(
@@ -130,6 +136,12 @@ Object.entries(data.fields).forEach(([key, value]) => {
 
 document.body.appendChild(form);
 form.submit();
+  } catch (error) {
+    console.error("VIDEO ORDER CHECKOUT ERROR:", error);
+    alert(error instanceof Error ? error.message : "Грешка при отваряне на плащането.");
+  } finally {
+    setIsOrdering(false);
+  }
 };
 
   return (
@@ -313,9 +325,17 @@ form.submit();
 <button
   type="button"
   onClick={handleOrder}
-  className="mt-5 w-full rounded-full bg-black px-6 py-4 text-sm font-black text-white transition hover:opacity-90"
+  disabled={isOrdering}
+  className="mt-5 flex w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-black px-6 py-4 text-sm font-black text-white transition hover:opacity-90 active:scale-[0.98] active:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-70"
 >
-  Поръчай видео – {selected?.price}
+  {isOrdering ? (
+    <>
+      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+      Отварям плащането...
+    </>
+  ) : (
+    <>Поръчай видео – {selected?.price}</>
+  )}
 </button>
             </div>
           </div>
