@@ -49,10 +49,21 @@ export async function middleware(request: NextRequest) {
     },
   );
 
-  const {
-  data: { user },
-} = await supabase.auth.getUser();
+  
+let user = null;
 
+try {
+  const res = await Promise.race([
+    supabase.auth.getUser(),
+    new Promise((resolve) => setTimeout(() => resolve(null), 1500)),
+  ]);
+
+  if (res && typeof res === "object" && "data" in res) {
+    user = res.data.user;
+  }
+} catch (e) {
+  console.error("Middleware auth error:", e);
+}
 const isPublicQuickDemo =
   request.nextUrl.pathname === "/dashboard" &&
   request.nextUrl.searchParams.get("mode") === "quick" &&
