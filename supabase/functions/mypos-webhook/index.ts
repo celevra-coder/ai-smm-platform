@@ -21,14 +21,7 @@ serve(async (req) => {
       return new Response("Missing OrderID", { status: 400 });
     }
 
-    const [planKey, userId] = orderId.split("_");
-    const selectedPlan = plans[planKey];
-
-    if (!selectedPlan || !userId) {
-      return new Response("Invalid OrderID", { status: 400 });
-    }
-
-    const isPaid =
+        const isPaid =
       status === "0" ||
       status.toLowerCase() === "success" ||
       status.toLowerCase() === "paid";
@@ -42,11 +35,34 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    if (orderId.startsWith("video_order_")) {
+            const { error } = await supabase
+        .from("video_orders")
+        .update({
+          payment_status: "paid",
+          status: "paid",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("payment_reference", orderId);
+      if (error) {
+        console.error("MYPOS VIDEO ORDER UPDATE ERROR:", error);
+        return new Response("Video order update error", { status: 500 });
+      }
+
+      return new Response("OK", { status: 200 });
+    }
+
+    const [planKey, userId] = orderId.split("_");
+    const selectedPlan = plans[planKey];
+
+    if (!selectedPlan || !userId) {
+      return new Response("Invalid OrderID", { status: 400 });
+    }
+
     const { error } = await supabase.rpc("add_credits", {
       p_user_id: userId,
       p_credits: selectedPlan.credits,
     });
-
     if (error) {
       console.error("MYPOS ADD CREDITS ERROR:", error);
       return new Response("Credit error", { status: 500 });

@@ -18,8 +18,10 @@ const plans: Record<
 };
 
 function signPostData(postData: Record<string, string>, privateKey: string) {
-  const raw = Object.values(postData).join("-");
-  const bytes = new TextEncoder().encode(raw);
+const orderedKeys = Object.keys(postData).filter((k) => k !== "Signature");
+
+const raw = orderedKeys.map((key) => postData[key]).join("-");
+    const bytes = new TextEncoder().encode(raw);
 
   let binary = "";
   bytes.forEach((byte) => {
@@ -54,6 +56,13 @@ serve(async (req) => {
     const siteUrl = Deno.env.get("SITE_URL");
     const myposConfigB64 = Deno.env.get("MYPOS_CONFIG_B64");
     const myposCheckoutUrl = Deno.env.get("MYPOS_CHECKOUT_URL");
+
+        console.log("MYPOS SAFE ENV CHECK:", {
+      siteUrl,
+      myposCheckoutUrl,
+      hasMyposConfig: Boolean(myposConfigB64),
+      myposConfigLength: myposConfigB64?.length,
+    });
 
     if (!siteUrl || !myposConfigB64 || !myposCheckoutUrl) {
       throw new Error("Missing myPOS configuration");
