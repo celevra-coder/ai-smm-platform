@@ -29,12 +29,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      import Footer from "@/components/Footer";
-
-<body>
-  {children}
-  <Footer />
-</body>
+            <body>
+        <AppShell>
+          {children}
+        </AppShell>
+        <Footer />
+      </body>
     </html>
   );
 }
