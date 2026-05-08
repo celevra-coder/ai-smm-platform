@@ -44,6 +44,7 @@ final_banner_url?: string | null;
 
 export default function AdminVideoOrdersPage() {
   const [orders, setOrders] = useState<VideoOrder[]>([]);
+  const [orderFiles, setOrderFiles] = useState<Record<string, any[]>>({});
   const [revisions, setRevisions] = useState<Revision[]>([]);
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
   const [generationLogs, setGenerationLogs] = useState<GenerationLog[]>([]);
@@ -75,7 +76,11 @@ export default function AdminVideoOrdersPage() {
       .order("created_at", { ascending: false });
 
            if (ordersError) console.error("ADMIN VIDEO ORDERS LOAD ERROR:", ordersError);     
+const { data: filesData, error: filesError } = await supabase
+  .from("video_order_files")
+  .select("*");
 
+if (filesError) console.error("VIDEO FILES LOAD ERROR:", filesError);
     const { data: revisionsData, error: revisionsError } = await supabase
       .from("video_revisions")
       .select("*")
@@ -112,6 +117,16 @@ if (logsError) {
 if (contactError) console.error(contactError);
 
     setOrders((ordersData || []).filter((order) => order.payment_status === "paid"));
+    const filesMap: Record<string, any[]> = {};
+
+(filesData || []).forEach((file) => {
+  if (!filesMap[file.order_id]) {
+    filesMap[file.order_id] = [];
+  }
+  filesMap[file.order_id].push(file);
+});
+
+setOrderFiles(filesMap);
     setRevisions(revisionsData || []);
     setContactRequests(contactData || []);
     if (!logsError && logsData) {
@@ -333,6 +348,26 @@ if (contactError) console.error(contactError);
               </p>
 
               <p className="mt-3 text-sm">{order.description}</p>
+              {orderFiles[order.id]?.length ? (
+  <div className="mt-4 rounded-2xl border bg-[#f8f5f1] p-4">
+    <p className="text-xs font-bold uppercase text-neutral-500">
+      Качени файлове от клиента
+    </p>
+
+    <div className="mt-2 space-y-2">
+      {orderFiles[order.id].map((file) => (
+        <a
+          key={file.id}
+          href={file.file_url}
+          target="_blank"
+          className="block text-sm font-bold text-blue-600 underline"
+        >
+          📎 {file.file_name || "Файл"}
+        </a>
+      ))}
+    </div>
+  </div>
+) : null}
 
               {order.final_video_url ? (
                 <video
