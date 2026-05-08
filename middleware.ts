@@ -2,10 +2,30 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  const isPublicPath =
+    pathname === "/" ||
+    pathname === "/pricing" ||
+    pathname === "/order-video" ||
+    pathname === "/contact" ||
+    pathname === "/content-calendar" ||
+    pathname === "/content-posts" ||
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/forgot-password" ||
+    pathname === "/reset-password" ||
+    pathname === "/video-revision" ||
+    pathname.startsWith("/auth/callback") ||
+    pathname.startsWith("/api/");
+
+  if (isPublicPath) {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({
     request,
   });
-
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
