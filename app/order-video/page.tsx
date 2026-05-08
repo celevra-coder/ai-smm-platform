@@ -99,11 +99,11 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
     return;
   }
 
-    // 2. викаме myPOS checkout функцията
+        // 2. викаме PayPal checkout функцията
   const accessToken = (await supabase.auth.getSession()).data.session?.access_token;
 
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-video-order-checkout`,
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-video-order-paypal`,
     {
       method: "POST",
       headers: {
@@ -118,24 +118,11 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
 
   const data = await res.json();
 
-  if (!res.ok || !data?.action || !data?.fields) {
-  throw new Error(data?.error || "Неуспешно създаване на плащане.");
-}
+    if (!res.ok || !data?.url) {
+    throw new Error(data?.error || "Неуспешно създаване на плащане.");
+  }
 
-const form = document.createElement("form");
-form.method = "POST";
-form.action = data.action;
-
-Object.entries(data.fields).forEach(([key, value]) => {
-  const input = document.createElement("input");
-  input.type = "hidden";
-  input.name = key;
-  input.value = String(value);
-  form.appendChild(input);
-});
-
-document.body.appendChild(form);
-form.submit();
+  window.location.href = data.url;
   } catch (error) {
     console.error("VIDEO ORDER CHECKOUT ERROR:", error);
     alert(error instanceof Error ? error.message : "Грешка при отваряне на плащането.");
