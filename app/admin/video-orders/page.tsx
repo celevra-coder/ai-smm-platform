@@ -74,7 +74,12 @@ export default function AdminVideoOrdersPage() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (ordersError) console.error(ordersError);
+        if (ordersError) console.error("ADMIN VIDEO ORDERS LOAD ERROR:", ordersError);
+
+    console.log("ADMIN VIDEO ORDERS DEBUG:", {
+      count: ordersData?.length,
+      ordersData,
+    });
 
     const { data: revisionsData, error: revisionsError } = await supabase
       .from("video_revisions")
