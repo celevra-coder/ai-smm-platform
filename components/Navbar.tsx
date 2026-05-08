@@ -170,18 +170,18 @@ const handleLogout = async () => {
       <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end sm:gap-3">
         {isLoggedIn ? (
           <>
-          {(credits ?? 0) > 0 ? (
-  <div className="rounded-full bg-[#efe7de] px-4 py-2 text-sm font-bold text-neutral-900">
-    {credits} кредита
-  </div>
-) : (
-  <Link
-    href="/pricing"
-    className="rounded-full bg-[#efe7de] px-4 py-2 text-sm font-bold text-neutral-900 transition hover:bg-[#e2d6c8]"
-  >
-    Купи кредити
-  </Link>
-)}
+                    <div className="flex items-center gap-2">
+            <div className="rounded-full bg-[#efe7de] px-4 py-2 text-sm font-bold text-neutral-900">
+              {(credits ?? 0)} кредита
+            </div>
+
+            <Link
+              href="/pricing"
+              className="rounded-full bg-neutral-950 px-4 py-2 text-sm font-bold text-white transition hover:opacity-90"
+            >
+              Купи кредити
+            </Link>
+          </div>
           <Link
   href="/"
   className="inline-flex rounded-full px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:bg-black/5"
