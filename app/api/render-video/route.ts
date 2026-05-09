@@ -218,10 +218,10 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Main,Arial,36,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,5,56,56,0,1
-Style: Brand,Times New Roman,64,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,1,0,0,100,100,0,0,1,4,2,8,40,40,240,1
-Style: Contact,Arial,42,&H00A8E7FF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,2,40,40,180,1
-Style: Address,Arial,30,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,3,2,2,40,40,110,1
+Style: Main,Roboto,42,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,5,2,5,56,56,0,1
+Style: Brand,Roboto,58,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,5,2,8,40,40,240,1
+Style: Contact,Roboto,44,&H00A8E7FF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,180,1
+Style: Address,Roboto,30,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,2,40,40,110,1
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 ${dialogues.join("\n")}
@@ -253,9 +253,15 @@ address ? cleanText(`АДРЕС: ${address}`) : "",
   console.log("FONT PATH:", fontPath);
   console.log("OVERLAY TEXT:", overlayLines.join(" | "));
 
-  const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,drawtext=fontfile=${fontPath}:text='${overlayText}':fontsize=48:fontcolor=white:borderw=4:bordercolor=black:line_spacing=14:x=(w-text_w)/2:y=(h-text_h)/2,format=yuv420p[v]`;
+  const ffmpegPathSafe = (value: string) =>
+  value.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/'/g, "\\'");
 
-  console.log("FFMPEG FILTER:", filter);
+const subtitlePathSafe = ffmpegPathSafe(subtitlePath);
+const fontsDirSafe = ffmpegPathSafe(path.join(process.cwd(), "public", "fonts"));
+
+const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,subtitles='${subtitlePathSafe}':fontsdir='${fontsDirSafe}',format=yuv420p[v]`;
+
+console.log("FFMPEG FILTER:", filter);
         return new Promise<void>((resolve, reject) => {
     ffmpeg()
       .input(inputPath)
