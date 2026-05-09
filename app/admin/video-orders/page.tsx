@@ -525,11 +525,31 @@ if (!updatedOrder) {
   <a
     href={rev.file_url}
     target="_blank"
-    className="mt-2 block text-sm font-bold underline"
+    className="mt-2 block font-bold underline"
   >
     Виж файл
   </a>
 ) : null}
+
+{revisionFiles[rev.id]?.length ? (
+  <div className="mt-3 space-y-2">
+    {revisionFiles[rev.id].map((file) => (
+      <a
+        key={file.id}
+        href={file.file_url}
+        target="_blank"
+        download={file.file_name || true}
+        className="inline-flex rounded-full bg-black px-4 py-2 text-xs font-bold text-white"
+      >
+        Свали файл: {file.file_name || "Файл"}
+      </a>
+    ))}
+  </div>
+) : (
+  <p className="mt-3 text-xs font-bold text-red-600">
+    Няма записани файлове към тази корекция.
+  </p>
+)}
 
 {revisionFiles[rev.id]?.length ? (
   <div className="mt-3 space-y-2">
