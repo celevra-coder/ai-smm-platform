@@ -152,24 +152,7 @@ onSelectBrand,
         ))}
       </section>
 
-      {showVideoReady ? (
-  <a
-    href={
-      videoOrders.find(
-        (order) => order.status === "delivered" && order.final_video_url
-      )
-        ? `#video-order-${
-            videoOrders.find(
-              (order) => order.status === "delivered" && order.final_video_url
-            )?.id
-          }`
-        : "#"
-    }
-    className="mt-3 block rounded-[18px] border border-green-200 bg-green-50 px-4 py-3 text-xs font-bold text-green-800"
-  >
-    🎉 Видеото ти е готово! Натисни тук, за да го видиш.
-  </a>
-) : null}
+      
 
 {message ? (
   <div className="mt-3 rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-xs font-semibold text-red-700">

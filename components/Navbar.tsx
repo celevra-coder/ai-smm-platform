@@ -170,13 +170,12 @@ if (readyVideoOrderIds.length > 0) {
     .in("id", readyVideoOrderIds);
 
   if (markVideosSeenError) {
-    console.error("MARK VIDEO NOTIFICATIONS SEEN ERROR:", markVideosSeenError);
-    return;
-  }
+  console.error("MARK VIDEO NOTIFICATIONS SEEN ERROR:", markVideosSeenError);
+}
 }
   }
 
-    router.push(notificationTarget);
+    router.push(readyVideoOrderIds.length > 0 ? "/account" : notificationTarget);
 };
 
 const handleLogout = async () => {
