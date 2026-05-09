@@ -25,6 +25,7 @@ type Revision = {
 
 type ContactRequest = {
   id: string;
+  user_id: string | null;
   message: string;
   uploaded_file_url: string | null;
   admin_reply: string | null;
@@ -49,6 +50,9 @@ export default function AdminVideoOrdersPage() {
 const [revisionFiles, setRevisionFiles] = useState<Record<string, any[]>>({});
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
 const [contactRequestFiles, setContactRequestFiles] = useState<Record<string, any[]>>({});
+const [contactReplyFiles, setContactReplyFiles] = useState<Record<string, any[]>>({});
+const [adminReplyFiles, setAdminReplyFiles] = useState<Record<string, File[]>>({});
+
   const [generationLogs, setGenerationLogs] = useState<GenerationLog[]>([]);
     const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [openEmojiForMessageId, setOpenEmojiForMessageId] = useState<string | null>(null);
@@ -110,6 +114,15 @@ if (revisionFilesError) {
 if (contactFilesError) {
   console.error("CONTACT REQUEST FILES LOAD ERROR:", contactFilesError);
 }
+
+const { data: contactReplyFilesData, error: contactReplyFilesError } = await supabase
+  .from("contact_reply_files")
+  .select("*");
+
+if (contactReplyFilesError) {
+  console.error("CONTACT REPLY FILES LOAD ERROR:", contactReplyFilesError);
+}
+
       const { data: logsData, error: logsError } = await supabase
   .from("generation_logs")
   .select(
@@ -228,7 +241,26 @@ setContactRequestFiles(contactFilesMap);
     return;
   }
 
-  setContactRequests(contactData || []);
+const { data: contactFilesData, error: contactFilesError } = await supabase
+  .from("contact_request_files")
+  .select("*");
+
+if (contactFilesError) {
+  console.error("CONTACT REQUEST FILES LOAD ERROR:", contactFilesError);
+}
+
+const contactFilesMap: Record<string, any[]> = {};
+
+(contactFilesData || []).forEach((file) => {
+  if (!contactFilesMap[file.contact_request_id]) {
+    contactFilesMap[file.contact_request_id] = [];
+  }
+
+  contactFilesMap[file.contact_request_id].push(file);
+});
+
+setContactRequestFiles(contactFilesMap);
+setContactRequests(contactData || []);
 
   const { error: markReadError } = await supabase
     .from("contact_requests")
@@ -345,40 +377,83 @@ const handleRevisionUpload = async (
     await loadOrders();
   };
 
-  const handleReplyToContact = async (messageId: string) => {
-    const reply = replyDrafts[messageId]?.trim();
+  const handleReplyToContact = async (messageId: string, userId: string | null) => {
+  const reply = replyDrafts[messageId]?.trim();
+  const files = adminReplyFiles[messageId] || [];
 
-    if (!reply) {
-      alert("Напиши отговор.");
+  if (!reply && files.length === 0) {
+    alert("Напиши отговор или прикачи файл.");
+    return;
+  }
+
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("contact_requests")
+    .update({
+      admin_reply: reply || null,
+      user_seen: false,
+      status: "answered",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", messageId);
+
+  if (error) {
+    alert("Грешка при изпращане на отговора.");
+    console.error(error);
+    return;
+  }
+
+  for (const file of files) {
+    const fileExtension = file.name.split(".").pop() || "file";
+    const filePath = `contact-replies/${messageId}-${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("videos")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: true,
+        contentType: file.type || undefined,
+      });
+
+    if (uploadError) {
+      console.error("CONTACT REPLY FILE UPLOAD ERROR:", uploadError);
+      alert(`Отговорът е изпратен, но файл не се качи: ${uploadError.message}`);
       return;
     }
 
-    const supabase = createClient();
+    const { data } = supabase.storage.from("videos").getPublicUrl(filePath);
 
-    const { error } = await supabase
-      .from("contact_requests")
-      .update({
-        admin_reply: reply,
-        user_seen: false,
-        status: "answered",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", messageId);
+    const { error: fileInsertError } = await supabase
+      .from("contact_reply_files")
+      .insert({
+        contact_request_id: messageId,
+        user_id: userId,
+        file_url: data.publicUrl,
+        file_name: file.name,
+        file_type: file.type || fileExtension,
+      });
 
-    if (error) {
-      alert("Грешка при изпращане на отговора.");
-      console.error(error);
+    if (fileInsertError) {
+      console.error("CONTACT REPLY FILE INSERT ERROR:", fileInsertError);
+      alert(`Файлът се качи, но не се записа към отговора: ${fileInsertError.message}`);
       return;
     }
+  }
 
-    setReplyDrafts((current) => ({
-      ...current,
-      [messageId]: "",
-    }));
+  setReplyDrafts((current) => ({
+    ...current,
+    [messageId]: "",
+  }));
 
-    alert("Отговорът е изпратен.");
-    await loadOrders();
-  };
+  setAdminReplyFiles((current) => ({
+    ...current,
+    [messageId]: [],
+  }));
+
+  alert("Отговорът е изпратен.");
+  await loadOrders();
+};
 
   if (loading) {
     return <div className="p-10">Зареждане...</div>;
@@ -670,8 +745,12 @@ const handleRevisionUpload = async (
 
                 <p className="mt-2 text-sm">{msg.message}</p>
 
-                {contactRequestFiles[msg.id]?.length ? (
+{contactRequestFiles[msg.id]?.length ? (
   <div className="mt-3 space-y-2">
+    <p className="text-xs font-bold uppercase text-neutral-500">
+      Файлове от потребителя
+    </p>
+
     {contactRequestFiles[msg.id].map((file) => (
       <a
         key={file.id}
@@ -693,10 +772,8 @@ const handleRevisionUpload = async (
     Виж файл
   </a>
 ) : null}
-                
-                
 
-                {msg.admin_reply ? (
+{msg.admin_reply ? (
                   <div className="mt-4 rounded-2xl bg-green-50 p-4 text-sm text-green-900">
                     <p className="font-bold">Твоят отговор:</p>
                     <p className="mt-1">{msg.admin_reply}</p>
@@ -755,13 +832,44 @@ const handleRevisionUpload = async (
                   ) : null}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => void handleReplyToContact(msg.id)}
-                  className="mt-3 rounded-full bg-black px-5 py-2 text-sm font-bold text-white"
-                >
-                  Изпрати отговор
-                </button>
+                <label className="mt-3 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-black/15 bg-[#faf8f6] px-4 py-5 text-center">
+  <span className="text-2xl">📎</span>
+  <span className="mt-1 text-xs font-bold text-neutral-700">
+    Прикачи файлове към отговора
+  </span>
+
+  <input
+    type="file"
+    multiple
+    className="hidden"
+    onChange={(e) => {
+      setAdminReplyFiles((current) => ({
+        ...current,
+        [msg.id]: Array.from(e.target.files || []),
+      }));
+    }}
+  />
+</label>
+
+{adminReplyFiles[msg.id]?.length ? (
+  <div className="mt-2 rounded-2xl bg-[#f8f5f1] p-3 text-xs">
+    <p className="font-bold">Избрани файлове:</p>
+
+    <ul className="mt-1 list-inside list-disc">
+      {adminReplyFiles[msg.id].map((file) => (
+        <li key={`${file.name}-${file.size}`}>{file.name}</li>
+      ))}
+    </ul>
+  </div>
+) : null}
+
+<button
+  type="button"
+  onClick={() => void handleReplyToContact(msg.id, msg.user_id)}
+  className="mt-3 rounded-full bg-black px-5 py-2 text-sm font-bold text-white"
+>
+  Изпрати отговор
+</button>
               </div>
             ))
           ) : (
