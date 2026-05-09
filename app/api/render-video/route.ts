@@ -135,11 +135,8 @@ function renderVideoWithMusic({
 
     return lines.slice(0, 12);
   };
-
-   const dialogues: string[] = [
-    `Dialogue: 0,0:00:00.00,0:00:05.00,Main,,0,0,0,,{\\an5\\fs52\\pos(360,200)}ТЕСТ ТЕКСТ`
-  ];
-  const visibleScenes = scenes;
+  const dialogues: string[] = [];
+     const visibleScenes = scenes;
   const totalSceneDuration = visibleScenes.reduce(
     (sum: number, scene: any) => sum + Math.max(scene?.duration_sec || 3, 1),
     0
@@ -356,6 +353,8 @@ if (!fs.existsSync(musicPath)) {
       },
     });
   } catch (error) {
+    console.error("RENDER VIDEO API ERROR:", error);
+
     return NextResponse.json(
       {
         success: false,
@@ -364,7 +363,7 @@ if (!fs.existsSync(musicPath)) {
       { status: 500 }
     );
   } finally {
-    try {
+      try {
       if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
       if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
       if (fs.existsSync(musicPath)) fs.unlinkSync(musicPath);
