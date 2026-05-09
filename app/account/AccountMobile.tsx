@@ -71,6 +71,21 @@ onSelectBrand,
   onDeleteLastCalendar,
   onDeleteBrandProfile,
 }: AccountMobileProps) {
+    const handleDownloadVideo = async (url: string, fileName: string) => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+
+  const blobUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = blobUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+
+  link.remove();
+  window.URL.revokeObjectURL(blobUrl);
+};
   return (
     <main className="min-h-screen bg-[#f5f1ec] px-3 py-4 text-neutral-900">
       <section className="rounded-[26px] bg-white p-4 shadow-[0_14px_40px_rgba(0,0,0,0.06)]">
@@ -140,14 +155,19 @@ onSelectBrand,
       {showVideoReady ? (
   <a
     href={
-      videoOrders.find((order) => order.status === "delivered" && order.final_video_url)
-        ?.final_video_url || "#"
+      videoOrders.find(
+        (order) => order.status === "delivered" && order.final_video_url
+      )
+        ? `#video-order-${
+            videoOrders.find(
+              (order) => order.status === "delivered" && order.final_video_url
+            )?.id
+          }`
+        : "#"
     }
-    target="_blank"
-    download
     className="mt-3 block rounded-[18px] border border-green-200 bg-green-50 px-4 py-3 text-xs font-bold text-green-800"
   >
-    🎉 Видеото ти е готово! Натисни тук, за да го свалиш.
+    🎉 Видеото ти е готово! Натисни тук, за да го видиш.
   </a>
 ) : null}
 
@@ -292,9 +312,10 @@ onSelectBrand,
           {videoOrders.length ? (
             videoOrders.map((order) => (
               <details
-                key={order.id}
-                className="rounded-[22px] border border-black/10 bg-[#fcfaf7] p-4"
-              >
+  id={`video-order-${order.id}`}
+  key={order.id}
+  className="rounded-[22px] border border-black/10 bg-[#fcfaf7] p-4"
+>
                 <summary className="cursor-pointer list-none">
                   <p className="text-base font-black">{order.service_title}</p>
                   <p className="mt-1 text-xs text-neutral-500">
@@ -336,14 +357,18 @@ onSelectBrand,
                     />
 
                     <div className="mt-3 flex flex-wrap gap-2">
-  <a
-    href={order.final_video_url}
-    download
-    target="_blank"
-    className="inline-flex rounded-full bg-black px-4 py-3 text-xs font-bold text-white"
-  >
-    ⬇ Свали видеото
-  </a>
+  <button
+  type="button"
+  onClick={() =>
+    void handleDownloadVideo(
+      order.final_video_url!,
+      `${order.service_title || "video"}.mp4`
+    )
+  }
+  className="inline-flex rounded-full bg-black px-4 py-3 text-xs font-bold text-white"
+>
+  ⬇ Свали видеото
+</button>
 
   <Link
     href={`/video-revision?order_id=${order.id}`}

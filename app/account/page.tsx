@@ -319,7 +319,21 @@ const handleDeleteBrandProfile = async (profileId: string) => {
 
   setMessage("Бизнес профилът е изтрит.");
 };
+const handleDownloadVideo = async (url: string, fileName: string) => {
+  const response = await fetch(url);
+  const blob = await response.blob();
 
+  const blobUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = blobUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+
+  link.remove();
+  window.URL.revokeObjectURL(blobUrl);
+};
   if (loading) {
     return (
       <main className="min-h-screen bg-[#f5f1ec] px-4 py-10 text-neutral-900">
@@ -437,15 +451,14 @@ onSelectBrand={(profile) => {
 
       {showVideoReady ? (
   <a
-    href={
-      videoOrders.find((order) => order.status === "delivered" && order.final_video_url)
-        ?.final_video_url || "#"
-    }
-    target="_blank"
-    download
+    href={`#video-order-${
+      videoOrders.find(
+        (order) => order.status === "delivered" && order.final_video_url
+      )?.id || ""
+    }`}
     className="mb-6 block rounded-[20px] border border-green-200 bg-green-50 px-5 py-4 text-sm font-bold text-green-800"
   >
-    🎉 Видеото ти е готово! Натисни тук, за да го свалиш.
+    🎉 Видеото ти е готово! Натисни тук, за да го видиш.
   </a>
 ) : null}
 
@@ -662,9 +675,10 @@ onSelectBrand={(profile) => {
           {videoOrders.length ? (
             videoOrders.map((order) => (
               <div
-                key={order.id}
-                className="rounded-[26px] border border-black/10 bg-[#fcfaf7] p-5"
-              >
+  id={`video-order-${order.id}`}
+  key={order.id}
+  className="rounded-[26px] border border-black/10 bg-[#fcfaf7] p-5"
+>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h3 className="text-xl font-black text-neutral-950">
@@ -713,14 +727,18 @@ onSelectBrand={(profile) => {
                       controls
                       className="max-h-[360px] w-full rounded-[22px] bg-black object-contain"
                     />
-                    <a
-  href={order.final_video_url}
-  download
-  target="_blank"
+<button
+  type="button"
+  onClick={() =>
+    void handleDownloadVideo(
+      order.final_video_url!,
+      `${order.service_title || "video"}.mp4`
+    )
+  }
   className="mt-3 inline-flex rounded-full bg-black px-5 py-2 text-sm font-bold text-white"
 >
   ⬇ Свали видеото
-</a>
+</button>
 
                     <Link
                       href={`/video-revision?order_id=${order.id}`}

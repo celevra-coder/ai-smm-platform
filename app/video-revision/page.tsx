@@ -57,7 +57,9 @@ const [submitting, setSubmitting] = useState(false);
       return;
     }
 
-    for (const file of files) {
+    let firstFileUrl: string | null = null;
+
+for (const file of files) {
       const fileExtension = file.name.split(".").pop() || "file";
       const filePath = `revisions/${orderId}/${revision.id}-${Date.now()}-${file.name}`;
 
@@ -78,6 +80,10 @@ const [submitting, setSubmitting] = useState(false);
       const { data } = supabase.storage.from("videos").getPublicUrl(filePath);
       const fileUrl = data.publicUrl;
 
+if (!firstFileUrl) {
+  firstFileUrl = fileUrl;
+}
+
       const { error: fileInsertError } = await supabase
         .from("video_revision_files")
         .insert({
@@ -95,7 +101,12 @@ const [submitting, setSubmitting] = useState(false);
         return;
       }
     }
-
+if (firstFileUrl) {
+  await supabase
+    .from("video_revisions")
+    .update({ file_url: firstFileUrl })
+    .eq("id", revision.id);
+}
     alert("Корекцията е изпратена.");
     window.location.href = "/account";
   } finally {
