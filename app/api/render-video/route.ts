@@ -230,7 +230,20 @@ ${dialogues.join("\n")}
 
   const ffmpegPathSafe = (value: string) =>
     value.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/ /g, "\\ ");
-const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,subtitles=${ffmpegPathSafe(subtitlePath)}:force_style='FontName=Arial,FontSize=42,PrimaryColour=&H00FFFFFF,OutlineColour=&H000000,Outline=4,Shadow=2',format=yuv420p[v]`;
+const fontPath = ffmpegPathSafe(
+  path.join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf")
+);
+
+const safeHeadline = (
+  headline ||
+  "Открийте сигурен източник на вода\nза вашия имот"
+)
+  .replace(/:/g, "\\:")
+  .replace(/\n/g, "\\n");
+
+const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,
+drawtext=fontfile='${fontPath}':text='${safeHeadline}':fontsize=52:fontcolor=white:borderw=3:bordercolor=black@0.6:line_spacing=10:x=(w-text_w)/2:y=(h-text_h)/2,
+format=yuv420p[v]`;
     return new Promise<void>((resolve, reject) => {
     ffmpeg()
       .input(inputPath)

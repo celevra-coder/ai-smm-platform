@@ -356,16 +356,8 @@ mobileBannerPhone,
           </p>
         </div>
       </div>
-    ) : generatedImageUrl ? (
-      <MobileBannerComposition
-  imageUrl={previewImageSource}
-  logoUrl={logoUrl}
-  headline={mobileBannerHeadline}
-  subtext={mobileBannerSubtext}
-  offerBadge={mobileBannerOfferBadge}
-  supportLines={mobileBannerSupportLines}
-  phone={mobileBannerPhone}
-/>
+       ) : generatedImageUrl ? (
+      renderBanner()
     ) : (
       <div className="flex aspect-square items-center justify-center p-6 text-center">
         <p className="text-sm font-bold text-neutral-500">

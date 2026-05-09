@@ -692,17 +692,23 @@ ${compactOffer}
 }
 const finalPrompt = videoImageUrl
   ? `
-Vertical 9:16 realistic image-to-video animation.
-Use the uploaded image as the exact visual source.
-Preserve the same scene, same subject, same composition, same environment, same colors, and same visual identity.
+Vertical 9:16 realistic commercial image-to-video ad.
+Use the uploaded image as the visual starting point and keep the same business category, subject, mood, colors, and premium advertising identity.
+Do NOT freeze the uploaded image as a static photo. Create a natural short commercial video with believable visual evolution.
 
-Animate only with subtle realistic camera motion and natural movement:
-- slow camera push-in
-- gentle side glide
-- slight depth movement
-- realistic light movement
-- natural environmental motion if already implied by the image
+Allow tasteful cinematic variation while staying consistent with the source:
+- dynamic camera movement, not just zoom
+- smooth push-in and pull-back
+- gentle side tracking
+- realistic parallax
+- slight angle change
+- natural light changes
+- subtle environmental movement
+- small believable subject movement if it fits the scene
+- for 10 second videos, create varied commercial moments from the same business context
 
+The video should feel like real social media ad footage, not a still image animation.
+Keep it coherent and realistic.
 Do not add new graphic elements.
 Do not add advertising elements.
 Do not add promotional layouts.
@@ -808,7 +814,7 @@ const wanInput = {
   prompt: finalPrompt,
 negative_prompt: [
   videoImageUrl
-? "new unrelated location, different business category, changing topic, unrelated industry, invented object, unrelated product, unrelated tools, fake UI, text, written text, readable text, fake text, gibberish text, words, letters, numbers, symbols, typography, title, title card, caption, subtitle, slogan, advertising text, promotional text, logo, watermark, label, signage, sign, poster, banner, billboard, packaging text, interface text, overlay text, split-screen, collage, distorted anatomy, extra limbs, deformed hands, floating objects, morphing objects, repetitive back and forth motion, pointless hand waving, frozen photo parallax only"
+? "new unrelated business category, changing topic, unrelated industry, fake UI, text, written text, readable text, fake text, gibberish text, words, letters, numbers, symbols, typography, title, title card, caption, subtitle, slogan, advertising text, promotional text, logo, watermark, label, signage, sign, poster, banner, billboard, packaging text, interface text, overlay text, split-screen, collage, distorted anatomy, extra limbs, deformed hands, floating objects, morphing objects, repetitive back and forth motion, pointless hand waving, frozen photo parallax only"
       : "text, words, letters, numbers, symbols, typography, title, title card, caption, subtitle, slogan, signage, sign, label, logo, watermark, poster, billboard, packaging text, interface text, control panel, split-screen, collage, storyboard, triptych, fantasy, futuristic devices, fake machines, excavator, bulldozer, construction vehicle, decorative water feature, canal, trench, hole in ground, pit, excavation",
   videoImageUrl ? "" : categoryNegativePrompt,
   videoImageUrl ? "" : aiVideoNegativeInstruction,
