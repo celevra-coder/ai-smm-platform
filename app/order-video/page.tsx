@@ -100,17 +100,19 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
   }
 
   if (selectedFiles.length > 0) {
-    for (const file of selectedFiles) {
-      const filePath = `video-order-files/${order.id}/${Date.now()}-${file.name}`;
+  for (const file of selectedFiles) {
+    console.log("Uploading file:", file.name);
+
+    const filePath = `video-order-files/${order.id}/${Date.now()}-${file.name}`;
 
       const { error: uploadError } = await supabase.storage
         .from("videos")
         .upload(filePath, file);
 
       if (uploadError) {
-        console.error("VIDEO ORDER FILE UPLOAD ERROR:", uploadError);
-        throw new Error("Грешка при качване на файл.");
-      }
+  console.error("VIDEO ORDER FILE UPLOAD ERROR:", uploadError);
+  continue; // НЕ спира останалите файлове
+}
 
       const { data: publicFile } = supabase.storage
         .from("videos")
