@@ -226,6 +226,7 @@ ${dialogues.join("\n")}
 `;
 
   fs.writeFileSync(subtitlePath, assContent, "utf8");
+  console.log("ASS SUBTITLE CONTENT:", assContent);
 
   const ffmpegPathSafe = (value: string) =>
     value.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/ /g, "\\ ");
