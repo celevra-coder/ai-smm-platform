@@ -99,15 +99,20 @@ setNotificationTarget(videoIds.length > 0 ? "/account" : "/contact");
 
   void checkUser();
 
-  const handleNotificationsUpdated = () => {
-    void checkUser();
-  };
+const interval = setInterval(() => {
+  void checkUser();
+}, 5000);
 
-  window.addEventListener("notifications-updated", handleNotificationsUpdated);
+const handleNotificationsUpdated = () => {
+  void checkUser();
+};
 
-  return () => {
-    window.removeEventListener("notifications-updated", handleNotificationsUpdated);
-  };
+window.addEventListener("notifications-updated", handleNotificationsUpdated);
+
+return () => {
+  clearInterval(interval);
+  window.removeEventListener("notifications-updated", handleNotificationsUpdated);
+};
 }, []);
 
 const handleNotificationsClick = async (
@@ -175,7 +180,7 @@ if (readyVideoOrderIds.length > 0) {
 }
   }
 
-    router.push(readyVideoOrderIds.length > 0 ? "/account" : notificationTarget);
+    router.push("/contact");
 };
 
 const handleLogout = async () => {
