@@ -222,21 +222,28 @@ setOrderFiles(filesMap);
     return;
   }
 
-  const { error: updateError } = await supabase
-    .from("video_orders")
-    .update({
-      final_video_url: publicUrl,
-      status: "delivered",
-      user_notified: false,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", orderId);
+  const { data: updatedOrder, error: updateError } = await supabase
+  .from("video_orders")
+  .update({
+    final_video_url: publicUrl,
+    status: "delivered",
+    user_notified: false,
+    updated_at: new Date().toISOString(),
+  })
+  .eq("id", orderId)
+  .select("id, status, final_video_url, user_notified")
+  .maybeSingle();
 
-  if (updateError) {
-    console.error("ADMIN READY VIDEO UPDATE ERROR:", updateError);
-    alert(`Грешка при запис към поръчката: ${updateError.message}`);
-    return;
-  }
+if (updateError) {
+  console.error("ADMIN READY VIDEO UPDATE ERROR:", updateError);
+  alert(`Грешка при запис към поръчката: ${updateError.message}`);
+  return;
+}
+
+if (!updatedOrder) {
+  alert("Видеото се качи, но поръчката НЕ се обнови. Най-вероятно липсва RLS policy за admin update.");
+  return;
+}
 
   alert("Готовото видео е изпратено към клиента.");
   await loadOrders();
