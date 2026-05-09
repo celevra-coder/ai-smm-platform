@@ -135,7 +135,9 @@ function renderVideoWithMusic({
 
     return lines.slice(0, 12);
   };
-  const dialogues: string[] = [];
+  const dialogues: string[] = [
+    `Dialogue: 9,0:00:00.00,0:00:05.00,Main,,0,0,0,,{\\an5\\fs70\\pos(360,300)}TEST 123`,
+  ];
      const visibleScenes = scenes;
   const totalSceneDuration = visibleScenes.reduce(
     (sum: number, scene: any) => sum + Math.max(scene?.duration_sec || 3, 1),
@@ -227,15 +229,34 @@ ${dialogues.join("\n")}
 
   fs.writeFileSync(subtitlePath, assContent, "utf8");
   console.log("ASS SUBTITLE CONTENT:", assContent);
-  const ffmpegPathSafe = (value: string) =>
-    value.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/'/g, "\\'");
+  const fontPath = path
+    .join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf")
+    .replace(/\\/g, "/")
+    .replace(/:/g, "\\:");
 
-  const subtitlePathSafe = ffmpegPathSafe(subtitlePath);
+  const overlayLines = [
+    cleanText(headline),
+    cleanText(brandName),
+    phone ? cleanText(`ТЕЛ: ${phone}`) : "",
+address ? cleanText(`АДРЕС: ${address}`) : "",
+  ].filter(Boolean);
 
-  const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,subtitles='${subtitlePathSafe}',format=yuv420p[v]`;
+  const drawTextSafe = (value: string) =>
+    value
+      .replace(/\\/g, "\\\\")
+      .replace(/:/g, "\\:")
+      .replace(/'/g, "\\'")
+      .replace(/\n/g, "\\n");
+
+  const overlayText = drawTextSafe(overlayLines.join("\\n"));
+
+  console.log("FONT PATH:", fontPath);
+  console.log("OVERLAY TEXT:", overlayLines.join(" | "));
+
+  const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,drawtext=fontfile=${fontPath}:text='${overlayText}':fontsize=48:fontcolor=white:borderw=4:bordercolor=black:line_spacing=14:x=(w-text_w)/2:y=(h-text_h)/2,format=yuv420p[v]`;
 
   console.log("FFMPEG FILTER:", filter);
-      return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
     ffmpeg()
       .input(inputPath)
       .input(musicPath)
@@ -253,6 +274,12 @@ ${dialogues.join("\n")}
         "-movflags +faststart",
         "-y",
       ])
+            .on("start", (commandLine) => {
+        console.log("FFMPEG COMMAND:", commandLine);
+      })
+      .on("stderr", (stderrLine) => {
+        console.log("FFMPEG STDERR:", stderrLine);
+      })
       .on("end", () => resolve())
       .on("error", (error, stdout, stderr) => {
         reject(
