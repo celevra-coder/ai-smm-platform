@@ -46,6 +46,7 @@ export default function AdminVideoOrdersPage() {
   const [orders, setOrders] = useState<VideoOrder[]>([]);
   const [orderFiles, setOrderFiles] = useState<Record<string, any[]>>({});
   const [revisions, setRevisions] = useState<Revision[]>([]);
+const [revisionFiles, setRevisionFiles] = useState<Record<string, any[]>>({});
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
   const [generationLogs, setGenerationLogs] = useState<GenerationLog[]>([]);
     const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
@@ -88,6 +89,13 @@ if (filesError) console.error("VIDEO FILES LOAD ERROR:", filesError);
       .order("created_at", { ascending: false });
 
     if (revisionsError) console.error(revisionsError);
+    const { data: revisionFilesData, error: revisionFilesError } = await supabase
+  .from("video_revision_files")
+  .select("*");
+
+if (revisionFilesError) {
+  console.error("VIDEO REVISION FILES LOAD ERROR:", revisionFilesError);
+}
 
     const { data: contactData, error: contactError } = await supabase
       .from("contact_requests")
@@ -128,7 +136,18 @@ if (contactError) console.error(contactError);
 });
 
 setOrderFiles(filesMap);
-    setRevisions(revisionsData || []);
+    const revisionFilesMap: Record<string, any[]> = {};
+
+(revisionFilesData || []).forEach((file) => {
+  if (!revisionFilesMap[file.revision_id]) {
+    revisionFilesMap[file.revision_id] = [];
+  }
+
+  revisionFilesMap[file.revision_id].push(file);
+});
+
+setRevisionFiles(revisionFilesMap);
+setRevisions(revisionsData || []);
     setContactRequests(contactData || []);
     if (!logsError && logsData) {
   setGenerationLogs(logsData);
@@ -503,14 +522,30 @@ if (!updatedOrder) {
                       <p className="mt-2 text-sm text-neutral-700">{rev.message}</p>
 
                       {rev.file_url ? (
-                        <a
-                          href={rev.file_url}
-                          target="_blank"
-                          className="mt-2 block text-sm font-bold underline"
-                        >
-                          Виж файл
-                        </a>
-                      ) : null}
+  <a
+    href={rev.file_url}
+    target="_blank"
+    className="mt-2 block text-sm font-bold underline"
+  >
+    Виж файл
+  </a>
+) : null}
+
+{revisionFiles[rev.id]?.length ? (
+  <div className="mt-3 space-y-2">
+    {revisionFiles[rev.id].map((file) => (
+      <a
+        key={file.id}
+        href={file.file_url}
+        target="_blank"
+        download={file.file_name || true}
+        className="inline-flex rounded-full bg-black px-4 py-2 text-xs font-bold text-white"
+      >
+        Свали файл: {file.file_name || "Файл"}
+      </a>
+    ))}
+  </div>
+) : null}
                     </div>
                   ))}
               </div>

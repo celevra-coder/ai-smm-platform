@@ -436,9 +436,17 @@ onSelectBrand={(profile) => {
       </section>
 
       {showVideoReady ? (
-  <div className="mb-6 rounded-[20px] border border-green-200 bg-green-50 px-5 py-4 text-sm font-bold text-green-800">
-    🎉 Видеото ти е готово!
-  </div>
+  <a
+    href={
+      videoOrders.find((order) => order.status === "delivered" && order.final_video_url)
+        ?.final_video_url || "#"
+    }
+    target="_blank"
+    download
+    className="mb-6 block rounded-[20px] border border-green-200 bg-green-50 px-5 py-4 text-sm font-bold text-green-800"
+  >
+    🎉 Видеото ти е готово! Натисни тук, за да го свалиш.
+  </a>
 ) : null}
 
       <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
