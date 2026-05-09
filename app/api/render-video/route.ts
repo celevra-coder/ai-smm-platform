@@ -277,7 +277,9 @@ export async function POST(req: Request) {
     const website = (body?.website as string) || "";
     const phone = (body?.phone as string) || "";
     const address = (body?.address as string) || "";
-      let scenes = Array.isArray(body?.scenes) ? body.scenes : [];
+          const totalDurationSec = Number(body?.totalDurationSec) || 10;
+
+    let scenes = Array.isArray(body?.scenes) ? body.scenes : [];
 
     if (!scenes.length) {
       scenes = [
@@ -288,7 +290,6 @@ export async function POST(req: Request) {
         },
       ];
     }
-    const totalDurationSec = Number(body?.totalDurationSec) || 10;
     console.log("VIDEO DURATION:", totalDurationSec);
     const musicStyle = (body?.musicStyle as string) || "";
 const selectedMusicPath = getMusicPath(musicStyle, totalDurationSec);
