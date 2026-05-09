@@ -231,8 +231,7 @@ ${dialogues.join("\n")}
   console.log("ASS SUBTITLE CONTENT:", assContent);
   
 
-  console.log("FONT PATH:", fontPath);
-  console.log("OVERLAY TEXT:", overlayLines.join(" | "));
+  
 
   const ffmpegPathSafe = (value: string) =>
   value.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/'/g, "\\'");
