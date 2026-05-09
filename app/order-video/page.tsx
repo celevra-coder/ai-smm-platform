@@ -49,7 +49,7 @@ export default function OrderVideoPage() {
   const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 const [isOrdering, setIsOrdering] = useState(false);
-const [showMobilePaymentInfo, setShowMobilePaymentInfo] = useState(false);
+const [showPaymentInfo, setShowPaymentInfo] = useState(false);
 const [pendingPaymentUrl, setPendingPaymentUrl] = useState("");
 const orderFormRef = useRef<HTMLElement | null>(null);
 
@@ -160,17 +160,9 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
     throw new Error(data?.error || "Неуспешно създаване на плащане.");
   }
 
-    const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(
-    navigator.userAgent
-  );
-
-  if (isMobile) {
-    setPendingPaymentUrl(data.url);
-    setShowMobilePaymentInfo(true);
-    return;
-  }
-
-  window.location.href = data.url;
+      setPendingPaymentUrl(data.url);
+  setShowPaymentInfo(true);
+  return;
   } catch (error) {
     console.error("VIDEO ORDER CHECKOUT ERROR:", error);
     alert(error instanceof Error ? error.message : "Грешка при отваряне на плащането.");
@@ -380,7 +372,7 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
           </div>
         </section>
       </div>
-      {showMobilePaymentInfo ? (
+      {showPaymentInfo ? (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
     <div className="w-full max-w-sm rounded-[28px] bg-white p-7 text-center shadow-2xl">
       <div className="mb-3 text-4xl">💳</div>
@@ -390,9 +382,8 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
       </h2>
 
       <p className="mt-3 text-sm leading-6 text-neutral-700">
-        След като се отвори PayPal, натисни{" "}
-        <span className="font-black">„Създаване на акаунт“</span>.
-        Там ще можеш да платиш с карта без регистрация.
+        След като се отвори PayPal, можеш да платиш с карта. Ако не виждаш директен бутон за плащане с карта, избери{" "}
+<span className="font-black">„Създаване на акаунт“</span> — това ще те отведе към плащане с карта без регистрация.
       </p>
 
       <button
@@ -409,7 +400,7 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
       <button
         type="button"
         onClick={() => {
-          setShowMobilePaymentInfo(false);
+          setShowPaymentInfo(false);
           setPendingPaymentUrl("");
         }}
         className="mt-3 text-xs font-bold text-neutral-500"
