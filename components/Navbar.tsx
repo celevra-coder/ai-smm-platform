@@ -12,6 +12,8 @@ export default function Navbar() {
   const [credits, setCredits] = useState<number | null>(null);
 const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
 const [unreadMessageIds, setUnreadMessageIds] = useState<string[]>([]);
+const [readyVideoOrderIds, setReadyVideoOrderIds] = useState<string[]>([]);
+const [notificationTarget, setNotificationTarget] = useState<"/contact" | "/account">("/contact");
 const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -29,7 +31,10 @@ const user = session?.user || null;
     if (!user) {
       setCredits(null);
       setUnreadMessagesCount(0);
-      return;
+setUnreadMessageIds([]);
+setReadyVideoOrderIds([]);
+setNotificationTarget("/contact");
+return;
     }
 
     const { data, error } = await supabase
@@ -70,8 +75,26 @@ const user = session?.user || null;
       unreadMessages = data;
     }
 
-    setUnreadMessagesCount(unreadMessages?.length || 0);
-setUnreadMessageIds((unreadMessages || []).map((msg: any) => msg.id));
+    let readyVideos: any[] = [];
+
+if (user.id !== "ef8f7aef-055b-4977-ab77-0430f42b500e") {
+  const { data } = await supabase
+    .from("video_orders")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("status", "delivered")
+    .eq("user_notified", false);
+
+  readyVideos = data || [];
+}
+
+const messageIds = (unreadMessages || []).map((msg: any) => msg.id);
+const videoIds = readyVideos.map((order: any) => order.id);
+
+setUnreadMessageIds(messageIds);
+setReadyVideoOrderIds(videoIds);
+setUnreadMessagesCount(messageIds.length + videoIds.length);
+setNotificationTarget(videoIds.length > 0 ? "/account" : "/contact");
   };
 
   void checkUser();
@@ -93,7 +116,8 @@ const handleNotificationsClick = async (
   e.preventDefault();
 
   setUnreadMessagesCount(0);
-  setUnreadMessageIds([]);
+setUnreadMessageIds([]);
+setReadyVideoOrderIds([]);
 
   const supabase = createClient();
 
@@ -139,9 +163,20 @@ if (markUserSeenError) {
   return;
 }
 }
+if (readyVideoOrderIds.length > 0) {
+  const { error: markVideosSeenError } = await supabase
+    .from("video_orders")
+    .update({ user_notified: true })
+    .in("id", readyVideoOrderIds);
+
+  if (markVideosSeenError) {
+    console.error("MARK VIDEO NOTIFICATIONS SEEN ERROR:", markVideosSeenError);
+    return;
+  }
+}
   }
 
-    router.push("/contact");
+    router.push(notificationTarget);
 };
 
 const handleLogout = async () => {
