@@ -9,7 +9,7 @@ function VideoRevisionPageContent() {
   const orderId = params.get("order_id");
 
   const [message, setMessage] = useState("");
-  const [files, setFiles] = useState<File[]>([]);
+  
 const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -40,16 +40,16 @@ const [submitting, setSubmitting] = useState(false);
     }
 
     const { data: revision, error: revisionError } = await supabase
-      .from("video_revisions")
-      .insert({
-        order_id: orderId,
-        user_id: user.id,
-        message: message.trim(),
-        file_url: null,
-        status: "pending",
-      })
-      .select("id")
-      .single();
+  .from("video_revisions")
+  .insert({
+    order_id: orderId,
+    user_id: user.id,
+    message: message.trim(),
+    file_url: null,
+    status: "pending",
+  })
+  .select("id")
+  .single();
 
     if (revisionError || !revision) {
       console.error("VIDEO REVISION INSERT ERROR:", revisionError);
@@ -57,56 +57,7 @@ const [submitting, setSubmitting] = useState(false);
       return;
     }
 
-    let firstFileUrl: string | null = null;
-
-for (const file of files) {
-      const fileExtension = file.name.split(".").pop() || "file";
-      const filePath = `revisions/${orderId}/${revision.id}-${Date.now()}-${file.name}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("videos")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: true,
-          contentType: file.type || undefined,
-        });
-
-      if (uploadError) {
-        console.error("REVISION FILE UPLOAD ERROR:", uploadError);
-        alert(`Корекцията е записана, но файл не се качи: ${uploadError.message}`);
-        return;
-      }
-
-      const { data } = supabase.storage.from("videos").getPublicUrl(filePath);
-      const fileUrl = data.publicUrl;
-
-if (!firstFileUrl) {
-  firstFileUrl = fileUrl;
-}
-
-      const { error: fileInsertError } = await supabase
-        .from("video_revision_files")
-        .insert({
-          revision_id: revision.id,
-          order_id: orderId,
-          user_id: user.id,
-          file_url: fileUrl,
-          file_name: file.name,
-          file_type: file.type || fileExtension,
-        });
-
-      if (fileInsertError) {
-        console.error("REVISION FILE INSERT ERROR:", fileInsertError);
-        alert(`Файлът се качи, но не се записа към корекцията: ${fileInsertError.message}`);
-        return;
-      }
-    }
-if (firstFileUrl) {
-  await supabase
-    .from("video_revisions")
-    .update({ file_url: firstFileUrl })
-    .eq("id", revision.id);
-}
+    
     alert("Корекцията е изпратена.");
     window.location.href = "/account";
   } finally {
@@ -129,36 +80,8 @@ if (firstFileUrl) {
           rows={6}
         />
 
-        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-black/15 bg-[#fcfaf7] px-5 py-8 text-center transition hover:bg-[#f3eee7]">
-  <span className="text-3xl">📎</span>
-  <span className="mt-2 text-sm font-black text-neutral-950">
-    Качи файлове към корекцията
-  </span>
-  <span className="mt-1 text-xs text-neutral-500">
-    Може да избереш няколко файла
-  </span>
+        
 
-  <input
-    type="file"
-    multiple
-    className="hidden"
-    onChange={(e) => {
-      setFiles(Array.from(e.target.files || []));
-    }}
-  />
-</label>
-
-        {files.length ? (
-          <div className="mt-3 rounded-2xl bg-[#f8f5f1] p-3 text-sm">
-            <p className="font-bold">Качени файлове:</p>
-
-            <ul className="mt-2 list-inside list-disc">
-              {files.map((file) => (
-                <li key={`${file.name}-${file.size}`}>{file.name}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
 
         <button
           onClick={handleSubmit}

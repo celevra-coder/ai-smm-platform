@@ -68,6 +68,7 @@ const [revisionFiles, setRevisionFiles] = useState<Record<string, any[]>>({});
   const [newRevisionsCount, setNewRevisionsCount] = useState(0);
   const [loading, setLoading] = useState(true);
 const [deliveryFiles, setDeliveryFiles] = useState<Record<string, File | null>>({});
+const [revisionDeliveryFiles, setRevisionDeliveryFiles] = useState<Record<string, File | null>>({});
 
   const loadOrders = async () => {
     const supabase = createClient();
@@ -264,7 +265,32 @@ if (!updatedOrder) {
   return;
 }
 
-  alert("Готовото видео е изпратено към клиента.");
+    alert("Готовото видео е изпратено към клиента.");
+  await loadOrders();
+};
+
+const handleRevisionUpload = async (
+  revisionId: string,
+  orderId: string,
+  file: File
+) => {
+  await handleUpload(orderId, file);
+
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("video_revisions")
+    .update({
+      status: "delivered",
+    })
+    .eq("id", revisionId);
+
+  if (error) {
+    console.error("REVISION STATUS UPDATE ERROR:", error);
+    alert("Видеото е изпратено, но статусът на корекцията не се обнови.");
+    return;
+  }
+
   await loadOrders();
 };
 
@@ -531,61 +557,7 @@ if (!updatedOrder) {
   </a>
 ) : null}
 
-{revisionFiles[rev.id]?.length ? (
-  <div className="mt-3 space-y-2">
-    {revisionFiles[rev.id].map((file) => (
-      <a
-        key={file.id}
-        href={file.file_url}
-        target="_blank"
-        download={file.file_name || true}
-        className="inline-flex rounded-full bg-black px-4 py-2 text-xs font-bold text-white"
-      >
-        Свали файл: {file.file_name || "Файл"}
-      </a>
-    ))}
-  </div>
-) : (
-  <p className="mt-3 text-xs font-bold text-red-600">
-    Няма показани файлове към тази корекция.
-  </p>
-)}
 
-{revisionFiles[rev.id]?.length ? (
-  <div className="mt-3 space-y-2">
-    {revisionFiles[rev.id].map((file) => (
-      <a
-        key={file.id}
-        href={file.file_url}
-        target="_blank"
-        download={file.file_name || true}
-        className="inline-flex rounded-full bg-black px-4 py-2 text-xs font-bold text-white"
-      >
-        Свали файл: {file.file_name || "Файл"}
-      </a>
-    ))}
-  </div>
-) : (
-  <p className="mt-3 text-xs font-bold text-red-600">
-    Няма записани файлове към тази корекция.
-  </p>
-)}
-
-{revisionFiles[rev.id]?.length ? (
-  <div className="mt-3 space-y-2">
-    {revisionFiles[rev.id].map((file) => (
-      <a
-        key={file.id}
-        href={file.file_url}
-        target="_blank"
-        download={file.file_name || true}
-        className="inline-flex rounded-full bg-black px-4 py-2 text-xs font-bold text-white"
-      >
-        Свали файл: {file.file_name || "Файл"}
-      </a>
-    ))}
-  </div>
-) : null}
                     </div>
                   ))}
               </div>
@@ -603,14 +575,51 @@ if (!updatedOrder) {
                 <p className="mt-2 text-sm">{rev.message}</p>
 
                 {rev.file_url ? (
-                  <a
-                    href={rev.file_url}
-                    target="_blank"
-                    className="mt-2 block font-bold underline"
-                  >
-                    Виж файл
-                  </a>
-                ) : null}
+  <a
+    href={rev.file_url}
+    target="_blank"
+    className="mt-2 block font-bold underline"
+  >
+    Виж файл
+  </a>
+) : null}
+
+<div className="mt-4 rounded-2xl border border-black/10 bg-[#faf8f6] p-4">
+  <p className="text-xs font-bold uppercase text-neutral-500">
+    Изпрати коригирано видео към клиента
+  </p>
+
+  <input
+    type="file"
+    accept="video/*"
+    onChange={(e) => {
+      const file = e.target.files?.[0] || null;
+
+      setRevisionDeliveryFiles((current) => ({
+        ...current,
+        [rev.id]: file,
+      }));
+    }}
+    className="mt-3 block text-sm"
+  />
+
+  <button
+    type="button"
+    onClick={() => {
+      const file = revisionDeliveryFiles[rev.id];
+
+      if (!file) {
+        alert("Първо избери коригираното видео.");
+        return;
+      }
+
+      void handleRevisionUpload(rev.id, rev.order_id, file);
+    }}
+    className="mt-3 rounded-full bg-black px-5 py-2 text-sm font-bold text-white"
+  >
+    Изпрати коригираното видео
+  </button>
+</div>
               </div>
             ))
           ) : (
