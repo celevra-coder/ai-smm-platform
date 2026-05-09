@@ -449,25 +449,7 @@ onSelectBrand={(profile) => {
         </div>
       </section>
 
-      {showVideoReady ? (
-  <button
-    type="button"
-    onClick={() => {
-      const readyOrder = videoOrders.find(
-        (order) => order.status === "delivered" && order.final_video_url
-      );
-
-      if (!readyOrder) return;
-
-      document
-        .getElementById(`video-order-${readyOrder.id}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }}
-    className="mb-6 block w-full rounded-[20px] border border-green-200 bg-green-50 px-5 py-4 text-left text-sm font-bold text-green-800"
-  >
-    🎉 Видеото ти е готово! Натисни тук, за да го видиш.
-  </button>
-) : null}
+      
 
       <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
         <div className="rounded-[32px] border border-black/10 bg-white p-6 shadow-[0_18px_60px_rgba(0,0,0,0.06)]">
