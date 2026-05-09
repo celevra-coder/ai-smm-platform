@@ -230,7 +230,7 @@ ${dialogues.join("\n")}
 
   const ffmpegPathSafe = (value: string) =>
     value.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/ /g, "\\ ");
-const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,subtitles=filename='${ffmpegPathSafe(subtitlePath)}',format=yuv420p[v]`;
+const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,subtitles=filename='${ffmpegPathSafe(subtitlePath)}',drawtext=text='TEST TEXT':x=(w-text_w)/2:y=120:fontsize=48:fontcolor=white:borderw=4:bordercolor=black,format=yuv420p[v]`;
     return new Promise<void>((resolve, reject) => {
     ffmpeg()
       .input(inputPath)
