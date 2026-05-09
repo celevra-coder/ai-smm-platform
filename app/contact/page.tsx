@@ -265,8 +265,32 @@ const [readyVideos, setReadyVideos] = useState<any[]>([]);
     multiple
     className="hidden"
     onChange={(e) => {
-      setFiles(Array.from(e.target.files || []));
-    }}
+  const selectedFiles = Array.from(e.target.files || []);
+
+  setFiles((current) => {
+    const nextFiles = [...current, ...selectedFiles];
+
+    const uniqueFiles = nextFiles.filter(
+      (file, index, array) =>
+        index ===
+        array.findIndex(
+          (item) =>
+            item.name === file.name &&
+            item.size === file.size &&
+            item.lastModified === file.lastModified
+        )
+    );
+
+    if (uniqueFiles.length > 5) {
+      alert("Можеш да прикачиш максимум 5 файла.");
+      return uniqueFiles.slice(0, 5);
+    }
+
+    return uniqueFiles;
+  });
+
+  e.target.value = "";
+}}
   />
 </label>
 
