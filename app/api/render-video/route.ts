@@ -271,12 +271,23 @@ export async function POST(req: Request) {
 
     const videoUrl = body?.videoUrl as string;
     const headline = (body?.headline as string) || "Видео реклама";
+    const subtext = (body?.subtext as string) || "";
     const brandName = (body?.brandName as string) || "";
-    const cta = (body?.cta as string) || "";
+        const cta = (body?.cta as string) || "";
     const website = (body?.website as string) || "";
     const phone = (body?.phone as string) || "";
     const address = (body?.address as string) || "";
-    const scenes = Array.isArray(body?.scenes) ? body.scenes : [];
+      let scenes = Array.isArray(body?.scenes) ? body.scenes : [];
+
+    if (!scenes.length) {
+      scenes = [
+        {
+          title: "Main",
+          overlay_text: headline || subtext || brandName || "Видео реклама",
+          duration_sec: Math.max(totalDurationSec - 2.4, 1),
+        },
+      ];
+    }
     const totalDurationSec = Number(body?.totalDurationSec) || 10;
     console.log("VIDEO DURATION:", totalDurationSec);
     const musicStyle = (body?.musicStyle as string) || "";
