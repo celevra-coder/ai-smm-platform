@@ -136,7 +136,9 @@ function renderVideoWithMusic({
     return lines.slice(0, 12);
   };
 
-  const dialogues: string[] = [];
+   const dialogues: string[] = [
+    `Dialogue: 0,0:00:00.00,0:00:05.00,Main,,0,0,0,,{\\an5\\fs52\\pos(360,200)}ТЕСТ ТЕКСТ`
+  ];
   const visibleScenes = scenes;
   const totalSceneDuration = visibleScenes.reduce(
     (sum: number, scene: any) => sum + Math.max(scene?.duration_sec || 3, 1),
