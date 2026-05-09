@@ -135,15 +135,17 @@ const [readyVideos, setReadyVideos] = useState<any[]>([]);
     return;
   }
 
+    const uploadedFiles: any[] = [];
+
   for (const file of files) {
     const fileExtension = file.name.split(".").pop() || "file";
-    const filePath = `contact/${contactRequest.id}-${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
+    const filePath = `contact/${contactRequest.id}/${crypto.randomUUID()}.${fileExtension}`;
 
     const { error: uploadError } = await supabase.storage
       .from("videos")
       .upload(filePath, file, {
         cacheControl: "3600",
-        upsert: true,
+        upsert: false,
         contentType: file.type || undefined,
       });
 
@@ -160,19 +162,23 @@ const [readyVideos, setReadyVideos] = useState<any[]>([]);
       firstFileUrl = fileUrl;
     }
 
+    uploadedFiles.push({
+      contact_request_id: contactRequest.id,
+      user_id: user.id,
+      file_url: fileUrl,
+      file_name: file.name,
+      file_type: file.type || fileExtension,
+    });
+  }
+
+  if (uploadedFiles.length > 0) {
     const { error: fileInsertError } = await supabase
       .from("contact_request_files")
-      .insert({
-        contact_request_id: contactRequest.id,
-        user_id: user.id,
-        file_url: fileUrl,
-        file_name: file.name,
-        file_type: file.type || fileExtension,
-      });
+      .insert(uploadedFiles);
 
     if (fileInsertError) {
       console.error("CONTACT FILE INSERT ERROR:", fileInsertError);
-      alert(`Файлът се качи, но не се записа към съобщението: ${fileInsertError.message}`);
+      alert(`Файловете се качиха, но не се записаха към съобщението: ${fileInsertError.message}`);
       return;
     }
   }
