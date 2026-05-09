@@ -88,7 +88,7 @@ serve(async (req) => {
       return Response.redirect(`${siteUrl}/order-video?payment=failed`, 302);
     }
 
-    return Response.redirect(`${siteUrl}/account?video_payment=success`, 302);
+    return Response.redirect(`${siteUrl}/?payment=video_success`, 302);
   } catch (error) {
     console.error("CAPTURE VIDEO PAYPAL CHECKOUT ERROR:", error);
 

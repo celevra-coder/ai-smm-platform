@@ -96,9 +96,8 @@ serve(async (req) => {
       console.error("PAYPAL ADD CREDITS ERROR:", error);
       return Response.redirect(`${siteUrl}/pricing?payment=failed`, 302);
     }
-
-    return Response.redirect(`${siteUrl}/dashboard?payment=success`, 302);
-  } catch (error) {
+return Response.redirect(`${siteUrl}/?payment=package_success`, 302);
+      } catch (error) {
     console.error("CAPTURE PAYPAL CHECKOUT ERROR:", error);
 
     const siteUrl = Deno.env.get("SITE_URL") || "https://www.aismmstudio.com";

@@ -9,16 +9,33 @@ import Navbar from "@/components/Navbar";
 import HomePageMobile from "./HomePageMobile";
 
 export default function HomePage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [paymentSuccessMessage, setPaymentSuccessMessage] = useState("");
 
 
   useEffect(() => {
-  const code = new URLSearchParams(window.location.search).get("code");
+    const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
+  const payment = params.get("payment");
 
   if (code) {
     window.location.href = `/reset-password?code=${code}`;
     return;
+  }
+
+  if (payment === "video_success") {
+    setPaymentSuccessMessage(
+      "Благодарим за поръчката! Ще получиш готовото видео до 3 работни дни тук в профила си."
+    );
+    window.history.replaceState({}, "", "/");
+  }
+
+  if (payment === "package_success") {
+    setPaymentSuccessMessage(
+      "Плащането е успешно! Кредитите вече са добавени към профила ти и можеш да започнеш да създаваш съдържание."
+    );
+    window.history.replaceState({}, "", "/");
   }
 
   const checkUser = async () => {
@@ -404,6 +421,29 @@ export default function HomePage() {
     </div>
   </div>
 )}
+{paymentSuccessMessage ? (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-[28px] bg-white p-7 text-center shadow-2xl">
+      <div className="mb-3 text-4xl">🎉</div>
+
+      <h2 className="text-xl font-black text-neutral-950">
+        Успешно плащане
+      </h2>
+
+      <p className="mt-3 text-sm leading-6 text-neutral-700">
+        {paymentSuccessMessage}
+      </p>
+
+      <button
+        type="button"
+        onClick={() => setPaymentSuccessMessage("")}
+        className="mt-6 w-full rounded-full bg-black px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
+      >
+        Разбрах
+      </button>
+    </div>
+  </div>
+) : null}
     </main>
   );
 }
