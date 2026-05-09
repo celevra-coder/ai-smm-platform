@@ -3640,11 +3640,21 @@ mobileBannerPhone={previewPhone}
       </div>
     ) : null}
 
-    <main className="hidden min-h-screen bg-[#f5f1ec] px-4 py-8 text-black md:block md:px-6 md:py-10">
-      <div className="mx-auto max-w-7xl">
-        {mode === "quick-ad" ? renderQuickPreview() : renderBrandMode()}
-      </div>
-    </main>
+        {!isQuickMode ? (
+      <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-black md:px-6 md:py-10">
+        <div className="mx-auto max-w-7xl">
+          {renderBrandMode()}
+        </div>
+      </main>
+    ) : null}
+
+    {isQuickMode ? (
+      <main className="hidden min-h-screen bg-[#f5f1ec] px-4 py-8 text-black md:block md:px-6 md:py-10">
+        <div className="mx-auto max-w-7xl">
+          {renderQuickPreview()}
+        </div>
+      </main>
+    ) : null}
 
 {generatedImageUrl ? (
   <div className="fixed left-[-9999px] top-0 h-[1024px] w-[1024px] overflow-hidden">
