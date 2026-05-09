@@ -49,6 +49,8 @@ export default function OrderVideoPage() {
   const [description, setDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 const [isOrdering, setIsOrdering] = useState(false);
+const [showMobilePaymentInfo, setShowMobilePaymentInfo] = useState(false);
+const [pendingPaymentUrl, setPendingPaymentUrl] = useState("");
 const orderFormRef = useRef<HTMLElement | null>(null);
 
   const selected = services.find((service) => service.id === selectedService);
@@ -156,6 +158,16 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
 
     if (!res.ok || !data?.url) {
     throw new Error(data?.error || "Неуспешно създаване на плащане.");
+  }
+
+    const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(
+    navigator.userAgent
+  );
+
+  if (isMobile) {
+    setPendingPaymentUrl(data.url);
+    setShowMobilePaymentInfo(true);
+    return;
   }
 
   window.location.href = data.url;
@@ -368,6 +380,45 @@ const priceNumber = parseFloat(selected.price.replace("€", ""));
           </div>
         </section>
       </div>
+      {showMobilePaymentInfo ? (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-sm rounded-[28px] bg-white p-7 text-center shadow-2xl">
+      <div className="mb-3 text-4xl">💳</div>
+
+      <h2 className="text-xl font-black text-neutral-950">
+        Плащане с карта
+      </h2>
+
+      <p className="mt-3 text-sm leading-6 text-neutral-700">
+        След като се отвори PayPal, натисни{" "}
+        <span className="font-black">„Създаване на акаунт“</span>.
+        Там ще можеш да платиш с карта без регистрация.
+      </p>
+
+      <button
+        type="button"
+        onClick={() => {
+          if (!pendingPaymentUrl) return;
+          window.location.href = pendingPaymentUrl;
+        }}
+        className="mt-6 w-full rounded-full bg-black px-5 py-3 text-sm font-bold text-white"
+      >
+        Продължи към плащане
+      </button>
+
+      <button
+        type="button"
+        onClick={() => {
+          setShowMobilePaymentInfo(false);
+          setPendingPaymentUrl("");
+        }}
+        className="mt-3 text-xs font-bold text-neutral-500"
+      >
+        Отказ
+      </button>
+    </div>
+  </div>
+) : null}
     </main>
   );
 }
