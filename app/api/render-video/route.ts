@@ -227,24 +227,15 @@ ${dialogues.join("\n")}
 
   fs.writeFileSync(subtitlePath, assContent, "utf8");
   console.log("ASS SUBTITLE CONTENT:", assContent);
-
   const ffmpegPathSafe = (value: string) =>
-    value.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/ /g, "\\ ");
-const fontPath = ffmpegPathSafe(
-  path.join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf")
-);
+    value.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/'/g, "\\'");
 
-const safeHeadline = (
-  headline ||
-  "Открийте сигурен източник на вода\nза вашия имот"
-)
-  .replace(/:/g, "\\:")
-  .replace(/\n/g, "\\n");
+  const subtitlePathSafe = ffmpegPathSafe(subtitlePath);
 
-const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,
-drawtext=fontfile='${fontPath}':text='${safeHeadline}':fontsize=52:fontcolor=white:borderw=3:bordercolor=black@0.6:line_spacing=10:x=(w-text_w)/2:y=(h-text_h)/2,
-format=yuv420p[v]`;
-    return new Promise<void>((resolve, reject) => {
+  const filter = `[0:v]scale=720:1280:force_original_aspect_ratio=increase,crop=720:1280,setsar=1,subtitles='${subtitlePathSafe}',format=yuv420p[v]`;
+
+  console.log("FFMPEG FILTER:", filter);
+      return new Promise<void>((resolve, reject) => {
     ffmpeg()
       .input(inputPath)
       .input(musicPath)
