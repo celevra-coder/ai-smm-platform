@@ -843,11 +843,39 @@ const handleRevisionUpload = async (
     multiple
     className="hidden"
     onChange={(e) => {
-      setAdminReplyFiles((current) => ({
+  const selectedFiles = Array.from(e.target.files || []);
+
+  setAdminReplyFiles((current) => {
+    const currentFiles = current[msg.id] || [];
+    const nextFiles = [...currentFiles, ...selectedFiles];
+
+    const uniqueFiles = nextFiles.filter(
+      (file, index, array) =>
+        index ===
+        array.findIndex(
+          (item) =>
+            item.name === file.name &&
+            item.size === file.size &&
+            item.lastModified === file.lastModified
+        )
+    );
+
+    if (uniqueFiles.length > 5) {
+      alert("Можеш да прикачиш максимум 5 файла.");
+      return {
         ...current,
-        [msg.id]: Array.from(e.target.files || []),
-      }));
-    }}
+        [msg.id]: uniqueFiles.slice(0, 5),
+      };
+    }
+
+    return {
+      ...current,
+      [msg.id]: uniqueFiles,
+    };
+  });
+
+  e.target.value = "";
+}}
   />
 </label>
 
