@@ -227,11 +227,10 @@ setContactRequestFiles(contactFilesMap);
       .is("admin_reply", null);
 
     if (error) {
-      console.error("ADMIN MARK MESSAGES READ ERROR:", error);
-      return;
-    }
+  console.error("ADMIN MARK MESSAGES READ ERROR:", error);
+}
 
-    await loadOrders();
+await loadOrders();
     window.dispatchEvent(new Event("notifications-updated"));
   };
   const handleUpload = async (orderId: string, file: File) => {
