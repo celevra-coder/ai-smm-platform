@@ -118,14 +118,24 @@ const [submitting, setSubmitting] = useState(false);
           rows={6}
         />
 
-        <input
-          type="file"
-          multiple
-          className="mt-4"
-          onChange={(e) => {
-            setFiles(Array.from(e.target.files || []));
-          }}
-        />
+        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-black/15 bg-[#fcfaf7] px-5 py-8 text-center transition hover:bg-[#f3eee7]">
+  <span className="text-3xl">📎</span>
+  <span className="mt-2 text-sm font-black text-neutral-950">
+    Качи файлове към корекцията
+  </span>
+  <span className="mt-1 text-xs text-neutral-500">
+    Може да избереш няколко файла
+  </span>
+
+  <input
+    type="file"
+    multiple
+    className="hidden"
+    onChange={(e) => {
+      setFiles(Array.from(e.target.files || []));
+    }}
+  />
+</label>
 
         {files.length ? (
           <div className="mt-3 rounded-2xl bg-[#f8f5f1] p-3 text-sm">
