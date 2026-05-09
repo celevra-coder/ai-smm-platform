@@ -213,26 +213,38 @@ setContactRequestFiles(contactFilesMap);
     return () => clearInterval(interval);
   }, []);
   const handleOpenMessagesTab = async () => {
-    setActiveTab("messages");
+  setActiveTab("messages");
 
-    const supabase = createClient();
+  const supabase = createClient();
 
-    const { error } = await supabase
-      .from("contact_requests")
-      .update({
-        status: "read",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("status", "pending")
-      .is("admin_reply", null);
+  const { data: contactData, error: contactError } = await supabase
+    .from("contact_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-    if (error) {
-  console.error("ADMIN MARK MESSAGES READ ERROR:", error);
-}
+  if (contactError) {
+    console.error("ADMIN CONTACT LOAD ERROR:", contactError);
+    alert(`Грешка при зареждане на съобщения: ${contactError.message}`);
+    return;
+  }
 
-await loadOrders();
-    window.dispatchEvent(new Event("notifications-updated"));
-  };
+  setContactRequests(contactData || []);
+
+  const { error: markReadError } = await supabase
+    .from("contact_requests")
+    .update({
+      status: "read",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("status", "pending")
+    .is("admin_reply", null);
+
+  if (markReadError) {
+    console.error("ADMIN MARK MESSAGES READ ERROR:", markReadError);
+  }
+
+  window.dispatchEvent(new Event("notifications-updated"));
+};
   const handleUpload = async (orderId: string, file: File) => {
   const supabase = createClient();
 
