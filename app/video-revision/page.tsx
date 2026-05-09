@@ -1,7 +1,8 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import Link from "next/link";
+import { Suspense, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase-browser";
 
 function VideoRevisionPageContent() {
@@ -9,11 +10,53 @@ function VideoRevisionPageContent() {
   const orderId = params.get("order_id");
 
   const [message, setMessage] = useState("");
-  
+const [hasExistingRevision, setHasExistingRevision] = useState(false);
+const [checkingRevision, setCheckingRevision] = useState(true);
 const [submitting, setSubmitting] = useState(false);
+useEffect(() => {
+  const checkExistingRevision = async () => {
+    if (!orderId) {
+      setCheckingRevision(false);
+      return;
+    }
+
+    const supabase = createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setCheckingRevision(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("video_revisions")
+      .select("id")
+      .eq("order_id", orderId)
+      .eq("user_id", user.id)
+      .limit(1);
+
+    if (error) {
+      console.error("CHECK EXISTING REVISION ERROR:", error);
+      setCheckingRevision(false);
+      return;
+    }
+
+    setHasExistingRevision((data || []).length > 0);
+    setCheckingRevision(false);
+  };
+
+  void checkExistingRevision();
+}, [orderId]);
 
   const handleSubmit = async () => {
   if (submitting) return;
+  if (hasExistingRevision) {
+  alert("Вече сме изпълнили поисканата безплатна корекция. За допълнителни корекции се свържи с екипа ни.");
+  return;
+}
 
   setSubmitting(true);
 
@@ -71,7 +114,28 @@ const [submitting, setSubmitting] = useState(false);
     <main className="min-h-screen bg-[#f5f1ec] p-6">
       <div className="mx-auto max-w-2xl rounded-[28px] bg-white p-6">
         <h1 className="text-2xl font-black">Искам корекция</h1>
+        {checkingRevision ? (
+  <p className="mt-4 text-sm text-neutral-500">Проверяваме корекциите...</p>
+) : hasExistingRevision ? (
+  <div className="mt-4 rounded-[20px] border border-yellow-200 bg-yellow-50 p-4">
+    <p className="text-sm font-bold text-yellow-900">
+      Вече сме изпълнили една безплатна корекция по тази поръчка.
+    </p>
 
+    <p className="mt-2 text-sm text-yellow-800">
+      За допълнителни корекции се свържи с екипа ни, за да уточним цена и срок.
+    </p>
+
+    <Link
+      href="/contact"
+      className="mt-4 inline-flex rounded-full bg-black px-5 py-3 text-sm font-bold text-white"
+    >
+      Свържи се с нас
+    </Link>
+  </div>
+) : null}
+{!checkingRevision && !hasExistingRevision ? (
+  <>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -90,6 +154,8 @@ const [submitting, setSubmitting] = useState(false);
         >
           {submitting ? "Изпращане..." : "Изпрати корекция"}
         </button>
+          </>
+) : null}
       </div>
     </main>
   );
