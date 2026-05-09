@@ -23,6 +23,10 @@ export default function ContactPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    if (!user) {
+  alert("Трябва да си логнат.");
+  return;
+}
 
     if (!user) return;
 
@@ -99,6 +103,11 @@ const [readyVideos, setReadyVideos] = useState<any[]>([]);
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (!user) {
+    alert("Трябва да си логнат.");
+    return;
+  }
+
   if (!message.trim()) {
     alert("Напиши съобщение.");
     return;
@@ -109,7 +118,7 @@ const [readyVideos, setReadyVideos] = useState<any[]>([]);
   const { data: contactRequest, error } = await supabase
     .from("contact_requests")
     .insert({
-      user_id: user?.id || null,
+      user_id: user.id,
       subject: "Общо запитване",
       message,
       uploaded_file_url: null,
@@ -128,7 +137,7 @@ const [readyVideos, setReadyVideos] = useState<any[]>([]);
 
   for (const file of files) {
     const fileExtension = file.name.split(".").pop() || "file";
-const filePath = `contact/${contactRequest.id}-${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
+    const filePath = `contact/${contactRequest.id}-${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
 
     const { error: uploadError } = await supabase.storage
       .from("videos")
@@ -155,7 +164,7 @@ const filePath = `contact/${contactRequest.id}-${Date.now()}-${crypto.randomUUID
       .from("contact_request_files")
       .insert({
         contact_request_id: contactRequest.id,
-        user_id: user?.id || null,
+        user_id: user.id,
         file_url: fileUrl,
         file_name: file.name,
         file_type: file.type || fileExtension,
