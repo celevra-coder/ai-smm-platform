@@ -34,14 +34,35 @@ export default function ContactPage() {
       .from("contact_requests")
       .select("*")
       .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+      .order("updated_at", { ascending: false });
 
     if (error) {
       console.error(error);
       return;
     }
 
-    setMessages(data || []);
+        setMessages(data || []);
+
+    const { data: replyFilesData, error: replyFilesError } = await supabase
+      .from("contact_reply_files")
+      .select("*")
+      .eq("user_id", user.id);
+
+    if (replyFilesError) {
+      console.error("CONTACT REPLY FILES LOAD ERROR:", replyFilesError);
+    }
+
+    const replyFilesMap: Record<string, any[]> = {};
+
+    (replyFilesData || []).forEach((file) => {
+      if (!replyFilesMap[file.contact_request_id]) {
+        replyFilesMap[file.contact_request_id] = [];
+      }
+
+      replyFilesMap[file.contact_request_id].push(file);
+    });
+
+    setContactReplyFiles(replyFilesMap);
     const { data: readyVideosData, error: readyVideosError } = await supabase
   .from("video_orders")
   .select("id, service_title, created_at")
@@ -79,6 +100,7 @@ if (readyVideosError) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
 const [readyVideos, setReadyVideos] = useState<any[]>([]);
+const [contactReplyFiles, setContactReplyFiles] = useState<Record<string, any[]>>({});
   const [files, setFiles] = useState<File[]>([]);
     const [successMessage, setSuccessMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -356,10 +378,31 @@ const [readyVideos, setReadyVideos] = useState<any[]>([]);
                 </a>
               ) : null}
 
-              {msg.admin_reply ? (
+                            {msg.admin_reply || contactReplyFiles[msg.id]?.length ? (
                 <div className="mt-3 rounded-xl bg-green-50 p-3 text-sm text-green-900">
                   <p className="font-bold">Отговор от екипа:</p>
-                  <p>{msg.admin_reply}</p>
+
+                  {msg.admin_reply ? <p>{msg.admin_reply}</p> : null}
+
+                  {contactReplyFiles[msg.id]?.length ? (
+                    <div className="mt-3 space-y-2">
+                      <p className="text-xs font-bold uppercase text-green-800">
+                        Прикачени файлове
+                      </p>
+
+                      {contactReplyFiles[msg.id].map((file) => (
+                        <a
+                          key={file.id}
+                          href={file.file_url}
+                          target="_blank"
+                          download={file.file_name || true}
+                          className="inline-flex rounded-full bg-green-700 px-4 py-2 text-xs font-bold text-white"
+                        >
+                          Свали файл: {file.file_name || "Файл"}
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
             </div>
