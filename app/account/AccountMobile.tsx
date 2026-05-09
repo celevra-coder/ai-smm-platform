@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 type Subscription = {
   credits: number | null;
@@ -71,6 +72,12 @@ onSelectBrand,
   onDeleteLastCalendar,
   onDeleteBrandProfile,
 }: AccountMobileProps) {
+  const router = useRouter();
+
+  const openBrandSetup = () => {
+    router.push("/dashboard?mode=brand");
+  };
+
     const handleDownloadVideo = async (url: string, fileName: string) => {
   const response = await fetch(url);
   const blob = await response.blob();
@@ -200,13 +207,14 @@ onSelectBrand,
       </p>
     </div>
 
-    <Link
-      href="/dashboard?mode=brand"
+        <button
+      type="button"
+      onClick={openBrandSetup}
       className="shrink-0 rounded-full bg-black px-4 py-2 text-xs font-bold text-white"
     >
       + Добави
-    </Link>
-  </div>
+    </button>
+    </div>
 
   <div className="mt-4">
     {brandProfiles.length ? (
