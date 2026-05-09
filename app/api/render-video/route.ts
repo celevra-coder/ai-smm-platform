@@ -135,10 +135,8 @@ function renderVideoWithMusic({
 
     return lines.slice(0, 12);
   };
-  const dialogues: string[] = [
-    `Dialogue: 9,0:00:00.00,0:00:05.00,Main,,0,0,0,,{\\an5\\fs70\\pos(360,300)}TEST 123`,
-  ];
-     const visibleScenes = scenes;
+  const dialogues: string[] = [];
+       const visibleScenes = scenes;
   const totalSceneDuration = visibleScenes.reduce(
     (sum: number, scene: any) => sum + Math.max(scene?.duration_sec || 3, 1),
     0
@@ -178,25 +176,27 @@ if (lines.length) {
 }
      }
 
-  const brandStart = Math.max(totalDurationSec - 2.4, 0);
-  const brandParts = splitLines(brandName || headline || "Brand", 24);
-if (brandParts.length) {
-  dialogues.push(
-    `Dialogue: 0,${assTime(brandStart)},${assTime(
-      totalDurationSec
-    )},Brand,,0,0,0,,{\\an5\\fnTimes New Roman\\b1\\i1\\fs82\\pos(360,460)}${brandParts
-      .map(assSafe)
-      .join("\\N")}`
-  );
-}
+    const brandStart = Math.max(totalDurationSec - 2.8, 0);
+  const finalBrandText = cleanText(brandName || headline || "Brand");
+  const brandParts = splitLines(finalBrandText, 22);
 
-if (phone) {
-  dialogues.push(
-    `Dialogue: 0,${assTime(brandStart)},${assTime(
-      totalDurationSec
-    )},Contact,,0,0,0,,{\\an5\\fs48\\pos(360,680)}${assSafe(`ТЕЛ: ${phone}`)}`
-  );
-}
+  if (brandParts.length) {
+    dialogues.push(
+      `Dialogue: 0,${assTime(brandStart)},${assTime(
+        totalDurationSec
+      )},Brand,,0,0,0,,{\\an5\\pos(360,470)}${brandParts
+        .map(assSafe)
+        .join("\\N")}`
+    );
+  }
+
+  if (phone) {
+    dialogues.push(
+      `Dialogue: 1,${assTime(brandStart)},${assTime(
+        totalDurationSec
+      )},Contact,,0,0,0,,{\\an5\\pos(360,690)}${assSafe(`ТЕЛ: ${phone}`)}`
+    );
+  }
 
 if (address) {
   const formattedAddress =
@@ -229,26 +229,7 @@ ${dialogues.join("\n")}
 
   fs.writeFileSync(subtitlePath, assContent, "utf8");
   console.log("ASS SUBTITLE CONTENT:", assContent);
-  const fontPath = path
-    .join(process.cwd(), "public", "fonts", "Roboto-Regular.ttf")
-    .replace(/\\/g, "/")
-    .replace(/:/g, "\\:");
-
-  const overlayLines = [
-    cleanText(headline),
-    cleanText(brandName),
-    phone ? cleanText(`ТЕЛ: ${phone}`) : "",
-address ? cleanText(`АДРЕС: ${address}`) : "",
-  ].filter(Boolean);
-
-  const drawTextSafe = (value: string) =>
-    value
-      .replace(/\\/g, "\\\\")
-      .replace(/:/g, "\\:")
-      .replace(/'/g, "\\'")
-      .replace(/\n/g, "\\n");
-
-  const overlayText = drawTextSafe(overlayLines.join("\\n"));
+  
 
   console.log("FONT PATH:", fontPath);
   console.log("OVERLAY TEXT:", overlayLines.join(" | "));
