@@ -75,8 +75,7 @@ if (readyVideosError) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
 const [readyVideos, setReadyVideos] = useState<any[]>([]);
-  const [fileName, setFileName] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
     const [successMessage, setSuccessMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
@@ -94,56 +93,92 @@ const [readyVideos, setReadyVideos] = useState<any[]>([]);
   
 
   const handleSubmit = async () => {
-    const supabase = createClient();
+  const supabase = createClient();
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!message.trim()) {
-      alert("Напиши съобщение.");
+  if (!message.trim()) {
+    alert("Напиши съобщение.");
+    return;
+  }
+
+  let firstFileUrl: string | null = null;
+
+  const { data: contactRequest, error } = await supabase
+    .from("contact_requests")
+    .insert({
+      user_id: user?.id || null,
+      subject: "Общо запитване",
+      message,
+      uploaded_file_url: null,
+      admin_reply: null,
+      status: "pending",
+      user_seen: true,
+    })
+    .select("id")
+    .single();
+
+  if (error || !contactRequest) {
+    console.error("CONTACT INSERT ERROR:", error);
+    alert("Грешка при изпращане.");
+    return;
+  }
+
+  for (const file of files) {
+    const fileExtension = file.name.split(".").pop() || "file";
+    const filePath = `contact/${contactRequest.id}-${Date.now()}-${file.name}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("videos")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: true,
+        contentType: file.type || undefined,
+      });
+
+    if (uploadError) {
+      console.error("CONTACT FILE UPLOAD ERROR:", uploadError);
+      alert(`Съобщението е изпратено, но файл не се качи: ${uploadError.message}`);
       return;
     }
 
-    let fileUrl: string | null = null;
+    const { data } = supabase.storage.from("videos").getPublicUrl(filePath);
+    const fileUrl = data.publicUrl;
 
-    if (file) {
-      const filePath = `contact/${Date.now()}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("videos")
-        .upload(filePath, file);
-
-      if (uploadError) {
-        alert("Грешка при качване на файл");
-        return;
-      }
-
-      const { data } = supabase.storage.from("videos").getPublicUrl(filePath);
-      fileUrl = data.publicUrl;
+    if (!firstFileUrl) {
+      firstFileUrl = fileUrl;
     }
 
-    const { error } = await supabase.from("contact_requests").insert({
-  user_id: user?.id || null,
-  subject: "Общо запитване",
-  message,
-  uploaded_file_url: fileUrl,
-  admin_reply: null,
-  status: "pending",
-  user_seen: true,
-});
+    const { error: fileInsertError } = await supabase
+      .from("contact_request_files")
+      .insert({
+        contact_request_id: contactRequest.id,
+        user_id: user?.id || null,
+        file_url: fileUrl,
+        file_name: file.name,
+        file_type: file.type || fileExtension,
+      });
 
-    if (error) {
-  console.error("CONTACT INSERT ERROR:", error);
-  alert("Грешка при изпращане.");
-  return;
-}
+    if (fileInsertError) {
+      console.error("CONTACT FILE INSERT ERROR:", fileInsertError);
+      alert(`Файлът се качи, но не се записа към съобщението: ${fileInsertError.message}`);
+      return;
+    }
+  }
 
-    setSuccessMessage("Съобщението беше изпратено успешно ✨.Следете профила си за отговор от екипа");
-    setMessage("");
-    setFile(null);
-    setFileName("");
-  };
+  if (firstFileUrl) {
+    await supabase
+      .from("contact_requests")
+      .update({ uploaded_file_url: firstFileUrl })
+      .eq("id", contactRequest.id);
+  }
+
+  setSuccessMessage("Съобщението беше изпратено успешно ✨. Следете профила си за отговор от екипа");
+  setMessage("");
+  setFiles([]);
+};
 
   return (
         <main
@@ -201,22 +236,36 @@ const [readyVideos, setReadyVideos] = useState<any[]>([]);
           ) : null}
         </div>
 
-        <input
-          type="file"
-          className="mt-4"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) {
-              setFile(f);
-              setFileName(f.name);
-            }
-          }}
-        />
+        <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-black/15 bg-[#fcfaf7] px-5 py-6 text-center transition hover:bg-[#f3eee7]">
+  <span className="text-3xl">📎</span>
+  <span className="mt-2 text-sm font-black text-neutral-950">
+    Прикачи файлове
+  </span>
+  <span className="mt-1 text-xs text-neutral-500">
+    Може да избереш един или няколко файла
+  </span>
 
-        {fileName && (
-          <p className="text-sm mt-2">Файл: {fileName}</p>
-        )}
+  <input
+    type="file"
+    multiple
+    className="hidden"
+    onChange={(e) => {
+      setFiles(Array.from(e.target.files || []));
+    }}
+  />
+</label>
 
+{files.length ? (
+  <div className="mt-3 rounded-2xl bg-[#f8f5f1] p-3 text-sm">
+    <p className="font-bold">Избрани файлове:</p>
+
+    <ul className="mt-2 list-inside list-disc">
+      {files.map((file) => (
+        <li key={`${file.name}-${file.size}`}>{file.name}</li>
+      ))}
+    </ul>
+  </div>
+) : null}
                 <button
   onClick={handleSubmit}
   className="mt-6 w-full rounded-full bg-black px-6 py-3 text-white font-bold transition-all duration-150 hover:scale-105 active:scale-95 active:opacity-80"
