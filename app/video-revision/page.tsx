@@ -9,10 +9,15 @@ function VideoRevisionPageContent() {
   const orderId = params.get("order_id");
 
   const [message, setMessage] = useState("");
-  const [fileName, setFileName] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+  if (submitting) return;
+
+  setSubmitting(true);
+
+  try {
     const supabase = createClient();
 
     const {
@@ -24,45 +29,81 @@ function VideoRevisionPageContent() {
       return;
     }
 
+    if (!orderId) {
+      alert("Липсва номер на поръчка.");
+      return;
+    }
+
     if (!message.trim()) {
       alert("Опиши каква корекция искаш.");
       return;
     }
 
-    let fileUrl: string | null = null;
+    const { data: revision, error: revisionError } = await supabase
+      .from("video_revisions")
+      .insert({
+        order_id: orderId,
+        user_id: user.id,
+        message: message.trim(),
+        file_url: null,
+        status: "pending",
+      })
+      .select("id")
+      .single();
 
-    if (file) {
-      const filePath = `revisions/${orderId}-${Date.now()}`;
+    if (revisionError || !revision) {
+      console.error("VIDEO REVISION INSERT ERROR:", revisionError);
+      alert(`Грешка при изпращане: ${revisionError?.message || "няма запис"}`);
+      return;
+    }
+
+    for (const file of files) {
+      const fileExtension = file.name.split(".").pop() || "file";
+      const filePath = `revisions/${orderId}/${revision.id}-${Date.now()}-${file.name}`;
 
       const { error: uploadError } = await supabase.storage
         .from("videos")
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: true,
+          contentType: file.type || undefined,
+        });
 
       if (uploadError) {
-        alert("Грешка при качване на файл");
+        console.error("REVISION FILE UPLOAD ERROR:", uploadError);
+        alert(`Корекцията е записана, но файл не се качи: ${uploadError.message}`);
         return;
       }
 
       const { data } = supabase.storage.from("videos").getPublicUrl(filePath);
-      fileUrl = data.publicUrl;
-    }
+      const fileUrl = data.publicUrl;
 
-        const { error } = await supabase.from("video_revisions").insert({
-      order_id: orderId,
-      user_id: user.id,
-      message,
-      file_url: fileUrl,
-      status: "pending",
-    });
+      const { error: fileInsertError } = await supabase
+        .from("video_revision_files")
+        .insert({
+          revision_id: revision.id,
+          order_id: orderId,
+          user_id: user.id,
+          file_url: fileUrl,
+          file_name: file.name,
+          file_type: file.type || fileExtension,
+        });
 
-    if (error) {
-      alert("Грешка при изпращане.");
-      return;
+      if (fileInsertError) {
+        console.error("REVISION FILE INSERT ERROR:", fileInsertError);
+        alert(`Файлът се качи, но не се записа към корекцията: ${fileInsertError.message}`);
+        return;
+      }
     }
 
     alert("Корекцията е изпратена.");
     window.location.href = "/account";
-  };
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+        
 
   return (
     <main className="min-h-screen bg-[#f5f1ec] p-6">
@@ -79,25 +120,31 @@ function VideoRevisionPageContent() {
 
         <input
           type="file"
+          multiple
           className="mt-4"
           onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) {
-              setFile(f);
-              setFileName(f.name);
-            }
+            setFiles(Array.from(e.target.files || []));
           }}
         />
 
-        {fileName && (
-          <p className="text-sm mt-2">Файл: {fileName}</p>
-        )}
+        {files.length ? (
+          <div className="mt-3 rounded-2xl bg-[#f8f5f1] p-3 text-sm">
+            <p className="font-bold">Качени файлове:</p>
+
+            <ul className="mt-2 list-inside list-disc">
+              {files.map((file) => (
+                <li key={`${file.name}-${file.size}`}>{file.name}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <button
           onClick={handleSubmit}
-          className="mt-6 w-full rounded-full bg-black px-6 py-3 text-white font-bold"
+          disabled={submitting}
+          className="mt-6 w-full rounded-full bg-black px-6 py-3 font-bold text-white disabled:opacity-60"
         >
-          Изпрати корекция
+          {submitting ? "Изпращане..." : "Изпрати корекция"}
         </button>
       </div>
     </main>
