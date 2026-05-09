@@ -128,7 +128,7 @@ const [readyVideos, setReadyVideos] = useState<any[]>([]);
 
   for (const file of files) {
     const fileExtension = file.name.split(".").pop() || "file";
-    const filePath = `contact/${contactRequest.id}-${Date.now()}-${file.name}`;
+const filePath = `contact/${contactRequest.id}-${Date.now()}-${crypto.randomUUID()}.${fileExtension}`;
 
     const { error: uploadError } = await supabase.storage
       .from("videos")

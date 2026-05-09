@@ -48,6 +48,7 @@ export default function AdminVideoOrdersPage() {
   const [revisions, setRevisions] = useState<Revision[]>([]);
 const [revisionFiles, setRevisionFiles] = useState<Record<string, any[]>>({});
   const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
+const [contactRequestFiles, setContactRequestFiles] = useState<Record<string, any[]>>({});
   const [generationLogs, setGenerationLogs] = useState<GenerationLog[]>([]);
     const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [openEmojiForMessageId, setOpenEmojiForMessageId] = useState<string | null>(null);
@@ -102,6 +103,13 @@ if (revisionFilesError) {
       .from("contact_requests")
       .select("*")
       .order("created_at", { ascending: false });
+      const { data: contactFilesData, error: contactFilesError } = await supabase
+  .from("contact_request_files")
+  .select("*");
+
+if (contactFilesError) {
+  console.error("CONTACT REQUEST FILES LOAD ERROR:", contactFilesError);
+}
       const { data: logsData, error: logsError } = await supabase
   .from("generation_logs")
   .select(
@@ -149,7 +157,19 @@ setOrderFiles(filesMap);
 
 setRevisionFiles(revisionFilesMap);
 setRevisions(revisionsData || []);
-    setContactRequests(contactData || []);
+    
+const contactFilesMap: Record<string, any[]> = {};
+
+(contactFilesData || []).forEach((file) => {
+  if (!contactFilesMap[file.contact_request_id]) {
+    contactFilesMap[file.contact_request_id] = [];
+  }
+
+  contactFilesMap[file.contact_request_id].push(file);
+});
+
+setContactRequestFiles(contactFilesMap);
+
     if (!logsError && logsData) {
   setGenerationLogs(logsData);
 }
@@ -639,15 +659,29 @@ const handleRevisionUpload = async (
 
                 <p className="mt-2 text-sm">{msg.message}</p>
 
-                {msg.uploaded_file_url ? (
-                  <a
-                    href={msg.uploaded_file_url}
-                    target="_blank"
-                    className="mt-2 block font-bold underline"
-                  >
-                    Виж файл
-                  </a>
-                ) : null}
+                {contactRequestFiles[msg.id]?.length ? (
+  <div className="mt-3 space-y-2">
+    {contactRequestFiles[msg.id].map((file) => (
+      <a
+        key={file.id}
+        href={file.file_url}
+        target="_blank"
+        download={file.file_name || true}
+        className="inline-flex rounded-full bg-black px-4 py-2 text-xs font-bold text-white"
+      >
+        Свали файл: {file.file_name || "Файл"}
+      </a>
+    ))}
+  </div>
+) : msg.uploaded_file_url ? (
+  <a
+    href={msg.uploaded_file_url}
+    target="_blank"
+    className="mt-2 block font-bold underline"
+  >
+    Виж файл
+  </a>
+) : null}
                 
                 
 
