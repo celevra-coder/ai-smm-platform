@@ -168,16 +168,7 @@ if (markUserSeenError) {
   return;
 }
 }
-if (readyVideoOrderIds.length > 0) {
-  const { error: markVideosSeenError } = await supabase
-    .from("video_orders")
-    .update({ user_notified: true })
-    .in("id", readyVideoOrderIds);
 
-  if (markVideosSeenError) {
-  console.error("MARK VIDEO NOTIFICATIONS SEEN ERROR:", markVideosSeenError);
-}
-}
   }
 
     router.push("/contact");
