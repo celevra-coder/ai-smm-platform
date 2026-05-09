@@ -450,16 +450,23 @@ onSelectBrand={(profile) => {
       </section>
 
       {showVideoReady ? (
-  <a
-    href={`#video-order-${
-      videoOrders.find(
+  <button
+    type="button"
+    onClick={() => {
+      const readyOrder = videoOrders.find(
         (order) => order.status === "delivered" && order.final_video_url
-      )?.id || ""
-    }`}
-    className="mb-6 block rounded-[20px] border border-green-200 bg-green-50 px-5 py-4 text-sm font-bold text-green-800"
+      );
+
+      if (!readyOrder) return;
+
+      document
+        .getElementById(`video-order-${readyOrder.id}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }}
+    className="mb-6 block w-full rounded-[20px] border border-green-200 bg-green-50 px-5 py-4 text-left text-sm font-bold text-green-800"
   >
     🎉 Видеото ти е готово! Натисни тук, за да го видиш.
-  </a>
+  </button>
 ) : null}
 
       <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
@@ -677,7 +684,7 @@ onSelectBrand={(profile) => {
               <div
   id={`video-order-${order.id}`}
   key={order.id}
-  className="rounded-[26px] border border-black/10 bg-[#fcfaf7] p-5"
+  className="scroll-mt-8 rounded-[26px] border border-black/10 bg-[#fcfaf7] p-5"
 >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
