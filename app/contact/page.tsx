@@ -38,6 +38,19 @@ export default function ContactPage() {
     }
 
     setMessages(data || []);
+    const { data: readyVideosData, error: readyVideosError } = await supabase
+  .from("video_orders")
+  .select("id, service_title, created_at")
+  .eq("user_id", user.id)
+  .eq("status", "delivered")
+  .eq("user_notified", false)
+  .order("created_at", { ascending: false });
+
+if (readyVideosError) {
+  console.error("READY VIDEOS LOAD ERROR:", readyVideosError);
+} else {
+  setReadyVideos(readyVideosData || []);
+}
 
     await supabase
       .from("contact_requests")
@@ -47,6 +60,12 @@ export default function ContactPage() {
       .eq("status", "answered")
       .not("admin_reply", "is", null)
       .neq("admin_reply", "");
+      await supabase
+  .from("video_orders")
+  .update({ user_notified: true })
+  .eq("user_id", user.id)
+  .eq("status", "delivered")
+  .eq("user_notified", false);
 
     window.dispatchEvent(new Event("notifications-updated"));
   };
@@ -55,6 +74,7 @@ export default function ContactPage() {
 }, []);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
+const [readyVideos, setReadyVideos] = useState<any[]>([]);
   const [fileName, setFileName] = useState("");
   const [file, setFile] = useState<File | null>(null);
     const [successMessage, setSuccessMessage] = useState("");
@@ -205,7 +225,29 @@ export default function ContactPage() {
 </button>
 
         <div className="mt-8 space-y-4">
-          {messages.map((msg) => (
+  {readyVideos.map((video) => (
+    <div
+      key={video.id}
+      className="rounded-[20px] border border-green-200 bg-green-50 p-4"
+    >
+      <p className="text-sm font-black text-green-900">
+        🎉 Видеото ти е готово.
+      </p>
+
+      <p className="mt-2 text-sm text-green-800">
+        Посети профила си, за да го видиш.
+      </p>
+
+      <a
+        href="/account"
+        className="mt-3 inline-flex rounded-full bg-green-700 px-4 py-2 text-xs font-bold text-white"
+      >
+        Към профила
+      </a>
+    </div>
+  ))}
+
+  {messages.map((msg) => (
             <div
               key={msg.id}
               className="rounded-[20px] border border-black/10 bg-[#faf8f6] p-4"
