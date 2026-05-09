@@ -178,7 +178,7 @@ if (lines.length) {
 
     const brandStart = Math.max(totalDurationSec - 2.8, 0);
   const finalBrandText = cleanText(brandName || headline || "Brand");
-  const brandParts = splitLines(finalBrandText, 22);
+  const brandParts = splitLines(finalBrandText, 18);
 
   if (brandParts.length) {
     dialogues.push(
@@ -219,8 +219,8 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Main,Roboto,42,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,5,2,5,56,56,0,1
-Style: Brand,Roboto,58,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,5,2,8,40,40,240,1
-Style: Contact,Roboto,44,&H00A8E7FF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,180,1
+Style: Brand,Roboto,72,&H00FFFFFF,&H00FFFFFF,&H00000000,&HAA000000,-1,0,0,0,100,100,0,0,1,6,3,8,36,36,230,1
+Style: Contact,Roboto,50,&H00A8E7FF,&H00FFFFFF,&H00000000,&HAA000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,165,1
 Style: Address,Roboto,30,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,2,40,40,110,1
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
