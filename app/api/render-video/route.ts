@@ -182,38 +182,23 @@ if (lines.length) {
 
      }
 
-    const brandStart = Math.max(totalDurationSec - 3, 0);
-  const finalBrandText = cleanText(brandName || headline || "Brand");
-  const brandParts = splitLines(finalBrandText, 18);
+const brandStart = Math.max(totalDurationSec - 3, 0);
 
-  if (brandParts.length) {
-    dialogues.push(
-      `Dialogue: 0,${assTime(brandStart)},${assTime(
-  totalDurationSec
-)},Brand,,0,0,0,,{\\an5\\fnTimes New Roman\\b1\\i1\\fs92\\pos(360,430)}${brandParts
-        .map(assSafe)
-        .join("\\N")}`
-    );
-  }
+const finalLines = [
+  cleanText(brandName || headline || "Brand"),
+  phone ? cleanText(`ТЕЛ: ${phone}`) : "",
+  address ? cleanText(`АДРЕС: ${address}`) : "",
+].filter(Boolean);
 
-  if (phone) {
-    dialogues.push(
-      `Dialogue: 1,${assTime(brandStart)},${assTime(
-        totalDurationSec
-      )},Contact,,0,0,0,,{\\an5\\fs56\\pos(360,690)}${assSafe(`ТЕЛ: ${phone}`)}`
-    );
-  }
+console.log("FINAL OVERLAY LINES:", finalLines);
 
-if (address) {
-  const formattedAddress =
-    address.length > 25
-      ? address.replace(/,\s*/g, "\\N")
-      : `АДРЕС: ${address}`;
-
+if (finalLines.length) {
   dialogues.push(
-    `Dialogue: 0,${assTime(brandStart)},${assTime(
+    `Dialogue: 9,${assTime(brandStart)},${assTime(
       totalDurationSec
-    )},Address,,0,0,0,,{\\an5\\fs38\\pos(360,820)}${assSafe(formattedAddress)}`
+    )},Brand,,0,0,0,,{\\an5\\fs54\\pos(360,610)}${finalLines
+      .map(assSafe)
+      .join("\\N\\N")}`
   );
 }
     const assContent = `[Script Info]
