@@ -136,6 +136,7 @@ function renderVideoWithMusic({
     return lines.slice(0, 12);
   };
   const dialogues: string[] = [];
+const visibleScenes = Array.isArray(scenes) ? scenes : [];
 
 const cleanOverlayCandidate = (value: string) => {
   let result = cleanText(value);
