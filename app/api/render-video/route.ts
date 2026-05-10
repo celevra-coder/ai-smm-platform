@@ -159,13 +159,23 @@ const cleanOverlayCandidate = (value: string) => {
   if (sentences[0]) {
     result = sentences[0];
   }
+const words = result.split(" ").filter(Boolean);
+const shortWords: string[] = [];
+let currentLength = 0;
 
-  if (result.length > 46) {
-    result = result.slice(0, 46).trim() + "...";
-  }
+for (const word of words) {
+  const nextLength = currentLength + word.length + (shortWords.length ? 1 : 0);
 
-  return result;
-};
+  if (nextLength > 58) break;
+
+  shortWords.push(word);
+  currentLength = nextLength;
+}
+
+result = shortWords.join(" ").trim();
+
+return result;
+  };
 
 const mainTextCandidates = [
   ...visibleScenes.map((scene: any) =>
@@ -193,7 +203,7 @@ const slotDuration = mainTexts.length > 1 ? mainEnd / mainTexts.length : mainEnd
 mainTexts.forEach((text, textIndex) => {
   const start = textIndex * slotDuration;
   const end = Math.min(start + slotDuration, mainEnd);
-  const lines = splitLines(text, 18).slice(0, 2);
+  const lines = splitLines(text, 20).slice(0, 3);
   const startY = 610;
   const lineGap = 64;
 
