@@ -46,11 +46,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-            <body>
+  <html
+    lang="en"
+    className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+  >
+    <head>
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-KP686DHVTF"></script>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-KP686DHVTF');
+          `,
+        }}
+      />
+    </head>
+
+    <body>
         <AppShell>
           {children}
         </AppShell>
