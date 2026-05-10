@@ -166,25 +166,31 @@ if (totalDurationSec <= 5) {
   }
 }
 const lines = splitLines(text, 22);
-
 if (lines.length) {
-  dialogues.push(
-    `Dialogue: 0,${assTime(start)},${assTime(end)},Main,,0,0,0,,{\\an5\\fs38\\pos(360,640)}${lines
-      .map(assSafe)
-      .join("\\N")}`
-  );
+  const visibleEnd = Math.min(end, Math.max(totalDurationSec - 3, 0));
+  const startY = 560;
+  const lineGap = 58;
+
+  lines.slice(0, 5).forEach((line, index) => {
+    dialogues.push(
+      `Dialogue: 0,${assTime(start)},${assTime(visibleEnd)},Main,,0,0,0,,{\\an5\\fs40\\pos(360,${
+        startY + index * lineGap
+      })}${assSafe(line)}`
+    );
+  });
 }
+
      }
 
-    const brandStart = Math.max(totalDurationSec - 2.8, 0);
+    const brandStart = Math.max(totalDurationSec - 3, 0);
   const finalBrandText = cleanText(brandName || headline || "Brand");
   const brandParts = splitLines(finalBrandText, 18);
 
   if (brandParts.length) {
     dialogues.push(
       `Dialogue: 0,${assTime(brandStart)},${assTime(
-        totalDurationSec
-      )},Brand,,0,0,0,,{\\an5\\pos(360,470)}${brandParts
+  totalDurationSec
+)},Brand,,0,0,0,,{\\an5\\fnTimes New Roman\\b1\\i1\\fs92\\pos(360,430)}${brandParts
         .map(assSafe)
         .join("\\N")}`
     );
@@ -194,7 +200,7 @@ if (lines.length) {
     dialogues.push(
       `Dialogue: 1,${assTime(brandStart)},${assTime(
         totalDurationSec
-      )},Contact,,0,0,0,,{\\an5\\pos(360,690)}${assSafe(`ТЕЛ: ${phone}`)}`
+      )},Contact,,0,0,0,,{\\an5\\fs56\\pos(360,690)}${assSafe(`ТЕЛ: ${phone}`)}`
     );
   }
 
@@ -207,7 +213,7 @@ if (address) {
   dialogues.push(
     `Dialogue: 0,${assTime(brandStart)},${assTime(
       totalDurationSec
-    )},Address,,0,0,0,,{\\an5\\fs30\\pos(360,800)}${assSafe(formattedAddress)}`
+    )},Address,,0,0,0,,{\\an5\\fs38\\pos(360,820)}${assSafe(formattedAddress)}`
   );
 }
     const assContent = `[Script Info]
