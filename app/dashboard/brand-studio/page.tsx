@@ -1788,159 +1788,173 @@ logoUrl={workspace.brand_profile?.logo_url}
 
       <div className="mt-6">
         {isGeneratingVideoFrames ? (
-  <div className="flex min-h-[360px] flex-col items-center justify-center gap-3 rounded-3xl bg-[#f7f3ee] text-center">
-    <div className="h-12 w-12 animate-spin rounded-full border-4 border-black/15 border-t-black" />
-    <p className="text-sm font-semibold text-black/60">
-      Генериране на кадри...
-    </p>
-  </div>
-) : videoFrameOptions.length === 0 ? (
-  <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-3xl bg-[#f7f3ee] text-center">
-    <p className="max-w-md text-sm leading-6 text-black/55">
-      Можеш да генерираш кадри за видеото или да качиш свое изображение отдолу.
-    </p>
+          <div className="flex min-h-[360px] flex-col items-center justify-center gap-3 rounded-3xl bg-[#f7f3ee] text-center">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-black/15 border-t-black" />
+            <p className="text-sm font-semibold text-black/60">
+              Генериране на кадри...
+            </p>
+          </div>
+        ) : videoFrameOptions.length === 0 ? (
+          <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-3xl bg-[#f7f3ee] text-center">
+            <p className="max-w-md text-sm leading-6 text-black/55">
+              Можеш да генерираш кадри за видеото или да качиш свое изображение отдолу.
+            </p>
 
-    <button
-      type="button"
-      onClick={handleGenerateVideoFrames}
-      className="rounded-full border border-black/15 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:scale-[1.02] hover:bg-black hover:text-white"
-    >
-      ✨ Генерирай кадри
-    </button>
-  </div>
-) : (
-  <div className="grid gap-4 md:grid-cols-3">
-            {videoFrameOptions.map((frameUrl, index) => (
+            <button
+              type="button"
+              onClick={handleGenerateVideoFrames}
+              className="rounded-full border border-black/15 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:scale-[1.02] hover:bg-black hover:text-white"
+            >
+              ✨ Генерирай кадри
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="mb-4 flex justify-center">
               <button
-                key={`${frameUrl}-${index}`}
                 type="button"
-                onClick={() => {
-                  setSelectedVideoFrameUrl(frameUrl);
-                  setUploadedVideoImageUrl("");
-                  setUploadedVideoImageName("");
-                }}
-                className={`overflow-hidden rounded-3xl border bg-[#f7f3ee] transition ${
-                  selectedVideoFrameUrl === frameUrl
-                    ? "border-black ring-4 ring-black"
-                    : "border-black/10 hover:border-black/40"
-                }`}
+                onClick={handleGenerateVideoFrames}
+                disabled={isGeneratingVideoFrames}
+                className="rounded-full border border-black/15 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:scale-[1.02] hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <img
-                  src={frameUrl}
-                  alt={`Video frame ${index + 1}`}
-                  className="aspect-[9/16] w-full object-cover"
-                />
+                🔄 Генерирай отново
               </button>
-            ))}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {videoFrameOptions.map((frameUrl, index) => (
+                <button
+                  key={`${frameUrl}-${index}`}
+                  type="button"
+                  onClick={() => {
+                    setSelectedVideoFrameUrl(frameUrl);
+                    setUploadedVideoImageUrl("");
+                    setUploadedVideoImageName("");
+                  }}
+                  className={`overflow-hidden rounded-3xl border bg-[#f7f3ee] transition ${
+                    selectedVideoFrameUrl === frameUrl
+                      ? "border-black ring-4 ring-black"
+                      : "border-black/10 hover:border-black/40"
+                  }`}
+                >
+                  <img
+                    src={frameUrl}
+                    alt={`Video frame ${index + 1}`}
+                    className="aspect-[9/16] w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         )}
-      </div>
 
-      <div className="mt-6 grid gap-5 md:grid-cols-[1fr_280px]">
-        <div className="rounded-3xl border border-black/10 bg-[#f7f3ee] p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-black/45">
-            Или качи свое изображение
-          </p>
+        <div className="mt-6 grid gap-5 md:grid-cols-[1fr_280px]">
+          <div className="rounded-3xl border border-black/10 bg-[#f7f3ee] p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-black/45">
+              Или качи свое изображение
+            </p>
 
-          <div className="mt-4 flex min-h-[220px] items-center justify-center overflow-hidden rounded-2xl bg-white text-sm text-black/45">
-            {uploadedVideoImageUrl ? (
-              <img
-                src={uploadedVideoImageUrl}
-                alt="Uploaded video image"
-                className="h-full max-h-[320px] w-full object-contain"
-              />
-            ) : (
-              "Няма качено изображение"
-            )}
-          </div>
-
-          <div className="mt-4 flex flex-wrap justify-center gap-3">
-            <label className="inline-flex cursor-pointer items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-semibold text-white">
-              Качи изображение
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-
-                  const reader = new FileReader();
-
-                  reader.onloadend = () => {
-                    setUploadedVideoImageUrl(reader.result as string);
-                    setUploadedVideoImageName(file.name);
-                    setSelectedVideoFrameUrl("");
-                  };
-
-                  reader.readAsDataURL(file);
-                }}
-                className="hidden"
-              />
-            </label>
-
-            {uploadedVideoImageUrl ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setUploadedVideoImageUrl("");
-                  setUploadedVideoImageName("");
-                }}
-                className="rounded-full border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-600"
-              >
-                Премахни
-              </button>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-black/10 bg-white p-4">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-black/45">
-            Дължина на видеото
-          </p>
-
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            {[5, 10].map((d) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setVideoDuration(d as 5 | 10)}
-                className={`rounded-2xl border px-5 py-4 text-lg font-black ${
-                  videoDuration === d
-                    ? "bg-black text-white"
-                    : "border-black/15 bg-white text-black"
-                }`}
-              >
-                {d}s
-              </button>
-            ))}
-          </div>
-
-          {videoErrorText ? (
-            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {videoErrorText}
+            <div className="mt-4 flex min-h-[220px] items-center justify-center overflow-hidden rounded-2xl bg-white text-sm text-black/45">
+              {uploadedVideoImageUrl ? (
+                <img
+                  src={uploadedVideoImageUrl}
+                  alt="Uploaded video image"
+                  className="h-full max-h-[320px] w-full object-contain"
+                />
+              ) : (
+                "Няма качено изображение"
+              )}
             </div>
-          ) : null}
 
-          <button
-            type="button"
-            onClick={handleContinueFromVideoSetup}
-            disabled={
-  isGenerating ||
-  isVideoGenerating ||
-  isGeneratingVideoFrames ||
-  (!useFakeVideo && !selectedVideoFrameUrl && !uploadedVideoImageUrl)
-}
-            className="mt-5 w-full rounded-full bg-black px-6 py-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {videoSetupMode === "campaign"
-              ? "Продължи към банер и видео"
-              : "Продължи към видео"}
-          </button>
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
+              <label className="inline-flex cursor-pointer items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-semibold text-white">
+                Качи изображение
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+
+                    reader.onloadend = () => {
+                      setUploadedVideoImageUrl(reader.result as string);
+                      setUploadedVideoImageName(file.name);
+                      setSelectedVideoFrameUrl("");
+                    };
+
+                    reader.readAsDataURL(file);
+                  }}
+                  className="hidden"
+                />
+              </label>
+
+              {uploadedVideoImageUrl ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUploadedVideoImageUrl("");
+                    setUploadedVideoImageName("");
+                  }}
+                  className="rounded-full border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-600"
+                >
+                  Премахни
+                </button>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-black/10 bg-white p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-black/45">
+              Дължина на видеото
+            </p>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              {[5, 10].map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setVideoDuration(d as 5 | 10)}
+                  className={`rounded-2xl border px-5 py-4 text-lg font-black ${
+                    videoDuration === d
+                      ? "bg-black text-white"
+                      : "border-black/15 bg-white text-black"
+                  }`}
+                >
+                  {d}s
+                </button>
+              ))}
+            </div>
+
+            {videoErrorText ? (
+              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {videoErrorText}
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={handleContinueFromVideoSetup}
+              disabled={
+                isGenerating ||
+                isVideoGenerating ||
+                isGeneratingVideoFrames ||
+                (!useFakeVideo && !selectedVideoFrameUrl && !uploadedVideoImageUrl)
+              }
+              className="mt-5 w-full rounded-full bg-black px-6 py-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {videoSetupMode === "campaign"
+                ? "Продължи към банер и видео"
+                : "Продължи към видео"}
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 ) : null}
+
       {showSystemBusyModal ? (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
     <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
