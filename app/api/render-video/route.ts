@@ -176,13 +176,34 @@ result = shortWords.join(" ").trim();
 
 return result;
   };
+const makeSmartAdLine = (value: string) => {
+  const text = cleanText(value).toLowerCase();
 
+  if (/пиц|pizza|mozzarella|моцарела|тесто|итал/i.test(text)) {
+    return "Истинска италианска пица";
+  }
+
+  if (/торт|cake|десерт|сладкар/i.test(text)) {
+    return "Бутикови торти за специални поводи";
+  }
+
+  if (/красот|салон|маникюр|коса|подстриг/i.test(text)) {
+    return "Професионална грижа за красотата";
+  }
+
+  if (/вода|кладенец|сондаж|геофиз/i.test(text)) {
+    return "Точна локация за вода";
+  }
+
+  return "";
+};
 const mainTextCandidates = [
   ...visibleScenes.map((scene: any) =>
     cleanOverlayCandidate(scene?.overlay_text || scene?.title || "")
   ),
+makeSmartAdLine([headline, brandName, ...visibleScenes.map((s: any) => s?.overlay_text || "")].join(" ")) ||
   cleanOverlayCandidate(headline),
-].filter(Boolean);
+  ].filter(Boolean);
 
 const uniqueMainTexts = mainTextCandidates.filter(
   (text, index, arr) =>
