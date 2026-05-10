@@ -156,19 +156,22 @@ function renderVideoWithMusic({
     cursor = end;
 let text = cleanText(scene?.overlay_text || scene?.title || "");
 
-if (totalDurationSec <= 5) {
-  const sentences = text.split(/[.!?]/).filter(Boolean);
+const sentences = text
+  .split(/[.!?]/)
+  .map((s) => s.trim())
+  .filter(Boolean);
 
-  text = sentences[0] || "";
-
-  if (text.length < 40 && sentences[1]) {
-    text = text + ". " + sentences[1];
-  }
+if (sentences.length > 0) {
+  text = sentences[0];
 }
-const lines = splitLines(text, 22);
+
+if (text.length > 55) {
+  text = text.slice(0, 55).trim() + "...";
+}
+const lines = splitLines(text, 18).slice(0, 2);
 if (lines.length) {
   const visibleEnd = Math.min(end, Math.max(totalDurationSec - 3, 0));
-  const startY = 560;
+  const startY = 610;
   const lineGap = 58;
 
   lines.slice(0, 5).forEach((line, index) => {
