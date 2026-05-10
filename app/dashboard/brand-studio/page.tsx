@@ -138,6 +138,7 @@ const [imageUsageMode, setImageUsageMode] = useState<
   const [toastMessage, setToastMessage] = useState("");
   const [isBannerVisible, setIsBannerVisible] = useState(false);
 const [showPaywallModal, setShowPaywallModal] = useState(false);
+const [showSystemBusyModal, setShowSystemBusyModal] = useState(false);
 const [pendingBrandBannerLogId, setPendingBrandBannerLogId] = useState("");
 const [pendingBrandBannerBgUrl, setPendingBrandBannerBgUrl] = useState("");
 const [showVideoSetupModal, setShowVideoSetupModal] = useState(false);
@@ -150,6 +151,12 @@ const bannerExportRef = useRef<HTMLDivElement | null>(null);
 const bannerCopyRef = useRef<HTMLDivElement | null>(null);
 const bannerSectionRef = useRef<HTMLDivElement | null>(null);
 const mobileBannerExportRef = useRef<HTMLDivElement | null>(null);
+const showSystemBusyMessage = () => {
+  setShowSystemBusyModal(true);
+  setVideoErrorText(
+    "В момента системата е временно претоварена. Моля, опитайте отново по-късно."
+  );
+};
   
 
   const [workspace, setWorkspace] = useState<VideoWorkspacePayload>({
@@ -718,10 +725,7 @@ if (generateVideoAfterBanner) {
       ? e.message
       : "Възникна грешка при генериране на кампанията.";
 
-  setToastMessage(message);
-  setVideoErrorText(message);
-
-  setTimeout(() => setToastMessage(""), 3500);
+    showSystemBusyMessage();
 } finally {
   setIsGenerating(false);
 }
@@ -1492,9 +1496,7 @@ try {
     }
   }
 
-  const message =
-    error instanceof Error ? error.message : "Video generation failed";
-  setVideoErrorText(message);
+    showSystemBusyMessage();
 } finally {
     setIsVideoGenerating(false);
   }
@@ -1563,12 +1565,7 @@ const handleGenerateVideoFrames = async () => {
   } catch (e) {
     console.error(e);
 
-    const message =
-      e instanceof Error
-        ? e.message
-        : "Генерирането на кадри не беше успешно.";
-
-    setVideoErrorText(message);
+        showSystemBusyMessage();
   } finally {
     setIsGeneratingVideoFrames(false);
   }
@@ -1944,7 +1941,27 @@ logoUrl={workspace.brand_profile?.logo_url}
     </div>
   </div>
 ) : null}
-      
+      {showSystemBusyModal ? (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+    <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
+      <h3 className="text-[24px] font-black text-neutral-900">
+        Системата е временно претоварена
+      </h3>
+
+      <p className="mt-3 text-sm leading-6 text-neutral-600">
+        В момента AI генерацията не може да бъде завършена. Моля, опитайте отново по-късно.
+      </p>
+
+      <button
+        type="button"
+        onClick={() => setShowSystemBusyModal(false)}
+        className="mt-6 rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white"
+      >
+        Разбрах
+      </button>
+    </div>
+  </div>
+) : null}
 {showPaywallModal ? (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
     <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
