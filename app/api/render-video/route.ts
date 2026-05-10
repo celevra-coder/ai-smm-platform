@@ -196,7 +196,7 @@ if (finalLines.length) {
   dialogues.push(
     `Dialogue: 9,${assTime(brandStart)},${assTime(
       totalDurationSec
-    )},Brand,,0,0,0,,{\\an5\\fs54\\pos(360,610)}${finalLines
+    )},Brand,,0,0,0,,{\\an5\\fs54\\pos(360,580)}${finalLines
       .map(assSafe)
       .join("\\N\\N")}`
   );
