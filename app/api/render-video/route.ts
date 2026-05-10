@@ -197,22 +197,59 @@ const makeSmartAdLine = (value: string) => {
 
   return "";
 };
-const mainTextCandidates = [
-  ...visibleScenes.map((scene: any) =>
-    cleanOverlayCandidate(scene?.overlay_text || scene?.title || "")
-  ),
-makeSmartAdLine([headline, brandName, ...visibleScenes.map((s: any) => s?.overlay_text || "")].join(" ")) ||
-  cleanOverlayCandidate(headline),
-  ].filter(Boolean);
+const allVideoText = [
+  headline,
+  brandName,
+  ...visibleScenes.map((scene: any) => scene?.overlay_text || scene?.title || ""),
+].join(" ");
 
-const uniqueMainTexts = mainTextCandidates.filter(
+const smartMainTexts = (() => {
+  const text = cleanText(allVideoText).toLowerCase();
+
+  if (/пиц|pizza|моцарела|mozzarella|итал|тесто/i.test(text)) {
+    return [
+      "Истинска италианска пица",
+      "Прясно тесто и богат вкус",
+    ];
+  }
+
+  if (/торт|cake|десерт|сладкар/i.test(text)) {
+    return [
+      "Бутикови торти по поръчка",
+      "За специални поводи и празници",
+    ];
+  }
+
+  if (/маникюр|нокти|красот|салон|коса|подстриг/i.test(text)) {
+    return [
+      "Професионална грижа за красотата",
+      "Запази час още днес",
+    ];
+  }
+
+  if (/вода|кладенец|сондаж|геофиз/i.test(text)) {
+    return [
+      "Точна локация за вода",
+      "Геофизични замервания за сондаж",
+    ];
+  }
+
+  return [];
+})();
+
+const fallbackTexts = visibleScenes
+  .map((scene: any) =>
+    cleanOverlayCandidate(scene?.overlay_text || scene?.title || "")
+  )
+  .filter(Boolean);
+
+const uniqueMainTexts = [...smartMainTexts, ...fallbackTexts].filter(
   (text, index, arr) =>
     arr.findIndex((item) => item.toLowerCase() === text.toLowerCase()) === index
 );
 
 const firstText = uniqueMainTexts[0] || cleanOverlayCandidate(headline);
 const secondText = uniqueMainTexts[1] || "";
-
 const mainTexts =
   totalDurationSec <= 5
     ? [firstText].filter(Boolean)
