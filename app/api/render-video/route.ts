@@ -136,72 +136,108 @@ function renderVideoWithMusic({
     return lines.slice(0, 12);
   };
   const dialogues: string[] = [];
-       const visibleScenes = scenes;
-  const totalSceneDuration = visibleScenes.reduce(
-    (sum: number, scene: any) => sum + Math.max(scene?.duration_sec || 3, 1),
-    0
-  );
 
-  let cursor = 0;
+const cleanOverlayCandidate = (value: string) => {
+  let result = cleanText(value);
 
-  for (const scene of visibleScenes) {
-    const rawDuration = Math.max(scene?.duration_sec || 3, 1);
-    const scaledDuration =
-      totalSceneDuration > 0
-        ? (rawDuration / totalSceneDuration) * Math.max(totalDurationSec - 2.4, 1)
-        : 3;
+  result = result
+    .replace(/тел[:\s]*[+\d\s\-()]+/giu, "")
+    .replace(/адрес[:\s]*/giu, "")
+    .replace(/гр\.\s*[а-яa-z\s,.0-9-]+/giu, "")
+    .replace(new RegExp(cleanText(brandName), "giu"), "")
+    .replace(/\s+/g, " ")
+    .trim();
 
-    const start = cursor;
-    const end = cursor + scaledDuration;
-    cursor = end;
-let text = cleanText(scene?.overlay_text || scene?.title || "");
+  if (result.length < 8) return "";
 
-const sentences = text
-  .split(/[.!?]/)
-  .map((s) => s.trim())
-  .filter(Boolean);
+  const sentences = result
+    .split(/[.!?]/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 
-if (sentences.length > 0) {
-  text = sentences[0];
-}
+  if (sentences[0]) {
+    result = sentences[0];
+  }
 
-if (text.length > 55) {
-  text = text.slice(0, 55).trim() + "...";
-}
-const lines = splitLines(text, 18).slice(0, 2);
-if (lines.length) {
-  const visibleEnd = Math.min(end, Math.max(totalDurationSec - 3, 0));
+  if (result.length > 46) {
+    result = result.slice(0, 46).trim() + "...";
+  }
+
+  return result;
+};
+
+const mainTextCandidates = [
+  ...visibleScenes.map((scene: any) =>
+    cleanOverlayCandidate(scene?.overlay_text || scene?.title || "")
+  ),
+  cleanOverlayCandidate(headline),
+].filter(Boolean);
+
+const uniqueMainTexts = mainTextCandidates.filter(
+  (text, index, arr) =>
+    arr.findIndex((item) => item.toLowerCase() === text.toLowerCase()) === index
+);
+
+const firstText = uniqueMainTexts[0] || cleanOverlayCandidate(headline);
+const secondText = uniqueMainTexts[1] || "";
+
+const mainTexts =
+  totalDurationSec <= 5
+    ? [firstText].filter(Boolean)
+    : [firstText, secondText].filter(Boolean).slice(0, 2);
+
+const mainEnd = Math.max(totalDurationSec - 3, 0);
+const slotDuration = mainTexts.length > 1 ? mainEnd / mainTexts.length : mainEnd;
+
+mainTexts.forEach((text, textIndex) => {
+  const start = textIndex * slotDuration;
+  const end = Math.min(start + slotDuration, mainEnd);
+  const lines = splitLines(text, 18).slice(0, 2);
   const startY = 610;
-  const lineGap = 58;
+  const lineGap = 64;
 
-  lines.slice(0, 5).forEach((line, index) => {
+  lines.forEach((line, lineIndex) => {
     dialogues.push(
-      `Dialogue: 0,${assTime(start)},${assTime(visibleEnd)},Main,,0,0,0,,{\\an5\\fs40\\pos(360,${
-        startY + index * lineGap
+      `Dialogue: 0,${assTime(start)},${assTime(end)},Main,,0,0,0,,{\\an5\\fs42\\pos(360,${
+        startY + lineIndex * lineGap
       })}${assSafe(line)}`
     );
   });
-}
-
-     }
+});
 
 const brandStart = Math.max(totalDurationSec - 3, 0);
 
-const finalLines = [
-  cleanText(brandName || headline || "Brand"),
-  phone ? cleanText(`ТЕЛ: ${phone}`) : "",
-  address ? cleanText(`АДРЕС: ${address}`) : "",
-].filter(Boolean);
+const finalBrandText = cleanText(brandName || headline || "Brand");
+const brandParts = splitLines(finalBrandText, 24).slice(0, 2);
 
-console.log("FINAL OVERLAY LINES:", finalLines);
-
-if (finalLines.length) {
+if (brandParts.length) {
   dialogues.push(
     `Dialogue: 9,${assTime(brandStart)},${assTime(
       totalDurationSec
-    )},Brand,,0,0,0,,{\\an5\\fs54\\pos(360,580)}${finalLines
+    )},Brand,,0,0,0,,{\\an5\\fs72\\pos(360,470)}${brandParts
       .map(assSafe)
-      .join("\\N\\N")}`
+      .join("\\N")}`
+  );
+}
+
+if (phone) {
+  dialogues.push(
+    `Dialogue: 9,${assTime(brandStart)},${assTime(
+      totalDurationSec
+    )},Contact,,0,0,0,,{\\an5\\fs52\\pos(360,660)}${assSafe(`ТЕЛ: ${phone}`)}`
+  );
+}
+
+if (address) {
+  const formattedAddress =
+    address.length > 30
+      ? `АДРЕС: ${address.replace(/,\s*/g, " ")}`
+      : `АДРЕС: ${address}`;
+
+  dialogues.push(
+    `Dialogue: 9,${assTime(brandStart)},${assTime(
+      totalDurationSec
+    )},Address,,0,0,0,,{\\an5\\fs34\\pos(360,780)}${assSafe(formattedAddress)}`
   );
 }
     const assContent = `[Script Info]
