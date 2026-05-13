@@ -58,7 +58,7 @@ export default function MobileBannerComposition({
           ) : null}
 
           {offerBadge ? (
-  <div className="mt-4 inline-flex max-w-[210px] rounded-full bg-black/65 px-3.5 py-2 text-[12px] font-black leading-tight text-white shadow-lg backdrop-blur-sm">
+  <div className="mt-4 inline-flex max-w-[210px] rounded-full bg-black/72 px-4 py-2 text-[12px] font-black leading-tight text-white shadow-lg">
     {offerBadge}
   </div>
 ) : null}
