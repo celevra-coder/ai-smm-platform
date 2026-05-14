@@ -1260,8 +1260,11 @@ const previewHeadlineSource = cleanHeadlineInput(
   const brandCandidate = extractBrandName(sourceText);
 
   if (brandCandidate) {
-    return clampText(brandCandidate, 28);
-  }
+  return brandCandidate
+    .replace(/\b(стайлинг и грижа|грижа от|услуги|професионални услуги)\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
 
   const source = sourceText.toLowerCase();
 
@@ -1994,10 +1997,15 @@ const isTextHeavy =
   Boolean(periodText) ||
   exactLines.length >= 3 ||
   previewSubtext.length > 60;
-
-const previewHeadline = previewOfferBadge
+const forcePureBrandHeadline =
+  quickBrandName.trim().length > 0;
+const previewHeadline = forcePureBrandHeadline
+  ? quickBrandName.trim()
+  : previewOfferBadge
   ? clampText(
-      previewHeadlineBase.replace(/\d+\s?(евро|€|eur|лв)/gi, "").trim(),
+      previewHeadlineBase
+        .replace(/\d+\s?(евро|€|eur|лв)/gi, "")
+        .trim(),
       isTextHeavy ? 38 : 46
     )
   : clampText(previewHeadlineBase, isTextHeavy ? 38 : 46);
