@@ -1212,126 +1212,77 @@ const previewHeadlineSource = cleanHeadlineInput(
   ""
 );
   const getDisplayHeadline = () => {
-  let clean = cleanHeadlineInput(previewHeadlineSource);
-
-  const source = [description, offerText, clean]
+  const sourceText = [description, exactText, offerText, headline, plan?.headline]
     .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+    .join(" ");
 
-  const normalizedAddress = normalizeCompareText(address);
-  const addressParts = (address || "")
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean);
+  const extractBrandName = (text: string) => {
+    const cleaned = text
+      .replace(/\s+/g, " ")
+      .replace(/създай рекламен банер за/gi, "за")
+      .replace(/направи рекламен банер за/gi, "за")
+      .replace(/искам рекламен банер за/gi, "за")
+      .trim();
 
-  const shouldAllowLocationInHeadline = (() => {
-    const businessSource = [description, exactText, offerText]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
+    const match =
+      cleaned.match(/\bза\s+([^.\n,]{3,38})/i) ||
+      cleaned.match(/^([^.\n,]{3,38})\s*[-–]/i);
 
-    return (
-      /ресторант|кафе|кафене|бар|бистро|пицария|хотел|hotel|апартамент|apartments|къща за гости|guest house|магазин|showroom|шоурум|салон|студио|spa|спа|клиника|кабинет/.test(
-        businessSource
-      ) &&
-      !/замерв|геофиз|подземн|сондаж|ремонт|монтаж|сервиз|доставка|почиств|обучен|курс|консултац/.test(
-        businessSource
-      )
-    );
-  })();
-
-  const stripAddressFromHeadline = (value: string) => {
-    let result = value;
-
-    if (normalizedAddress) {
-      const escapedAddress = address.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      result = result.replace(new RegExp(escapedAddress, "i"), " ");
-    }
-
-    for (const part of addressParts) {
-      if (!part) continue;
-      if (part.length < 3) continue;
-
-      const escapedPart = part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      result = result.replace(new RegExp(`\\b${escapedPart}\\b`, "i"), " ");
-    }
-
-    result = result
-      .replace(/\b(в|за|до|от|към)\s*$/i, "")
+    const candidate = (match?.[1] || "")
+      .replace(/\b(бизнеса|салон|студио|магазин|ресторант|кафе)\s*$/gi, "")
+      .replace(/\b(в|гр\.|град|ул\.|бул\.).*$/gi, "")
       .replace(/\s{2,}/g, " ")
       .trim();
 
-    return result;
+    if (!candidate) return "";
+
+    const tooGeneric =
+      /^(банер|реклама|оферта|промоция|услуга|продукт|бизнес)$/i.test(
+        candidate
+      );
+
+    if (tooGeneric) return "";
+
+    return candidate;
   };
 
-  const isWaterTopic =
-    source.includes("вода") ||
-    source.includes("подземн") ||
-    source.includes("водоизточ") ||
-    source.includes("сондаж");
+  const brandCandidate = extractBrandName(sourceText);
 
-  if (!shouldAllowLocationInHeadline && address.trim()) {
-    clean = stripAddressFromHeadline(clean);
+  if (brandCandidate) {
+    return clampText(brandCandidate, 28);
   }
 
-  if (
-    isWaterTopic &&
-    /замерв|проучван|геофиз|изследван/i.test(clean) &&
-    !/вода|подземн|водоизточ|сондаж/i.test(clean)
-  ) {
-    clean = `${clean} за вода`;
+  const source = sourceText.toLowerCase();
+
+  if (/маникюр|нокти|nails|nail/i.test(source)) {
+    return "Маникюр студио";
   }
-
-  if (clean.length < 20) {
-    if (isWaterTopic) {
-      clean = "Геофизични замервания за вода";
-    } else if (source.includes("замер")) {
-      clean = "Професионални геофизични замервания";
-    } else if (source.includes("козмет") || source.includes("красота")) {
-      clean = "Подчертай естествената си красота";
-    } else if (source.includes("торта") || source.includes("десерт")) {
-      clean = "Сладко изкушение за всеки повод";
-    } else {
-      clean = "Професионално решение за твоите нужди";
-    }
-  }
-
-  if (
-    isWaterTopic &&
-    !/вода|подземн|водоизточ|сондаж/i.test(clean)
-  ) {
-    clean = `${clean} за вода`;
-  }
-
-  if (!shouldAllowLocationInHeadline && address.trim()) {
-    clean = stripAddressFromHeadline(clean);
-  }
-
-  clean = clean
-    .replace(/\s{2,}/g, " ")
-    .replace(/\b(в|за|до|от|към)\s*$/i, "")
-    .trim();
-
-    clean = clean
-    .replace(/\b(луксозни|модерни|професионални|премиум)\s+/gi, "")
-    .replace(/\bза твоя специален\b/gi, "")
-    .replace(/\bза твоите нужди\b/gi, "")
-    .replace(/\bпрофесионално решение\b/gi, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
 
   if (/фризьор|коса|причес/i.test(source)) {
-    clean = "Фризьорски салон";
-  } else if (/кафе|кафене|капучино/i.test(source)) {
-    clean = "Кафе оферта";
-  } else if (/пиц|бургер|ресторант|храна|меню/i.test(source)) {
-    clean = "Вкусна оферта";
-  } else if (/торта|сладкар|десерт/i.test(source)) {
-    clean = "Сладка оферта";
+    return "Фризьорски салон";
   }
 
-  return clampText(clean, 28);
+  if (/бюти|beauty|козмет|красота|естет|мигли|вежди|масаж|spa|спа/i.test(source)) {
+    return "Салон за красота";
+  }
+
+  if (/кафе|кафене|капучино|еспресо/i.test(source)) {
+    return "Кафе оферта";
+  }
+
+  if (/пиц|бургер|ресторант|храна|меню|доставка/i.test(source)) {
+    return "Вкусна оферта";
+  }
+
+  if (/торта|сладкар|десерт|пекарна/i.test(source)) {
+    return "Сладка оферта";
+  }
+
+  if (/вода|подземн|водоизточ|сондаж|геофиз|замерв/i.test(source)) {
+    return "Замерване за вода";
+  }
+
+  return "Рекламна оферта";
 };
 
   const getDisplaySubtext = () => {
