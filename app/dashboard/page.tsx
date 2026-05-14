@@ -1313,11 +1313,25 @@ const previewHeadlineSource = cleanHeadlineInput(
     .replace(/\b(в|за|до|от|към)\s*$/i, "")
     .trim();
 
-  if (Math.random() > 0.6 && !clean.includes("!")) {
-    clean = clean + "!";
+    clean = clean
+    .replace(/\b(луксозни|модерни|професионални|премиум)\s+/gi, "")
+    .replace(/\bза твоя специален\b/gi, "")
+    .replace(/\bза твоите нужди\b/gi, "")
+    .replace(/\bпрофесионално решение\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  if (/фризьор|коса|причес/i.test(source)) {
+    clean = "Фризьорски салон";
+  } else if (/кафе|кафене|капучино/i.test(source)) {
+    clean = "Кафе оферта";
+  } else if (/пиц|бургер|ресторант|храна|меню/i.test(source)) {
+    clean = "Вкусна оферта";
+  } else if (/торта|сладкар|десерт/i.test(source)) {
+    clean = "Сладка оферта";
   }
 
-  return clampText(clean, 46);
+  return clampText(clean, 28);
 };
 
   const getDisplaySubtext = () => {
