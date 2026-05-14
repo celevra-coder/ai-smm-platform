@@ -2059,7 +2059,7 @@ const getSmartLayout = () => {
     source.includes("злат") ||
     source.includes("лукс")
   ) {
-    return "bottom-card";
+    return "hero-left";
   }
 
   // услуги → hero
@@ -2489,7 +2489,7 @@ const renderBannerComposition = (
         </>
       ) : null}
 
-      {previewLayout === "bottom-card" ? (
+      {false ? (
         <>
           <div className={`absolute inset-0 ${overlayClasses.base}`} />
           {renderLogoBadge(large)}
@@ -2700,7 +2700,7 @@ const headlineMaxLines =
 
     ctx.textBaseline = "top";
 
-    if (previewLayout === "bottom-card") {
+    if (previewLayout === "hero-left") {
       drawRoundedRect(ctx, 42, 630, 940, 330, 28);
       ctx.fillStyle = "rgba(255,255,255,0.92)";
       ctx.fill();
