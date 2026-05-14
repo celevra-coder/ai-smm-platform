@@ -851,7 +851,7 @@ if (isDemo && !session?.user) {
 "3. ПОДТЕКСТ – обяснява офертата",
 "4. ТЕЛЕФОН – много видим и лесен за действие",
 "Headline и офертата НЕ трябва да се сливат – да има контраст и ясно разграничение.",
-"АКО има цена, отстъпка или процент, те ЗАДЪЛЖИТЕЛНО трябва да присъстват визуално като силно отличен promo badge, sticker, circle badge или highlight box.",
+"НЕ рисувай текстови кутии, бели карти, кръгове, стикери, купони, highlight box-ове или promo badge елементи вътре в самото изображение. Фонът трябва да бъде чиста реалистична рекламна сцена без вграден текст и без бели overlay панели.",
 "Телефонът, ако е подаден, е ЗАДЪЛЖИТЕЛЕН елемент и трябва да бъде голям, ясен и лесен за забелязване.",
 "НЕ повтаряй един и същ текст едновременно като headline, subtext, offer badge и support text.",
 
@@ -900,8 +900,8 @@ const accessToken = session?.access_token;
             extraText.trim(),
             imageUrl.trim() ? `Image usage mode: ${imageUsageMode}` : "",
             fromBrandExport ? "Source: brand export flow" : "",
-            "Design mode: readable editorial",
-            "Banner style: more creative layout, richer hierarchy, stronger variation, premium local ad look",
+            "Design mode: clean realistic background only",
+"Banner style: premium realistic social media background, no built-in text boxes, no white cards, no stickers, no coupon shapes",
             
             "Do not render CTA as a fake clickable button",
           ]
