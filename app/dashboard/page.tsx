@@ -2181,7 +2181,9 @@ const renderPhonePill = (large = false) => {
 const renderOfferBadge = (large = false) => {
   if (!previewOfferBadge) return null;
 
-  if (useCircularOfferBadge) {
+  const allowCircularBadge = large && useCircularOfferBadge;
+
+  if (allowCircularBadge) {
     return (
       <div
         className={`absolute right-4 top-[72px] z-20 flex items-center justify-center rounded-full border text-center font-black shadow-[0_14px_34px_rgba(0,0,0,0.18)] backdrop-blur-sm ${
@@ -2198,17 +2200,17 @@ const renderOfferBadge = (large = false) => {
   }
 
   return (
-  <div
-    className={`inline-flex w-fit items-center gap-2 rounded-[18px] border border-white/20 bg-white/90 px-4 py-2 font-extrabold text-neutral-900 shadow-[0_8px_20px_rgba(0,0,0,0.18)] backdrop-blur-sm ${
-      large
-        ? "px-5 py-2.5 text-[16px] md:text-[19px]"
-        : "text-[14px]"
-    }`}
-  >
-    <span className="text-[1em]">💰</span>
-    <span>{previewOfferBadge}</span>
-  </div>
-);
+    <div
+      className={`inline-flex w-fit items-center gap-2 rounded-[20px] border border-white/10 px-4 py-2 font-extrabold shadow-[0_10px_24px_rgba(0,0,0,0.22)] ${
+        large
+          ? "bg-white/90 px-5 py-2.5 text-[16px] text-neutral-900 backdrop-blur-sm md:text-[19px]"
+          : "bg-black/72 text-[13px] text-white"
+      }`}
+    >
+      <span className="text-[1em]">💰</span>
+      <span>{previewOfferBadge}</span>
+    </div>
+  );
 };
 const renderLogoBadge = (large = false) => {
   if (!logoUrl) return null;
