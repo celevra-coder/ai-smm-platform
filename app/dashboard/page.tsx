@@ -1110,16 +1110,16 @@ if (userError || !user) {
   }
 
   if (
-    value.includes("bottom") ||
-    value.includes("card") ||
-    value.includes("overlay")
-  ) {
-    return "bottom-card";
-  }
+  value.includes("bottom") ||
+  value.includes("card") ||
+  value.includes("overlay")
+) {
+  return "hero-left";
+}
 
   if (hasStrongPromo) return "promo-heavy";
-  if (hasPhone && headlineLength > 34) return "bottom-card";
-  if (hasImage) return "hero-left";
+if (hasPhone && headlineLength > 34) return "hero-left";
+if (hasImage) return "hero-left";
 
   return "split-layout";
 };
