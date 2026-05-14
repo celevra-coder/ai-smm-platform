@@ -1229,34 +1229,33 @@ const previewHeadlineSource = cleanHeadlineInput(
     .join(" ");
 
   const extractBrandName = (text: string) => {
-    const cleaned = text
-      .replace(/\s+/g, " ")
-      .replace(/създай рекламен банер за/gi, "за")
-      .replace(/направи рекламен банер за/gi, "за")
-      .replace(/искам рекламен банер за/gi, "за")
-      .trim();
+  const cleaned = text.replace(/\s+/g, " ").trim();
 
-    const match =
-      cleaned.match(/\bза\s+([^.\n,]{3,38})/i) ||
-      cleaned.match(/^([^.\n,]{3,38})\s*[-–]/i);
+  const businessNameMatch =
+    cleaned.match(/(?:фризьорски салон|салон за красота|маникюр студио|nails studio|кафе|ресторант|пицария|сладкарница)\s+([A-Za-zА-Яа-я0-9 '&.-]{2,32})/i);
 
-    const candidate = (match?.[1] || "")
-      .replace(/\b(бизнеса|салон|студио|магазин|ресторант|кафе)\s*$/gi, "")
+  if (businessNameMatch?.[1]) {
+    return businessNameMatch[1]
       .replace(/\b(в|гр\.|град|ул\.|бул\.).*$/gi, "")
-      .replace(/\s{2,}/g, " ")
+      .replace(/[.,!?]+$/g, "")
       .trim();
+  }
 
-    if (!candidate) return "";
+  const afterZaMatch = cleaned.match(/\bза\s+([^.\n,]{3,38})/i);
 
-    const tooGeneric =
-      /^(банер|реклама|оферта|промоция|услуга|продукт|бизнес)$/i.test(
-        candidate
-      );
+  const candidate = (afterZaMatch?.[1] || "")
+    .replace(/\b(в|гр\.|град|ул\.|бул\.).*$/gi, "")
+    .replace(/[.,!?]+$/g, "")
+    .trim();
 
-    if (tooGeneric) return "";
+  if (!candidate) return "";
 
-    return candidate;
-  };
+  if (/^(бизнеса|банер|реклама|оферта|промоция|услуга|продукт)$/i.test(candidate)) {
+    return "";
+  }
+
+  return candidate;
+};
 
   const brandCandidate = extractBrandName(sourceText);
 
