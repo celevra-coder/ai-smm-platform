@@ -552,7 +552,12 @@ useEffect(() => {
       logoInputRef.current.value = "";
     }
   };
-
+const clearActiveBrandSelection = () => {
+  localStorage.removeItem("active_brand_profile");
+  localStorage.removeItem("active_brand_user_id");
+  setQuickBrandName("");
+  resetQuickAdState();
+};
   const clearImageSelection = () => {
     setImageUrl("");
     setImageFileName("");
@@ -2960,6 +2965,13 @@ const downloadImage = async (format: "png" | "jpg") => {
                 генерирай бърз банер за Facebook / Instagram.
               </p>
             </div>
+            <button
+  type="button"
+  onClick={clearActiveBrandSelection}
+  className="shrink-0 rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-bold text-neutral-700 hover:bg-neutral-100"
+>
+  Изчисти избрания бранд
+</button>
 
             
           </div>
