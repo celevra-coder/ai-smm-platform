@@ -111,6 +111,7 @@ const isDemo =
   const [periodText, setPeriodText] = useState("");
   const [exactText, setExactText] = useState("");
   const [quickPhone, setQuickPhone] = useState("");
+const [quickBrandName, setQuickBrandName] = useState("");
 
   const [logoUrl, setLogoUrl] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -265,6 +266,7 @@ useEffect(() => {
         );
         setAddress(brand.business_address || "");
         setQuickPhone(brand.phone || "");
+        setQuickBrandName(brand.brand_name || "");
         setLogoUrl(brand.logo_url || "");
         setExtraText(
           brand.preferred_colors
@@ -578,6 +580,7 @@ useEffect(() => {
     setPeriodText("");
     setExactText("");
     setQuickPhone("");
+    setQuickBrandName("");
     setLogoUrl("");
     setImageUrl("");
     setImageUsageMode("auto");
@@ -1212,7 +1215,11 @@ const previewHeadlineSource = cleanHeadlineInput(
   ""
 );
   const getDisplayHeadline = () => {
-  const sourceText = [description, exactText, offerText, headline, plan?.headline]
+  if (quickBrandName.trim()) {
+    return clampText(quickBrandName.trim(), 28);
+  }
+
+  const sourceText = [quickBrandName, description, exactText, offerText, headline, plan?.headline]
     .filter(Boolean)
     .join(" ");
 
