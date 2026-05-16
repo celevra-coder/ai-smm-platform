@@ -765,7 +765,13 @@ No collage.
 No storyboard.
 No split-screen.
 Natural realistic camera look.
+Strict realism requirement: everything must look physically believable and commercially usable.
+Food must look real, fresh, appetizing, natural, and edible — never plastic, waxy, melted, rubbery, fake, overly glossy, or artificial.
+People must move naturally and must never pass through tables, chairs, counters, products, or other objects.
+Objects must stay solid and physically consistent. No morphing, no melting, no floating items, no broken hands, no distorted faces, no impossible body positions.
+If a realistic human action is uncertain, avoid the action and show a stable realistic environment, product detail, ambience, or camera movement instead.
 `
+
   .replace(/\s+/g, " ")
   .trim();
 
