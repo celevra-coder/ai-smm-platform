@@ -2582,9 +2582,12 @@ const renderBannerComposition = (
             <div className={textWrapClass}>
 {previewHeadline ? (
   <div>
-    <div className="inline-flex rounded-full bg-black/55 px-4 py-1.5 text-[16px] font-black uppercase tracking-[0.16em] text-white shadow-lg backdrop-blur-sm">
-      {previewHeadline}
-    </div>
+    <h3
+  className={`${headlineClass} line-clamp-2 tracking-[-0.04em]`}
+  style={{ textShadow: "0 4px 18px rgba(0,0,0,0.35)" }}
+>
+  {previewHeadline}
+</h3>
 
     <div className="mt-4 h-[2px] w-24 rounded-full bg-white/70" />
   </div>
