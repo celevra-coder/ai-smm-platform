@@ -386,13 +386,12 @@ if (looksLikeEnvironmentService) {
   }
 
       if (looksLikeFoodPlace) {
-    return [
-      "realistic premium restaurant or cafe commercial scene showing elegant food-service interior, warm atmosphere, refined table setting, believable dining environment, and appetizing hospitality mood",
-      "clean cinematic food-place ad shot with realistic restaurant or cafe interior, plated food or drinks, refined ambience, premium hospitality aesthetic, and natural adult presence if needed",
-      "believable closing restaurant or cafe commercial shot focused on ambience, table styling, food-and-drink presentation, and premium hospitality atmosphere, with no text",
-    ];
-  }
-
+  return [
+    "hyper-realistic real restaurant commercial footage with natural edible food, authentic plating, real ingredients, matte natural textures, steam, sauce, fresh vegetables, rice, fish, meat, bread or drinks depending on the business. Food must look photographed from a real restaurant, not AI generated, not plastic, not waxy, not glossy, not rubbery, not melted, not fake. Believable table setting, warm hospitality atmosphere, realistic lighting, no strange food shapes",
+    "clean cinematic real food-place ad shot with natural appetizing food texture, realistic restaurant or cafe interior, believable plates, cutlery, table surface, drinks, hands only if anatomically correct, and premium hospitality mood. Avoid artificial perfect shapes, toy-like food, plastic sushi, fake cheese, melted textures, deformed plates, and impossible ingredients",
+    "believable closing restaurant or cafe commercial shot focused on real edible food presentation, natural table styling, warm ambience, real-world restaurant lighting, and authentic hospitality atmosphere, with no text and no fake AI-looking food",
+  ];
+}
   if (looksLikeNightlife) {
     return [
       "realistic premium nightlife commercial scene showing elegant bar, lounge, or club interior with cinematic low light, stylish drinks, music atmosphere, refined crowd mood, and believable evening energy",
@@ -592,7 +591,7 @@ const subjectInstruction = looksLikeEnvironmentService
   : looksLikePoolSpaLeisure
   ? leisureSubjectInstruction
   : looksLikeFoodPlace
-  ? "Show a realistic premium restaurant, cafe, or food-place commercial. Focus on warm hospitality atmosphere, elegant interior, believable food or drink presentation, table styling, ambient lighting, and authentic dining mood. Do not switch to pharmacy, gym, beauty salon, or unrelated retail."
+  ? "gym equipment, pharmacy shelves, beauty salon procedure, car service garage, nightclub dance floor, pet grooming table, plastic food, wax food, fake food, toy food, rubber food, glossy artificial food, melted food, deformed food, impossible food shape, strange sushi, plastic sushi, fake fish, fake rice, melted cheese texture, unrealistic sauce, distorted plates, floating food, food morphing, hands passing through food, people passing through tables"
   : looksLikeNightlife
   ? "Show a realistic premium nightlife commercial for a bar, lounge, or club. Focus on stylish drinks, ambient low light, elegant interior, believable evening energy, premium social mood, and entertainment atmosphere. Do not switch to restaurant daylight service, gym, pharmacy, or beauty salon."
   : looksLikePetBusiness
