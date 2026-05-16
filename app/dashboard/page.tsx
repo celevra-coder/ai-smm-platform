@@ -2487,7 +2487,7 @@ const renderBannerComposition = (
           >
             <div className={large ? "max-w-[560px]" : "max-w-[330px]"}>
               {previewHeadline ? (
-  <div>
+  <div className="-mt-4">
     <h3
       className={`${headlineClass} line-clamp-2 tracking-[-0.04em]`}
       style={{ textShadow: "0 4px 18px rgba(0,0,0,0.35)" }}
