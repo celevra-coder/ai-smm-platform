@@ -2462,14 +2462,20 @@ const renderBannerComposition = (
             }`}
           >
             <div className={large ? "max-w-[560px]" : "max-w-[330px]"}>
-              {previewHeadline ? <h3 className={headlineClass}>{previewHeadline}</h3> : null}
-              {previewSubtext ? <p className={subtextClass}>{previewSubtext}</p> : null}
+              {previewHeadline ? (
+  <div>
+    <h3
+      className={`${headlineClass} line-clamp-2 tracking-[-0.04em]`}
+      style={{ textShadow: "0 4px 18px rgba(0,0,0,0.35)" }}
+    >
+      {previewHeadline}
+    </h3>
 
-              {!useCircularOfferBadge ? (
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  {renderOfferBadge(large)}
-                </div>
-              ) : null}
+    {quickBrandName ? (
+      <div className="mt-4 h-[2px] w-24 rounded-full bg-white/70" />
+    ) : null}
+  </div>
+) : null}
 
               {renderSupportBlock(large, false)}
 
