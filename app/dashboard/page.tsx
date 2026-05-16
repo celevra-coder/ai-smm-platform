@@ -2369,29 +2369,37 @@ const renderBannerComposition = (
   }`}
 >
               {previewHeadline ? (
-                <h3
-                  className={`${headlineClass} ${
-  large && logoUrl ? "max-w-[520px]" : large ? "max-w-[720px]" : "max-w-[340px]"
-}`}
-                >
-                  {previewHeadline}
-                </h3>
-              ) : null}
+  <div className={large && logoUrl ? "max-w-[520px]" : large ? "max-w-[720px]" : "max-w-[340px]"}>
+    <h3
+      className={`${headlineClass} line-clamp-2 tracking-[-0.04em]`}
+      style={{ textShadow: "0 4px 18px rgba(0,0,0,0.35)" }}
+    >
+      {previewHeadline}
+    </h3>
 
-              {previewSubtext ? (() => {
-                let cleanSubtext = previewSubtext;
+    {quickBrandName ? (
+      <div className="mt-4 h-[2px] w-24 rounded-full bg-white/70" />
+    ) : null}
+  </div>
+) : null}
 
-                if (previewOfferBadge) {
-                  const offerRegex = new RegExp(previewOfferBadge, "i");
-                  cleanSubtext = cleanSubtext.replace(offerRegex, "").trim();
-                }
+{previewSubtext ? (() => {
+  let cleanSubtext = previewSubtext;
 
-                return (
-                  <p className={`${subtextClass} ${large ? "max-w-[620px]" : "max-w-[320px]"}`}>
-                    {cleanSubtext}
-                  </p>
-                );
-              })() : null}
+  if (previewOfferBadge) {
+    const offerRegex = new RegExp(previewOfferBadge, "i");
+    cleanSubtext = cleanSubtext.replace(offerRegex, "").trim();
+  }
+
+  return (
+    <p
+      className={`${subtextClass} mt-5 line-clamp-3 ${large ? "max-w-[620px]" : "max-w-[320px]"}`}
+      style={{ textShadow: "0 2px 12px rgba(0,0,0,0.28)" }}
+    >
+      {cleanSubtext}
+    </p>
+  );
+})() : null}
 
               {!useCircularOfferBadge ? (
                 <div className={large ? "mt-6 flex flex-wrap items-center justify-center gap-3" : "mt-5 flex flex-wrap items-center justify-center gap-3"}>
