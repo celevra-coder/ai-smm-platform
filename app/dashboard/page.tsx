@@ -76,7 +76,13 @@ type BannerPlan = {
   phone_style?: "pill" | "card";
   badge_style?: "rounded" | "circle";
 };
+function extractBrandName(text: string) {
+  const match = text.match(
+    /\b(?:за|на|от)\s+([A-ZА-Я][A-Za-zА-Яа-я0-9&\-\s]{2,30})/i
+  );
 
+  return match?.[1]?.trim() || "";
+}
 function DashboardPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -1997,10 +2003,16 @@ const isTextHeavy =
   Boolean(periodText) ||
   exactLines.length >= 3 ||
   previewSubtext.length > 60;
-const forcePureBrandHeadline =
-  quickBrandName.trim().length > 0;
+
+  const detectedQuickBrandName =
+  quickBrandName.trim() ||
+  extractBrandName(description) ||
+  "";
+
+const forcePureBrandHeadline = detectedQuickBrandName.length > 0;
+
 const previewHeadline = forcePureBrandHeadline
-  ? quickBrandName.trim()
+  ? detectedQuickBrandName
   : previewOfferBadge
   ? clampText(
       previewHeadlineBase
@@ -2556,10 +2568,14 @@ const renderBannerComposition = (
             }`}
           >
             <div className={textWrapClass}>
-              {previewHeadline ? (
-  <h3 className={`${headlineClass} line-clamp-3`}>
-    {previewHeadline}
-  </h3>
+{previewHeadline ? (
+  <div>
+    <div className="inline-flex rounded-full bg-black/55 px-4 py-1.5 text-[16px] font-black uppercase tracking-[0.16em] text-white shadow-lg backdrop-blur-sm">
+      {previewHeadline}
+    </div>
+
+    <div className="mt-4 h-[2px] w-24 rounded-full bg-white/70" />
+  </div>
 ) : null}
               {previewSubtext ? (
   <p className={`${subtextClass} line-clamp-2`}>
