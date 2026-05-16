@@ -77,11 +77,23 @@ type BannerPlan = {
   badge_style?: "rounded" | "circle";
 };
 function extractBrandName(text: string) {
-  const match = text.match(
-    /\b(?:за|на|от)\s+([A-ZА-Я][A-Za-zА-Яа-я0-9&\-\s]{2,30})/i
+  const clean = text.trim();
+
+  const knownBusinessMatch = clean.match(
+    /\b(?:салон|студио|кафе|ресторант|пицария|бар|магазин|козметика|маникюр)\s+([A-ZА-Я][A-Za-zА-Яа-я0-9&.-]{2,24})\b/i
   );
 
-  return match?.[1]?.trim() || "";
+  if (knownBusinessMatch?.[1]) {
+    return knownBusinessMatch[1].trim();
+  }
+
+  const latinBrandMatch = clean.match(/\b([A-Z][A-Za-z0-9&.-]{2,24})\b/);
+
+  if (latinBrandMatch?.[1]) {
+    return latinBrandMatch[1].trim();
+  }
+
+  return "";
 }
 function DashboardPageContent() {
   const searchParams = useSearchParams();
