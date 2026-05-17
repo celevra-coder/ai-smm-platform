@@ -64,7 +64,26 @@ const buildQuickVideoPrompt = () => {
       " Show realistic fresh sushi, real rice texture, fish texture, nori, wooden board or plate, restaurant lighting. Avoid plastic-looking food, fake glossy surfaces, impossible ingredients, or artificial shapes.";
   }
 
-  return `${videoIdea.trim()}. ${businessDescription.trim()}. ${realismRules} Negative details: bones, plastic bones, chew toy, kibble, pellets, granules, pet snacks, biscuits, steak, steak pieces, cooked meat, grilled meat, sausage, rice, vegetables, pharmacy, veterinary clinic, pet store, retail shelves, medical room, supermarket, laboratory, hospital, white walls, medicine products, fake food, CGI food, cartoon food, floating objects, distorted animal mouth, unrealistic chewing.`;
+  return `
+Main video scene:
+${videoIdea.trim()}.
+
+Business context only:
+${businessDescription.trim()}.
+
+Important:
+The MAIN visual action and camera focus must follow ONLY the video idea section.
+The business context is background information only and must NOT force unrelated objects, body parts, services, or scenes into the same shot.
+
+Create one clean coherent commercial scene.
+Avoid mixing manicure and pedicure in the same close-up unless explicitly requested.
+Avoid awkward touching, hands touching feet, combined beauty procedures, or unnatural beauty salon actions.
+
+${realismRules}
+
+Negative details:
+bones, plastic bones, chew toy, kibble, pellets, granules, pet snacks, biscuits, steak, steak pieces, cooked meat, grilled meat, sausage, rice, vegetables, pharmacy, veterinary clinic, pet store, retail shelves, medical room, supermarket, laboratory, hospital, white walls, medicine products, fake food, CGI food, cartoon food, floating objects, distorted animal mouth, unrealistic chewing.
+`;
 };
 const uploadImage = async (file: File) => {
   try {
