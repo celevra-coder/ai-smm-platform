@@ -42,38 +42,7 @@ export default function HomePageMobile({
         </div>
       </section>
 
-      <section className="mt-5 overflow-hidden rounded-[28px] bg-black text-white shadow-sm">
-        <video
-          src="/videos/promo.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="h-[220px] w-full object-cover opacity-90"
-        />
-
-        <div className="p-5">
-          <p className="text-xs uppercase tracking-[0.18em] text-white/60">
-            Професионално видео
-          </p>
-
-          <h2 className="mt-2 text-2xl font-black leading-tight">
-            Поръчай обработено или AI видео
-          </h2>
-
-          <p className="mt-3 text-sm leading-6 text-white/70">
-            Субтитри, ефекти, музика, анимации или AI инфлуенсър видео.
-          </p>
-
-          <Link
-            href="/order-video"
-            onClick={(e) => handleProtectedClick(e, "/order-video")}
-            className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-bold text-black"
-          >
-            Виж опциите
-          </Link>
-        </div>
-      </section>
+      
 
       <section id="mobile-solutions" className="mt-8">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-500">
@@ -115,23 +84,59 @@ export default function HomePageMobile({
       </section>
 
       <section
-        id="mobile-how-it-works"
-        className="mt-8 rounded-[28px] bg-white/80 p-5 shadow-sm"
+  id="mobile-how-it-works"
+  className="mt-8 space-y-4"
+>
+  <div className="rounded-[28px] bg-white/80 p-5 shadow-sm">
+    <p className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-500">
+      Как работи
+    </p>
+
+    <h2 className="mt-2 text-2xl font-black tracking-tight">
+      Пишеш естествено. Получаваш готова рекламна идея.
+    </h2>
+
+    <div className="mt-5 space-y-3">
+      <Step number="1" title="Описваш рекламата" />
+      <Step number="2" title="Добавяш детайли или изображение" />
+      <Step number="3" title="Получаваш готов резултат" />
+    </div>
+  </div>
+
+  <div className="overflow-hidden rounded-[28px] bg-black text-white shadow-sm">
+    <video
+      src="/videos/promo.mp4"
+      autoPlay
+      muted
+      loop
+      playsInline
+      className="h-[220px] w-full object-cover opacity-90"
+    />
+
+    <div className="p-5">
+      <p className="text-xs uppercase tracking-[0.18em] text-white/60">
+        Професионално видео
+      </p>
+
+      <h2 className="mt-2 text-2xl font-black leading-tight">
+        Нужно ти е повече от кратко AI видео?
+      </h2>
+
+      <p className="mt-3 text-sm leading-6 text-white/70">
+        Поръчай професионално видео и ние ще го изработим за теб — с монтаж,
+        субтитри, ефекти, музика и завършен рекламен вид.
+      </p>
+
+      <Link
+        href="/order-video"
+        onClick={(e) => handleProtectedClick(e, "/order-video")}
+        className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-bold text-black"
       >
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-500">
-          Как работи
-        </p>
-
-        <h2 className="mt-2 text-2xl font-black tracking-tight">
-          Пишеш естествено. Получаваш готова рекламна идея.
-        </h2>
-
-        <div className="mt-5 space-y-3">
-          <Step number="1" title="Описваш рекламата" />
-          <Step number="2" title="Добавяш детайли или изображение" />
-          <Step number="3" title="Получаваш готов резултат" />
-        </div>
-      </section>
+        Поръчай професионално видео
+      </Link>
+    </div>
+  </div>
+</section>
     </div>
   );
 }
