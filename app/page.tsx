@@ -373,65 +373,93 @@ export default function HomePage() {
       </section>
 
       <section
-        id="how-it-works"
-        className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8"
-      >
-        <div className="rounded-[28px] border border-white/70 bg-white/70 px-4 py-8 shadow-[0_18px_60px_rgba(0,0,0,0.05)] backdrop-blur sm:rounded-[36px] sm:px-8 lg:px-12 lg:py-14">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-500">
-              Как работи
-            </p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-neutral-950 sm:text-4xl">
-              Пишеш естествено. Получаваш готова рекламна визия.
-            </h2>
-            <p className="mt-4 text-base leading-7 text-neutral-600">
-              Идеята не е потребителят да учи сложни команди. Идеята е да опише
-              рекламата си така, както би я обяснил на човек.
-            </p>
+  id="how-it-works"
+  className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8"
+>
+  <div className="grid gap-6 lg:grid-cols-[1fr_0.75fr]">
+    <div className="rounded-[28px] border border-white/70 bg-white/70 px-4 py-7 shadow-[0_18px_60px_rgba(0,0,0,0.05)] backdrop-blur sm:rounded-[36px] sm:px-7 lg:px-9 lg:py-10">
+      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-500">
+        Как работи
+      </p>
+
+      <h2 className="mt-3 text-2xl font-black tracking-tight text-neutral-950 sm:text-3xl">
+        Пишеш естествено. Получаваш готова рекламна визия.
+      </h2>
+
+      <div className="mt-7 grid gap-3 md:grid-cols-3">
+        <div className="rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-950 text-sm font-black text-white">
+            1
           </div>
-
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            <div className="rounded-[28px] border border-neutral-200 bg-[#faf8f6] p-5">
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-950 text-sm font-black text-white">
-                1
-              </div>
-              <h3 className="text-lg font-bold text-neutral-950">
-                Описваш рекламата
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-neutral-600">
-                Услуга, продукт, град, период, промоция, настроение, стил или
-                конкретно послание.
-              </p>
-            </div>
-
-            <div className="rounded-[28px] border border-neutral-200 bg-[#faf8f6] p-5">
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-950 text-sm font-black text-white">
-                2
-              </div>
-              <h3 className="text-lg font-bold text-neutral-950">
-                Добавяш детайли
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-neutral-600">
-                По желание качваш лого или изображение, които системата може да
-                използва в банера.
-              </p>
-            </div>
-
-            <div className="rounded-[28px] border border-neutral-200 bg-[#faf8f6] p-5">
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-950 text-sm font-black text-white">
-                3
-              </div>
-              <h3 className="text-lg font-bold text-neutral-950">
-                Получаваш резултат
-              </h3>
-              <p className="mt-2 text-sm leading-6 text-neutral-600">
-                Готов банер с текст, композиция и рекламно усещане, съобразени с
-                твоята идея.
-              </p>
-            </div>
-          </div>
+          <h3 className="text-base font-bold text-neutral-950">
+            Описваш рекламата
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            Услуга, продукт, град, оферта или конкретно послание.
+          </p>
         </div>
-      </section>
+
+        <div className="rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-950 text-sm font-black text-white">
+            2
+          </div>
+          <h3 className="text-base font-bold text-neutral-950">
+            Добавяш детайли
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            По желание качваш лого или изображение.
+          </p>
+        </div>
+
+        <div className="rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-950 text-sm font-black text-white">
+            3
+          </div>
+          <h3 className="text-base font-bold text-neutral-950">
+            Получаваш резултат
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            Готов банер или рекламна идея за социални мрежи.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div className="overflow-hidden rounded-[28px] border border-white/70 bg-neutral-950 text-white shadow-[0_18px_60px_rgba(0,0,0,0.10)] sm:rounded-[36px]">
+      <video
+        src="/videos/promo.mp4"
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="h-[220px] w-full object-cover opacity-90"
+      />
+
+      <div className="p-5 sm:p-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">
+          Професионално видео
+        </p>
+
+        <h3 className="mt-2 text-2xl font-black leading-tight">
+          Нужно ти е повече от кратко AI видео?
+        </h3>
+
+        <p className="mt-3 text-sm leading-6 text-white/75">
+          Поръчай професионално видео и ние ще го изработим за теб — с монтаж,
+          субтитри, ефекти, музика и завършен рекламен вид.
+        </p>
+
+        <Link
+          href="/order-video"
+          onClick={(e) => handleProtectedClick(e, "/order-video")}
+          className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-black"
+        >
+          Поръчай професионално видео
+        </Link>
+      </div>
+    </div>
+  </div>
+</section>
             </div>
       {showAuthModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
