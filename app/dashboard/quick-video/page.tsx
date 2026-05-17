@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { createClient } from "@/lib/supabase-browser";
 
 export default function QuickVideoPage() {
   const [businessName, setBusinessName] = useState("");
@@ -12,6 +13,67 @@ export default function QuickVideoPage() {
   const [showMiniPackageModal, setShowMiniPackageModal] = useState(false);
 const [paymentLoading, setPaymentLoading] = useState(false);
 const [paymentError, setPaymentError] = useState("");
+const [imageUrl, setImageUrl] = useState("");
+const [imageFileName, setImageFileName] = useState("");
+const [imageUploading, setImageUploading] = useState(false);
+const [generating, setGenerating] = useState(false);
+const [generatedVideoUrl, setGeneratedVideoUrl] = useState("");
+const [generationError, setGenerationError] = useState("");
+const uploadImage = async (file: File) => {
+  try {
+    setImageUploading(true);
+    setGenerationError("");
+
+    if (!file.type.startsWith("image/")) {
+      setGenerationError("Моля, качи валидна снимка.");
+      return;
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error("Липсва Supabase конфигурация.");
+    }
+
+    const safeName = file.name
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9.\-_]/g, "");
+
+    const filePath = `uploads/quick-video/${Date.now()}-${safeName}`;
+
+    const uploadResponse = await fetch(
+      `${supabaseUrl}/storage/v1/object/banners/${filePath}`,
+      {
+        method: "POST",
+        headers: {
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+          "Content-Type": file.type,
+          "x-upsert": "true",
+        },
+        body: file,
+      }
+    );
+
+    const rawText = await uploadResponse.text();
+
+    if (!uploadResponse.ok) {
+      throw new Error(rawText || "Неуспешно качване на снимката.");
+    }
+
+    setImageUrl(`${supabaseUrl}/storage/v1/object/public/banners/${filePath}`);
+    setImageFileName(file.name);
+  } catch (error) {
+    console.error(error);
+    setGenerationError(
+      error instanceof Error ? error.message : "Неуспешно качване на снимката."
+    );
+  } finally {
+    setImageUploading(false);
+  }
+};
 const handleMiniPackageCheckout = async () => {
   try {
     setPaymentLoading(true);
@@ -56,6 +118,181 @@ const handleMiniPackageCheckout = async () => {
     setPaymentError("Не успяхме да отворим плащането. Опитай отново.");
   } finally {
     setPaymentLoading(false);
+  }
+};
+const handleGenerateVideo = async () => {
+  try {
+    setGenerating(true);
+    setGenerationError("");
+    setGeneratedVideoUrl("");
+
+    if (!businessName.trim()) {
+      setGenerationError("Моля, попълни име на бизнес.");
+      return;
+    }
+
+    if (!businessDescription.trim()) {
+      setGenerationError("Моля, опиши какво предлага бизнесът.");
+      return;
+    }
+
+    if (!videoIdea.trim()) {
+      setGenerationError("Моля, опиши идеята за видеото.");
+      return;
+    }
+
+    const supabase = createClient();
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const videoCreditCost = duration >= 10 ? 35 : 25;
+
+    const creditRes = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/spend-credit`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          action_type: "video",
+          cost: videoCreditCost,
+        }),
+      }
+    );
+
+    const creditData = await creditRes.json().catch(() => null);
+
+    if (!creditRes.ok || !creditData?.success) {
+      setShowMiniPackageModal(true);
+      return;
+    }
+
+    const generateRes = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          video_image_url: imageUrl || "",
+          source_type: imageUrl ? "video-image" : "text-only",
+          duration,
+          brand_profile: {
+            brand_name: businessName.trim(),
+            brand_description: businessDescription.trim(),
+            phone: phone.trim(),
+          },
+          selected_post: {
+            headline: videoIdea.trim(),
+            caption: videoIdea.trim(),
+            offer: videoIdea.trim(),
+            cta: phone.trim() ? "Обади се сега" : "Пиши ни сега",
+          },
+        }),
+      }
+    );
+
+    const generateData = await generateRes.json().catch(() => null);
+
+    if (!generateRes.ok) {
+      throw new Error(
+        generateData?.error ||
+          generateData?.details ||
+          "Неуспешно стартиране на видео генерацията."
+      );
+    }
+
+    const requestId = generateData?.fal_request_id || generateData?.request_id;
+
+    if (!requestId) {
+      throw new Error("Липсва request_id от видео генерацията.");
+    }
+
+    let rawVideoUrl = "";
+
+    for (let i = 0; i < 40; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 4000));
+
+      const statusRes = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video-status?request_id=${requestId}`,
+        {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const statusData = await statusRes.json().catch(() => null);
+
+      rawVideoUrl =
+        statusData?.video?.url ||
+        statusData?.video_url ||
+        statusData?.fal_response?.video?.url ||
+        "";
+
+      if (rawVideoUrl) break;
+    }
+
+    if (!rawVideoUrl) {
+      throw new Error("Видеото не беше готово навреме. Опитай отново.");
+    }
+
+    const renderRes = await fetch("/api/render-video", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        videoUrl: rawVideoUrl,
+        headline: videoIdea.trim(),
+        brandName: businessName.trim(),
+        scenes: [
+          {
+            title: "Quick video",
+            overlay_text: videoIdea.trim(),
+            duration_sec: duration,
+          },
+        ],
+        totalDurationSec: duration,
+        cta: phone.trim() ? "Обади се сега" : "Пиши ни сега",
+        phone: phone.trim(),
+        address: "",
+        musicStyle: "modern social ad",
+      }),
+    });
+
+    if (!renderRes.ok) {
+      const renderError = await renderRes.json().catch(() => null);
+      throw new Error(renderError?.error || "Неуспешно рендериране на видеото.");
+    }
+
+    const blob = await renderRes.blob();
+    const finalUrl = URL.createObjectURL(blob);
+
+    setGeneratedVideoUrl(finalUrl);
+  } catch (error) {
+    console.error(error);
+    setGenerationError(
+      error instanceof Error ? error.message : "Възникна грешка при видеото."
+    );
+  } finally {
+    setGenerating(false);
   }
 };
   return (
@@ -141,6 +378,36 @@ const handleMiniPackageCheckout = async () => {
                   className="w-full rounded-2xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-black/30"
                 />
               </label>
+              <label className="block">
+  <span className="mb-2 block text-sm font-bold">
+    Снимка по желание
+  </span>
+
+  <input
+    type="file"
+    accept="image/*"
+    disabled={imageUploading || generating}
+    onChange={(e) => {
+      const file = e.target.files?.[0];
+      if (file) void uploadImage(file);
+    }}
+    className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm outline-none focus:border-black/30"
+  />
+
+  {imageFileName ? (
+    <p className="mt-2 text-xs font-semibold text-neutral-500">
+      Качена снимка: {imageFileName}
+    </p>
+  ) : null}
+
+  {imageUrl ? (
+    <img
+      src={imageUrl}
+      alt="Качена снимка"
+      className="mt-3 h-36 w-full rounded-2xl object-cover"
+    />
+  ) : null}
+</label>
 
               <div>
                 <p className="mb-2 text-sm font-bold">Продължителност</p>
@@ -164,11 +431,17 @@ const handleMiniPackageCheckout = async () => {
 
               <button
   type="button"
-  onClick={() => setShowMiniPackageModal(true)}
-  className="w-full rounded-full bg-neutral-950 px-5 py-4 text-sm font-black text-white"
+  onClick={() => void handleGenerateVideo()}
+  disabled={generating || imageUploading}
+  className="w-full rounded-full bg-neutral-950 px-5 py-4 text-sm font-black text-white disabled:opacity-60"
 >
-  Генерирай видео
+  {generating ? "Генерираме видео..." : "Генерирай видео"}
 </button>
+{generationError ? (
+  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+    {generationError}
+  </div>
+) : null}
             </div>
           </section>
 
@@ -190,14 +463,25 @@ const handleMiniPackageCheckout = async () => {
             </div>
 
             <div className="mt-8 overflow-hidden rounded-[28px] bg-black">
-              <video
-                src="/showcase/video-1.mp4"
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="aspect-[9/16] w-full object-cover opacity-90"
-              />
+              {generatedVideoUrl ? (
+  <video
+    src={generatedVideoUrl}
+    controls
+    autoPlay
+    loop
+    playsInline
+    className="aspect-[9/16] w-full object-cover"
+  />
+) : (
+  <video
+    src="/showcase/video-1.mp4"
+    autoPlay
+    muted
+    loop
+    playsInline
+    className="aspect-[9/16] w-full object-cover opacity-90"
+  />
+)}
             </div>
           </section>
         </div>
