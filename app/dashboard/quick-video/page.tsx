@@ -78,10 +78,15 @@ The business context is background information only and must NOT force unrelated
 Create one clean coherent commercial scene.
 Avoid mixing manicure and pedicure in the same close-up unless explicitly requested.
 Avoid awkward touching, hands touching feet, combined beauty procedures, or unnatural beauty salon actions.
+ABSOLUTELY NO TEXT INSIDE THE RAW VIDEO.
+Do not generate captions, subtitles, typography, titles, labels, logos, UI elements, watermarks, posters, signs, product packaging text, or any readable letters.
+The generated video must contain ONLY clean cinematic footage.
+Any text overlay will be added later externally.
 
 ${realismRules}
 
 Negative details:
+text, subtitles, captions, letters, typography, logo, watermark, UI,
 bones, plastic bones, chew toy, kibble, pellets, granules, pet snacks, biscuits, steak, steak pieces, cooked meat, grilled meat, sausage, rice, vegetables, pharmacy, veterinary clinic, pet store, retail shelves, medical room, supermarket, laboratory, hospital, white walls, medicine products, fake food, CGI food, cartoon food, floating objects, distorted animal mouth, unrealistic chewing.
 `;
 };
