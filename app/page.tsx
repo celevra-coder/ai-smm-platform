@@ -218,8 +218,8 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-  <div className="rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
+              <div className="mt-5 grid items-stretch gap-3 sm:grid-cols-2">
+  <div className="flex h-full flex-col rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
     <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-600">
       Free Test
     </p>
@@ -235,13 +235,13 @@ export default function HomePage() {
     <Link
       href="/dashboard?mode=quick"
       onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
-      className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
+      className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
     >
       Тествай безплатно
     </Link>
   </div>
 
-  <div className="rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
+  <div className="flex h-full flex-col rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
   <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#7a6d62]">
     Генерирай видео
   </p>
@@ -257,7 +257,7 @@ export default function HomePage() {
   <Link
     href="/dashboard/video"
     onClick={(e) => handleProtectedClick(e, "/dashboard/video")}
-    className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
+     className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
   >
     Генерирай видео
   </Link>
