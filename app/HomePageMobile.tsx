@@ -98,13 +98,51 @@ export default function HomePageMobile({
     ))}
   </div>
 
-  <Link
-    href="/dashboard?mode=quick"
-    onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
-    className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white"
-  >
-    Създай такава реклама
-  </Link>
+  <div className="mt-5 grid grid-cols-2 items-stretch gap-3">
+  <div className="flex h-full flex-col rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
+    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-600">
+      Free Test
+    </p>
+
+    <h3 className="mt-2 text-[15px] font-black leading-tight text-neutral-950">
+      Създай банер
+    </h3>
+
+    <p className="mt-2 text-xs leading-5 text-neutral-600">
+      Тествай безплатно и генерирай банер.
+    </p>
+
+    <Link
+      href="/dashboard?mode=quick"
+      onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
+      className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-3 py-3 text-xs font-bold text-white"
+    >
+      Тествай
+    </Link>
+  </div>
+
+  <div className="flex h-full flex-col rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
+    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#7a6d62]">
+      Генерирай видео
+    </p>
+
+    <h3 className="mt-2 text-[15px] font-black leading-tight text-neutral-950">
+      Създай AI видео
+    </h3>
+
+    <p className="mt-2 text-xs leading-5 text-neutral-600">
+      Създай бързо рекламно видео.
+    </p>
+
+    <Link
+      href="/dashboard/video"
+      onClick={(e) => handleProtectedClick(e, "/dashboard/video")}
+      className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-3 py-3 text-xs font-bold text-white"
+    >
+      Видео
+    </Link>
+  </div>
+</div>
 </section>
 
       
