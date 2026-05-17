@@ -218,13 +218,51 @@ export default function HomePage() {
                 ))}
               </div>
 
-              <Link
-                href="/dashboard?mode=quick"
-                onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
-                className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
-              >
-                Създай такава реклама
-              </Link>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+  <div className="rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
+    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-600">
+      Free Test
+    </p>
+
+    <h3 className="mt-2 text-lg font-black text-neutral-950">
+      Създай рекламен банер
+    </h3>
+
+    <p className="mt-2 text-sm leading-6 text-neutral-600">
+      Тествай платформата безплатно и генерирай банер по описание.
+    </p>
+
+    <Link
+      href="/dashboard?mode=quick"
+      onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
+      className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
+    >
+      Тествай безплатно
+    </Link>
+  </div>
+
+  <div className="rounded-[24px] border border-neutral-200 bg-neutral-950 p-4 text-white">
+    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#d6bfa7]">
+      Еднократно AI видео
+    </p>
+
+    <h3 className="mt-2 text-lg font-black">
+      Генерирай AI видео
+    </h3>
+
+    <p className="mt-2 text-sm leading-6 text-white/70">
+      Създай кратко рекламно видео без да минаваш през Brand Studio.
+    </p>
+
+    <Link
+      href="/dashboard/video"
+      onClick={(e) => handleProtectedClick(e, "/dashboard/video")}
+      className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-black transition hover:opacity-90"
+    >
+      Създай AI видео
+    </Link>
+  </div>
+</div>
             </div>
           </div>
         </div>
