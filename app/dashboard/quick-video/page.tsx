@@ -9,7 +9,55 @@ export default function QuickVideoPage() {
   const [videoIdea, setVideoIdea] = useState("");
   const [phone, setPhone] = useState("");
   const [duration, setDuration] = useState<5 | 10>(5);
+  const [showMiniPackageModal, setShowMiniPackageModal] = useState(false);
+const [paymentLoading, setPaymentLoading] = useState(false);
+const [paymentError, setPaymentError] = useState("");
+const handleMiniPackageCheckout = async () => {
+  try {
+    setPaymentLoading(true);
+    setPaymentError("");
 
+    const { createClient } = await import("@/lib/supabase-browser");
+    const supabase = createClient();
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-paypal-checkout`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ plan: "quick_video" }),
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data?.url) {
+      throw new Error(data?.error || "Неуспешно създаване на плащане.");
+    }
+
+    window.location.href = data.url;
+  } catch (error) {
+    console.error(error);
+    setPaymentError("Не успяхме да отворим плащането. Опитай отново.");
+  } finally {
+    setPaymentLoading(false);
+  }
+};
   return (
     <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-neutral-950">
       <div className="mx-auto max-w-6xl">
@@ -115,11 +163,12 @@ export default function QuickVideoPage() {
               </div>
 
               <button
-                type="button"
-                className="w-full rounded-full bg-neutral-950 px-5 py-4 text-sm font-black text-white"
-              >
-                Купи мини пакет и генерирай
-              </button>
+  type="button"
+  onClick={() => setShowMiniPackageModal(true)}
+  className="w-full rounded-full bg-neutral-950 px-5 py-4 text-sm font-black text-white"
+>
+  Генерирай видео
+</button>
             </div>
           </section>
 
@@ -153,6 +202,49 @@ export default function QuickVideoPage() {
           </section>
         </div>
       </div>
+      {showMiniPackageModal ? (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-2xl">
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-[#7a6d62]">
+        Мини пакет AI видео
+      </p>
+
+      <h2 className="mt-3 text-2xl font-black text-neutral-950">
+        2 кратки AI видеа за 4€
+      </h2>
+
+      <p className="mt-3 text-sm leading-6 text-neutral-600">
+        Получаваш 50 кредита — достатъчни за 2 видеа по 5 секунди.
+        Ако избереш 10 секунди, едно видео използва 35 кредита.
+      </p>
+
+      {paymentError ? (
+        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+          {paymentError}
+        </div>
+      ) : null}
+
+      <div className="mt-6 flex flex-col gap-3">
+        <button
+          type="button"
+          onClick={handleMiniPackageCheckout}
+          disabled={paymentLoading}
+          className="rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
+        >
+          {paymentLoading ? "Отварям PayPal..." : "Купи мини пакет"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowMiniPackageModal(false)}
+          className="text-sm font-semibold text-neutral-500"
+        >
+          Затвори
+        </button>
+      </div>
+    </div>
+  </div>
+) : null}
     </main>
   );
 }

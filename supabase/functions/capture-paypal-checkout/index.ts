@@ -5,6 +5,7 @@ const plans: Record<string, { credits: number }> = {
   starter: { credits: 150 },
   growth: { credits: 300 },
   pro: { credits: 400 },
+  quick_video: { credits: 50 },
 };
 
 async function getPayPalAccessToken() {
@@ -74,9 +75,12 @@ serve(async (req) => {
     const purchaseUnit = captureData.purchase_units?.[0];
     const customId = purchaseUnit?.custom_id || purchaseUnit?.reference_id || "";
 
-    const [planKey, userId] = String(customId).split("_");
-    const selectedPlan = plans[planKey];
+    const customParts = String(customId).split("_");
+const timestamp = customParts.pop();
+const userId = customParts.pop();
+const planKey = customParts.join("_");
 
+const selectedPlan = plans[planKey];
     if (!selectedPlan || !userId) {
       console.error("PAYPAL INVALID CUSTOM ID:", customId);
       return Response.redirect(`${siteUrl}/pricing?payment=failed`, 302);
