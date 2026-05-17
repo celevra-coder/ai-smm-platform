@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 type HomePageMobileProps = {
   handleProtectedClick: (e: React.MouseEvent, href: string) => void;
@@ -9,38 +10,102 @@ type HomePageMobileProps = {
 export default function HomePageMobile({
   handleProtectedClick,
 }: HomePageMobileProps) {
+  const showcaseItems = [
+    {
+      type: "image",
+      src: "/showcase/banner-1.png",
+      label: "Банер за промоция",
+    },
+    {
+      type: "video",
+      src: "/showcase/video-1.mp4",
+      label: "Кратко рекламно видео",
+    },
+    {
+      type: "image",
+      src: "/showcase/banner-2.png",
+      label: "Банер за услуга",
+    },
+    {
+      type: "video",
+      src: "/showcase/video-2.mp4",
+      label: "Видео за социални мрежи",
+    },
+  ];
+
+  const [activeShowcaseIndex, setActiveShowcaseIndex] = useState(0);
+  const activeShowcase = showcaseItems[activeShowcaseIndex];
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveShowcaseIndex((current) =>
+        current === showcaseItems.length - 1 ? 0 : current + 1
+      );
+    }, 3000);
+
+    return () => window.clearInterval(interval);
+  }, [showcaseItems.length]);
+
   return (
     <div className="block sm:hidden bg-[#f5f1ec] px-4 pb-10 pt-5 text-neutral-950">
-      <section className="rounded-[28px] bg-white/80 p-5 shadow-sm">
-        <div className="inline-flex rounded-full bg-[#f3eee8] px-3 py-1 text-xs font-bold text-neutral-700">
-          AI SMM платформа
-        </div>
+      <section className="overflow-hidden rounded-[28px] bg-white/85 p-4 shadow-sm">
+  <div className="mb-4">
+    <div className="inline-flex rounded-full bg-[#f3eee8] px-3 py-1 text-xs font-bold text-neutral-700">
+      AI SMM платформа
+    </div>
 
-        <h1 className="mt-5 text-[2.15rem] font-black leading-[1.02] tracking-tight">
-          Създавай реклами за социалните мрежи.
-        </h1>
+    <h1 className="mt-4 text-[1.85rem] font-black leading-[1.05] tracking-tight">
+      Виж какви реклами можеш да създадеш.
+    </h1>
 
-        <p className="mt-4 text-[15px] leading-7 text-neutral-600">
-          Опиши идеята си на български и платформата ще ти помогне с визия,
-          текстове, банери, видео посока и контент календар.
-        </p>
+    <p className="mt-3 text-sm leading-6 text-neutral-600">
+      Банери и кратки видеа за социалните мрежи — по описание на български.
+    </p>
+  </div>
 
-        <div className="mt-6 flex flex-col gap-3">
-          <a
-            href="#mobile-solutions"
-            className="rounded-full bg-neutral-950 px-5 py-3 text-center text-sm font-bold text-white"
-          >
-            Започни
-          </a>
+  <div className="overflow-hidden rounded-[24px] bg-black">
+    {activeShowcase.type === "video" ? (
+      <video
+        key={activeShowcase.src}
+        src={activeShowcase.src}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="aspect-square w-full object-cover"
+      />
+    ) : (
+      <img
+        key={activeShowcase.src}
+        src={activeShowcase.src}
+        alt={activeShowcase.label}
+        className="aspect-square w-full object-cover"
+      />
+    )}
+  </div>
 
-          <a
-            href="#mobile-how-it-works"
-            className="rounded-full border border-neutral-300 bg-white px-5 py-3 text-center text-sm font-bold text-neutral-900"
-          >
-            Как работи
-          </a>
-        </div>
-      </section>
+  <div className="mt-4 grid grid-cols-4 gap-2">
+    {showcaseItems.map((item, index) => (
+      <button
+        key={item.src}
+        type="button"
+        onClick={() => setActiveShowcaseIndex(index)}
+        className={`h-2 rounded-full transition ${
+          activeShowcaseIndex === index ? "bg-neutral-950" : "bg-neutral-300"
+        }`}
+        aria-label={item.label}
+      />
+    ))}
+  </div>
+
+  <Link
+    href="/dashboard?mode=quick"
+    onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
+    className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white"
+  >
+    Създай такава реклама
+  </Link>
+</section>
 
       
 
