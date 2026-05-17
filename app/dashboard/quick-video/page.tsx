@@ -22,23 +22,49 @@ const [generationError, setGenerationError] = useState("");
 const buildQuickOverlayText = () => {
   const source = `${businessName} ${businessDescription} ${videoIdea}`.toLowerCase();
 
-  if (/суши|sushi|ресторант|храна|пица|бургер|кафе|десерт|торта/.test(source)) {
-    return "Свеж вкус за всеки повод";
+  if (/куче|котка|домашн|pet|животн|кайма|храна за животни/.test(source)) {
+    return "Истинска храна, която любимците обичат";
+  }
+
+  if (/суши|sushi/.test(source)) {
+    return "Свежо суши с апетитен вкус";
+  }
+
+  if (/ресторант|храна|пица|бургер|кафе|десерт|торта/.test(source)) {
+    return "Вкус, който се забелязва веднага";
   }
 
   if (/маникюр|коса|фризьор|козмет|масаж|салон|красота/.test(source)) {
-    return "Професионална грижа за теб";
+    return "Професионална грижа с видим резултат";
   }
 
   if (/фитнес|трениров|зала|спорт/.test(source)) {
-    return "Започни промяната днес";
+    return "Започни промяната още днес";
   }
 
-  if (businessName.trim()) {
-    return `${businessName.trim()} представя`;
+  if (businessDescription.trim()) {
+    return "Рекламно видео с реалистична визия";
   }
 
-  return "Открий нашето предложение";
+  return "Открий предложение, което си струва";
+};
+const buildQuickVideoPrompt = () => {
+  const source = `${businessName} ${businessDescription} ${videoIdea}`.toLowerCase();
+
+  let realismRules =
+    "Create realistic vertical 9:16 commercial video footage. No text, no letters, no subtitles, no logos, no signs, no labels, no fake typography inside the raw video. Natural camera movement, believable real-world physics, realistic textures, realistic lighting, no plastic-looking objects, no AI fantasy, no distorted anatomy.";
+
+  if (/куче|котка|кайма/.test(source)) {
+    realismRules +=
+      " Show a realistic dog and cat actively eating fresh minced meat from clean bowls or plates. The food must clearly look like fresh minced meat, not dry kibble, not pellets, not granules. The animals should naturally lower their heads to the food and actually eat, lick, and chew in a believable way. Avoid fake pet food, plastic textures, strange mouths, frozen chewing, or unrealistic animal movement.";
+  }
+
+  if (/суши|sushi/.test(source)) {
+    realismRules +=
+      " Show realistic fresh sushi, real rice texture, fish texture, nori, wooden board or plate, restaurant lighting. Avoid plastic-looking food, fake glossy surfaces, impossible ingredients, or artificial shapes.";
+  }
+
+  return `${videoIdea.trim()}. ${businessDescription.trim()}. ${realismRules}`;
 };
 const uploadImage = async (file: File) => {
   try {
@@ -219,8 +245,8 @@ const handleGenerateVideo = async () => {
             phone: phone.trim(),
           },
           selected_post: {
-  headline: videoIdea.trim(),
-  caption: `${videoIdea.trim()}. Важно: генерирай само чисто реалистично видео без никакъв текст, букви, лога, табели, надписи, captions или typography вътре в raw видеото.`,
+  headline: buildQuickOverlayText(),
+  caption: buildQuickVideoPrompt(),
   offer: "",
   cta: phone.trim() ? "Обади се сега" : "Пиши ни сега",
 },
