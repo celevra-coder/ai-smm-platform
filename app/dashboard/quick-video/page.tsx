@@ -19,6 +19,27 @@ const [imageUploading, setImageUploading] = useState(false);
 const [generating, setGenerating] = useState(false);
 const [generatedVideoUrl, setGeneratedVideoUrl] = useState("");
 const [generationError, setGenerationError] = useState("");
+const buildQuickOverlayText = () => {
+  const source = `${businessName} ${businessDescription} ${videoIdea}`.toLowerCase();
+
+  if (/суши|sushi|ресторант|храна|пица|бургер|кафе|десерт|торта/.test(source)) {
+    return "Свеж вкус за всеки повод";
+  }
+
+  if (/маникюр|коса|фризьор|козмет|масаж|салон|красота/.test(source)) {
+    return "Професионална грижа за теб";
+  }
+
+  if (/фитнес|трениров|зала|спорт/.test(source)) {
+    return "Започни промяната днес";
+  }
+
+  if (businessName.trim()) {
+    return `${businessName.trim()} представя`;
+  }
+
+  return "Открий нашето предложение";
+};
 const uploadImage = async (file: File) => {
   try {
     setImageUploading(true);
@@ -198,11 +219,11 @@ const handleGenerateVideo = async () => {
             phone: phone.trim(),
           },
           selected_post: {
-            headline: videoIdea.trim(),
-            caption: videoIdea.trim(),
-            offer: videoIdea.trim(),
-            cta: phone.trim() ? "Обади се сега" : "Пиши ни сега",
-          },
+  headline: videoIdea.trim(),
+  caption: `${videoIdea.trim()}. Важно: генерирай само чисто реалистично видео без никакъв текст, букви, лога, табели, надписи, captions или typography вътре в raw видеото.`,
+  offer: "",
+  cta: phone.trim() ? "Обади се сега" : "Пиши ни сега",
+},
         }),
       }
     );
@@ -265,7 +286,7 @@ const handleGenerateVideo = async () => {
         scenes: [
           {
             title: "Quick video",
-            overlay_text: videoIdea.trim(),
+            overlay_text: buildQuickOverlayText(),
             duration_sec: duration,
           },
         ],
@@ -463,7 +484,20 @@ const handleGenerateVideo = async () => {
             </div>
 
             <div className="mt-8 overflow-hidden rounded-[28px] bg-black">
-              {generatedVideoUrl ? (
+              {generating ? (
+  <div className="flex aspect-[9/16] w-full flex-col items-center justify-center bg-neutral-950 px-6 text-center">
+    <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+
+    <h3 className="mt-6 text-xl font-black text-white">
+      Генерираме видеото...
+    </h3>
+
+    <p className="mt-3 text-sm leading-6 text-white/60">
+      Това може да отнеме известно време. Подготвяме реалистична визия,
+      движение, музика и финален рекламен текст.
+    </p>
+  </div>
+) : generatedVideoUrl ? (
   <video
     src={generatedVideoUrl}
     controls
@@ -486,6 +520,15 @@ const handleGenerateVideo = async () => {
           </section>
         </div>
       </div>
+      {generatedVideoUrl ? (
+  <a
+    href={generatedVideoUrl}
+    download="ai-smm-video.mp4"
+    className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-black"
+  >
+    Свали видеото
+  </a>
+) : null}
       {showMiniPackageModal ? (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
     <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-2xl">
