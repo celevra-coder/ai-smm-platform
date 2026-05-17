@@ -12,6 +12,31 @@ export default function HomePage() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [paymentSuccessMessage, setPaymentSuccessMessage] = useState("");
+    const showcaseItems = [
+    {
+      type: "image",
+      src: "/showcase/banner-1.png",
+      label: "Банер за промоция",
+    },
+    {
+      type: "video",
+      src: "/showcase/video-1.mp4",
+      label: "Кратко рекламно видео",
+    },
+    {
+      type: "image",
+      src: "/showcase/banner-2.png",
+      label: "Банер за услуга",
+    },
+    {
+      type: "video",
+      src: "/showcase/video-2.mp4",
+      label: "Видео за социални мрежи",
+    },
+  ];
+
+  const [activeShowcaseIndex, setActiveShowcaseIndex] = useState(0);
+  const activeShowcase = showcaseItems[activeShowcaseIndex];
 
 
   useEffect(() => {
@@ -50,6 +75,15 @@ export default function HomePage() {
 
   void checkUser();
 }, []);
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveShowcaseIndex((current) =>
+        current === showcaseItems.length - 1 ? 0 : current + 1
+      );
+    }, 3000);
+
+    return () => window.clearInterval(interval);
+  }, [showcaseItems.length]);
   const handleProtectedClick = (e: React.MouseEvent, href: string) => {
   if (isLoggedIn) return;
 
@@ -127,58 +161,72 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative">
-  <div className="absolute -left-10 top-12 h-40 w-40 rounded-full bg-white/55 blur-3xl" />
-  <div className="absolute -right-10 bottom-10 h-44 w-44 rounded-full bg-[#e7ddd2] blur-3xl" />
+                    <div className="relative">
+            <div className="absolute -left-10 top-12 h-40 w-40 rounded-full bg-white/55 blur-3xl" />
+            <div className="absolute -right-10 bottom-10 h-44 w-44 rounded-full bg-[#e7ddd2] blur-3xl" />
 
-  <div className="relative rounded-[28px] border border-white/70 bg-white/85 p-4 text-center shadow-[0_25px_80px_rgba(0,0,0,0.08)] backdrop-blur sm:rounded-[36px] sm:p-8">
-    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-neutral-500">
-  Професионално видео
-</p>
+            <div className="relative overflow-hidden rounded-[36px] border border-white/70 bg-white/85 p-5 shadow-[0_25px_80px_rgba(0,0,0,0.08)] backdrop-blur">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                    Примери от платформата
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black tracking-tight text-neutral-950">
+                    Банери и видеа, готови за реклама
+                  </h2>
+                </div>
 
-<h2 className="mt-3 text-2xl font-black tracking-tight text-neutral-950 sm:text-4xl">
-  Поръчай видео за твоя бизнес
-</h2>
+                <div className="rounded-full bg-neutral-950 px-3 py-1 text-xs font-bold text-white">
+                  {activeShowcase.label}
+                </div>
+              </div>
 
-<p className="mx-auto mt-4 max-w-xl text-base leading-7 text-neutral-600">
-  Обработка, субтитри, ефекти, музика или AI инфлуенсър видео —
-  всичко на едно място.
-</p>
+              <div className="overflow-hidden rounded-[28px] border border-black/10 bg-black">
+                {activeShowcase.type === "video" ? (
+                  <video
+                    key={activeShowcase.src}
+                    src={activeShowcase.src}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="aspect-square w-full object-cover"
+                  />
+                ) : (
+                  <img
+                    key={activeShowcase.src}
+                    src={activeShowcase.src}
+                    alt={activeShowcase.label}
+                    className="aspect-square w-full object-cover"
+                  />
+                )}
+              </div>
 
-    <div className="mt-8 overflow-hidden rounded-[24px] border border-black/10 bg-black">
-      <video
-        src="/videos/promo.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="h-[190px] w-full object-cover opacity-90 sm:h-[260px]"
-      />
+              <div className="mt-5 grid grid-cols-4 gap-2">
+                {showcaseItems.map((item, index) => (
+                  <button
+                    key={item.src}
+                    type="button"
+                    onClick={() => setActiveShowcaseIndex(index)}
+                    className={`h-2 rounded-full transition ${
+                      activeShowcaseIndex === index
+                        ? "bg-neutral-950"
+                        : "bg-neutral-300"
+                    }`}
+                    aria-label={item.label}
+                  />
+                ))}
+              </div>
 
-      <div className="p-4 text-left text-white">
-        <p className="text-xs uppercase tracking-[0.18em] text-white/60">
-          Професионално видео
-        </p>
-
-        <h3 className="mt-1 text-lg font-black leading-tight">
-          Поръчай обработено или AI видео
-        </h3>
-
-        <p className="mt-2 text-sm text-white/70">
-          Субтитри, ефекти, музика, анимации или AI инфлуенсър.
-        </p>
-
-        <Link
-  href="/order-video"
-  onClick={(e) => handleProtectedClick(e, "/order-video")}
-          className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-bold text-black"
-        >
-          Виж опциите
-        </Link>
-      </div>
-    </div>
-  </div>
-</div>
+              <Link
+                href="/dashboard?mode=quick"
+                onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
+                className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
+              >
+                Създай такава реклама
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
