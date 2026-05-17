@@ -54,17 +54,17 @@ const buildQuickVideoPrompt = () => {
   let realismRules =
     "Create realistic vertical 9:16 commercial video footage. No text, no letters, no subtitles, no logos, no signs, no labels, no fake typography inside the raw video. Natural camera movement, believable real-world physics, realistic textures, realistic lighting, no plastic-looking objects, no AI fantasy, no distorted anatomy.";
 
-  if (/куче|котка|кайма/.test(source)) {
-    realismRules +=
-      " Show a realistic dog and cat actively eating fresh minced meat from clean bowls or plates. The food must clearly look like fresh minced meat, not dry kibble, not pellets, not granules. The animals should naturally lower their heads to the food and actually eat, lick, and chew in a believable way. Avoid fake pet food, plastic textures, strange mouths, frozen chewing, or unrealistic animal movement.";
-  }
+  if (/куче|котка|кайма|barf|барф|суров/.test(source)) {
+  realismRules +=
+    " This is a BARF raw pet food commercial. Show a realistic dog and a realistic cat near two simple clean bowls on a neutral home kitchen floor or natural pet-feeding corner. The bowls must contain ONLY fresh raw minced meat: soft ground meat texture, small uneven minced pieces, natural red-pink meat color. Do not show steaks, ribs, chunks of steak, cooked meat, grilled meat, dry kibble, pellets, granules, canned food, bones, sausages, or human food. The scene must clearly communicate raw minced meat pet food. The animals should lower their heads toward the bowls, lick the food, take small bites, and chew subtly in a believable way. If exact eating motion is difficult, show natural close-up feeding behavior with heads lowered, noses touching the minced meat, licking, small mouth movement, and realistic bowl interaction. Use a cozy home or clean pet-food brand environment only. Do not show pharmacy, clinic, medicine shelves, supermarket aisles, hospital, laboratory, restaurant kitchen, or unrelated retail background. No text, no labels, no packaging text.";
+}
 
   if (/суши|sushi/.test(source)) {
     realismRules +=
       " Show realistic fresh sushi, real rice texture, fish texture, nori, wooden board or plate, restaurant lighting. Avoid plastic-looking food, fake glossy surfaces, impossible ingredients, or artificial shapes.";
   }
 
-  return `${videoIdea.trim()}. ${businessDescription.trim()}. ${realismRules}`;
+  return `${videoIdea.trim()}. ${businessDescription.trim()}. ${realismRules} Negative details: steak, steak pieces, grilled meat, cooked meat, kibble, pellets, granules, pharmacy, clinic, medicine shelves, supermarket aisle, laboratory, hospital, restaurant kitchen, fake chewing, floating food, distorted animal mouth, plastic food texture.`;
 };
 const uploadImage = async (file: File) => {
   try {
