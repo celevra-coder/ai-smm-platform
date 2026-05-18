@@ -545,8 +545,8 @@ onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
       </h2>
 
       <p className="text-sm text-gray-600 mb-6">
-        За да създаваш реклами, трябва да имаш акаунт.
-      </p>
+  Регистрацията отнема точно 10 секунди. След това можеш веднага да създаваш реклами.
+</p>
 
       <div className="flex flex-col gap-3">
         <Link
