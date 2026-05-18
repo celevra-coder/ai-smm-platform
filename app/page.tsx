@@ -91,6 +91,15 @@ export default function HomePage() {
   setShowAuthModal(true);
 };
 
+const handleCardClick = (href: string) => {
+  if (!isLoggedIn) {
+    setShowAuthModal(true);
+    return;
+  }
+
+  window.location.href = href;
+};
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#f5f1ec] text-neutral-900">
       <div className="absolute inset-0 -z-10 overflow-hidden hidden sm:block">
@@ -288,10 +297,17 @@ onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <div className="rounded-[28px] border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:rounded-[32px] sm:p-7">
-            <div className="inline-flex rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-              Най-бърз старт
-            </div>
+          <div
+  onClick={() => handleCardClick("/dashboard?mode=quick")}
+  className="cursor-pointer rounded-[28px] border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:rounded-[32px] sm:p-7"
+>
+            <div className="mb-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-black uppercase tracking-wide text-emerald-700">
+  Тествай безплатно
+</div>
+
+<div className="inline-flex rounded-full bg-neutral-950 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+  Най-бърз старт
+</div>
 
             <h3 className="mt-5 text-3xl font-black tracking-tight text-neutral-950">
               Нямаш време?
@@ -329,7 +345,10 @@ onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:rounded-[32px] sm:p-7">
+          <div
+  onClick={() => handleCardClick("/dashboard?mode=brand")}
+  className="cursor-pointer rounded-[28px] border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:rounded-[32px] sm:p-7"
+>
             <div className="inline-flex rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-700">
               За по-силно присъствие
             </div>
@@ -370,7 +389,10 @@ onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:rounded-[32px] sm:p-7">
+          <div
+  onClick={() => handleCardClick("/content-calendar")}
+  className="cursor-pointer rounded-[28px] border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:rounded-[32px] sm:p-7"
+>
             <div className="inline-flex rounded-full bg-[#f3eee8] px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-700">
               Нов модул
             </div>
@@ -465,7 +487,10 @@ onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
       </div>
     </div>
 
-    <div className="overflow-hidden rounded-[28px] border border-white/70 bg-neutral-950 text-white shadow-[0_18px_60px_rgba(0,0,0,0.10)] sm:rounded-[36px]">
+    <div
+  onClick={() => handleCardClick("/order-video")}
+  className="cursor-pointer overflow-hidden rounded-[28px] border border-white/70 bg-neutral-950 text-white shadow-[0_18px_60px_rgba(0,0,0,0.10)] sm:rounded-[36px]"
+>
       <video
         src="/videos/promo.mp4"
         autoPlay
