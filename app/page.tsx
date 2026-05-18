@@ -108,35 +108,37 @@ export default function HomePage() {
         <div className="grid items-center gap-8 py-10 sm:py-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:py-24">
           <div>
             <div className="inline-flex max-w-full rounded-full border border-black/10 bg-white/80 px-4 py-2 text-center text-xs font-semibold text-neutral-700 shadow-sm backdrop-blur sm:text-sm">
-              Създавай реклами по описание на български
-            </div>
+  Създай банер или кратко AI видео по описание
+</div>
 
             <h1 className="mt-6 max-w-3xl text-[2.35rem] font-black leading-[1.05] tracking-tight text-neutral-950 sm:text-5xl lg:text-6xl">
-              Премиум рекламни визии,
-              <span className="block text-[#7a6d62]">
-                създадени по описание на български.
-              </span>
+              Създай реклама за минути —
+<span className="block text-[#7a6d62]">
+  банер или AI видео по описание.
+</span>
             </h1>
 
             <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-600 sm:text-lg sm:leading-8">
-              Създавай банери и рекламни идеи за социалните мрежи, без да мислиш
-              като дизайнер или copywriter. Просто опиши какво искаш — системата
-              оформя визията вместо теб.
+              Опиши бизнеса, офертата или идеята си на български. AI SMM Studio ти
+помага да създадеш готова рекламна визия или кратко видео за социалните мрежи,
+без дизайнер и без сложен процес.
             </p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="#solutions"
-                className="inline-flex items-center justify-center rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
-              >
-                Разгледай опциите
-              </a>
-              <a
-                href="#how-it-works"
-                className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-6 py-3 text-sm font-semibold text-neutral-900 transition hover:border-neutral-400"
-              >
-                Как работи
-              </a>
+              <Link
+  href="/dashboard/quick-video"
+  onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
+  className="inline-flex items-center justify-center rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+>
+  Създай AI видео
+</Link>
+<Link
+  href="/dashboard?mode=quick"
+  onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
+  className="inline-flex items-center justify-center rounded-full border border-neutral-300 bg-white px-6 py-3 text-sm font-semibold text-neutral-900 transition hover:border-neutral-400"
+>
+  Създай банер
+</Link>
             </div>
 
             <div className="mt-8 grid gap-3 sm:max-w-2xl sm:grid-cols-3 sm:gap-4">
