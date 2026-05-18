@@ -10,8 +10,9 @@ import HomePageMobile from "./HomePageMobile";
 
 export default function HomePage() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [paymentSuccessMessage, setPaymentSuccessMessage] = useState("");
+const [authChecked, setAuthChecked] = useState(false);
+const [showAuthModal, setShowAuthModal] = useState(false);
+const [paymentSuccessMessage, setPaymentSuccessMessage] = useState("");
     const showcaseItems = [
     {
       type: "image",
@@ -40,7 +41,7 @@ export default function HomePage() {
 
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
   const payment = params.get("payment");
 
@@ -71,6 +72,7 @@ export default function HomePage() {
     } = await supabase.auth.getUser();
 
     setIsLoggedIn(Boolean(user));
+    setAuthChecked(true);
   };
 
   void checkUser();
@@ -85,6 +87,11 @@ export default function HomePage() {
     return () => window.clearInterval(interval);
   }, [showcaseItems.length]);
   const handleProtectedClick = (e: React.MouseEvent, href: string) => {
+  if (!authChecked) {
+    e.preventDefault();
+    return;
+  }
+
   if (isLoggedIn) return;
 
   e.preventDefault();
@@ -92,6 +99,8 @@ export default function HomePage() {
 };
 
 const handleCardClick = (href: string) => {
+  if (!authChecked) return;
+
   if (!isLoggedIn) {
     setShowAuthModal(true);
     return;
@@ -108,7 +117,9 @@ const handleCardClick = (href: string) => {
         <div className="absolute bottom-[-120px] left-[18%] h-[300px] w-[300px] rounded-full bg-[#ddd0c3] blur-3xl" />
       </div>
 
-            <HomePageMobile handleProtectedClick={handleProtectedClick} />
+            <HomePageMobile
+  handleProtectedClick={handleProtectedClick}
+/>
 
       <div className="hidden sm:block">
       <section className="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 lg:px-8">
