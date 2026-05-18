@@ -99,7 +99,11 @@ export default function HomePageMobile({
   </div>
 
   <div className="mt-5 grid grid-cols-2 items-stretch gap-3">
-  <div className="flex h-full flex-col rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
+  <Link
+    href="/dashboard?mode=quick"
+    onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
+    className="flex h-full cursor-pointer flex-col rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4"
+  >
     <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-600">
       Free Test
     </p>
@@ -112,16 +116,16 @@ export default function HomePageMobile({
       Тествай безплатно и генерирай банер.
     </p>
 
-    <Link
-      href="/dashboard?mode=quick"
-      onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
-      className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-3 py-3 text-xs font-bold text-white"
-    >
+    <span className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-3 py-3 text-xs font-bold text-white">
       Тествай
-    </Link>
-  </div>
+    </span>
+  </Link>
 
-  <div className="flex h-full flex-col rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4">
+  <Link
+    href="/dashboard/quick-video"
+    onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
+    className="flex h-full cursor-pointer flex-col rounded-[24px] border border-neutral-200 bg-[#faf8f6] p-4"
+  >
     <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#7a6d62]">
       Генерирай видео
     </p>
@@ -134,14 +138,10 @@ export default function HomePageMobile({
       Създай бързо рекламно видео.
     </p>
 
-    <Link
-      href="/dashboard/quick-video"
-onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
-      className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-3 py-3 text-xs font-bold text-white"
-    >
+    <span className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-3 py-3 text-xs font-bold text-white">
       Видео
-    </Link>
-  </div>
+    </span>
+  </Link>
 </div>
 </section>
 
@@ -158,8 +158,9 @@ onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
 
         <div className="mt-5 space-y-4">
           <MobileCard
-            label="Най-бърз старт"
-            title="Бърза реклама"
+  badge="Тествай безплатно"
+  label="Най-бърз старт"
+  title="Бърза реклама"
             text="Създай банер или рекламна идея за промоция, услуга, продукт или локална оферта."
             href="/dashboard?mode=quick"
             button="Стартирай"
@@ -206,7 +207,11 @@ onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
     </div>
   </div>
 
-  <div className="overflow-hidden rounded-[28px] bg-black text-white shadow-sm">
+  <Link
+  href="/order-video"
+  onClick={(e) => handleProtectedClick(e, "/order-video")}
+  className="block cursor-pointer overflow-hidden rounded-[28px] bg-black text-white shadow-sm"
+>
     <video
       src="/videos/promo.mp4"
       autoPlay
@@ -230,21 +235,18 @@ onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
         субтитри, ефекти, музика и завършен рекламен вид.
       </p>
 
-      <Link
-        href="/order-video"
-        onClick={(e) => handleProtectedClick(e, "/order-video")}
-        className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-bold text-black"
-      >
-        Поръчай професионално видео
-      </Link>
+      <span className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-white px-4 py-3 text-sm font-bold text-black">
+  Поръчай професионално видео
+</span>
     </div>
-  </div>
+  </Link>
 </section>
     </div>
   );
 }
 
 function MobileCard({
+  badge,
   label,
   title,
   text,
@@ -252,6 +254,7 @@ function MobileCard({
   button,
   onClick,
 }: {
+  badge?: string;
   label: string;
   title: string;
   text: string;
@@ -260,24 +263,30 @@ function MobileCard({
   onClick: (e: React.MouseEvent, href: string) => void;
 }) {
   return (
-    <div className="rounded-[28px] bg-white p-5 shadow-sm">
-      <div className="inline-flex rounded-full bg-[#f3eee8] px-3 py-1 text-xs font-bold text-neutral-700">
-        {label}
+  <Link
+    href={href}
+    onClick={(e) => onClick(e, href)}
+    className="block cursor-pointer rounded-[28px] bg-white p-5 shadow-sm"
+  >
+    {badge ? (
+      <div className="mb-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-black uppercase tracking-wide text-emerald-700">
+        {badge}
       </div>
+    ) : null}
+
+    <div className="inline-flex rounded-full bg-[#f3eee8] px-3 py-1 text-xs font-bold text-neutral-700">
+      {label}
+    </div>
 
       <h3 className="mt-4 text-2xl font-black tracking-tight">{title}</h3>
 
       <p className="mt-3 text-sm leading-6 text-neutral-600">{text}</p>
 
-      <Link
-        href={href}
-        onClick={(e) => onClick(e, href)}
-        className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white"
-      >
-        {button}
+      <span className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white">
+  {button}
+</span>
       </Link>
-    </div>
-  );
+);
 }
 
 function Step({ number, title }: { number: string; title: string }) {
