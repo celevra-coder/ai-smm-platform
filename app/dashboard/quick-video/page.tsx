@@ -19,6 +19,10 @@ const [imageUploading, setImageUploading] = useState(false);
 const [generating, setGenerating] = useState(false);
 const [generatedVideoUrl, setGeneratedVideoUrl] = useState("");
 const [generationError, setGenerationError] = useState("");
+const [showPreviewModal, setShowPreviewModal] = useState(false);
+const [previewLoading, setPreviewLoading] = useState(false);
+const [previewImages, setPreviewImages] = useState<string[]>([]);
+
 const buildQuickOverlayText = () => {
   const source = `${businessName} ${businessDescription} ${videoIdea}`.toLowerCase();
 
@@ -189,6 +193,80 @@ const handleMiniPackageCheckout = async () => {
     setPaymentError("Не успяхме да отворим плащането. Опитай отново.");
   } finally {
     setPaymentLoading(false);
+  }
+};
+const handleGeneratePreview = async () => {
+  try {
+    setGenerationError("");
+
+    if (!businessName.trim()) {
+      setGenerationError("Моля, попълни име на бизнес.");
+      return;
+    }
+
+    if (!businessDescription.trim()) {
+      setGenerationError("Моля, опиши какво предлага бизнесът.");
+      return;
+    }
+
+    if (!videoIdea.trim()) {
+      setGenerationError("Моля, опиши идеята за видеото.");
+      return;
+    }
+
+    setPreviewImages([]);
+    setPreviewLoading(true);
+    setShowPreviewModal(true);
+
+    const supabase = createClient();
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      window.location.href = "/login";
+      return;
+    }
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video-frames`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          brand_profile: {
+            brand_name: businessName,
+            brand_description: businessDescription,
+          },
+          selected_post: {
+            headline: videoIdea,
+            caption: videoIdea,
+            raw_text: videoIdea,
+          },
+        }),
+      }
+    );
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data?.success || !Array.isArray(data?.images)) {
+      throw new Error(data?.error || "Не успяхме да създадем preview кадри.");
+    }
+
+    setPreviewImages(data.images);
+  } catch (error) {
+    console.error(error);
+    setShowPreviewModal(false);
+    setGenerationError("Не успяхме да създадем preview. Опитай отново.");
+  } finally {
+    setPreviewLoading(false);
   }
 };
 const handleGenerateVideo = async () => {
@@ -502,12 +580,89 @@ const handleGenerateVideo = async () => {
 
               <button
   type="button"
-  onClick={() => void handleGenerateVideo()}
-  disabled={generating || imageUploading}
+  onClick={() => void handleGeneratePreview()}
+  disabled={generating || imageUploading || previewLoading}
   className="w-full rounded-full bg-neutral-950 px-5 py-4 text-sm font-black text-white disabled:opacity-60"
 >
-  {generating ? "Генерираме видео..." : "Генерирай видео"}
+  {previewLoading
+    ? "Подготвяме preview..."
+    : generating
+      ? "Генерираме видео..."
+      : "Генерирай видео"}
 </button>
+{showPreviewModal ? (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-[32px] bg-white p-6 shadow-2xl">
+      {previewLoading ? (
+        <div className="text-center">
+          <div className="mx-auto mb-5 h-14 w-14 animate-spin rounded-full border-4 border-neutral-200 border-t-black" />
+
+          <h2 className="text-2xl font-black text-neutral-950">
+            AI подготвя видеото...
+          </h2>
+
+          <div className="mt-5 space-y-2 text-sm font-semibold text-neutral-500">
+            <p>Създава сцени...</p>
+            <p>Добавя cinematic transitions...</p>
+            <p>Подготвя рекламни кадри...</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="mb-4">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-neutral-500">
+              Preview
+            </p>
+
+            <h2 className="mt-2 text-2xl font-black text-neutral-950">
+              Ето как може да изглежда видеото ти
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+  {previewImages.map((image, index) => (
+    <img
+      key={`${image.slice(0, 24)}-${index}`}
+      src={image}
+      alt={`Preview ${index + 1}`}
+      className="aspect-[9/16] rounded-2xl object-cover"
+    />
+  ))}
+</div>
+
+          <div className="mt-5 rounded-2xl bg-neutral-100 p-4">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-neutral-500">
+              AI Hook
+            </p>
+
+            <p className="mt-2 text-sm font-bold text-neutral-900">
+              {videoIdea || "Твоето AI видео ще се появи тук."}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setShowPreviewModal(false);
+              void handleGenerateVideo();
+            }}
+            className="mt-5 w-full rounded-full bg-black px-5 py-4 text-sm font-black text-white"
+          >
+            Отключи пълното видео
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowPreviewModal(false)}
+            className="mt-3 w-full text-sm font-semibold text-neutral-500"
+          >
+            Затвори
+          </button>
+        </>
+      )}
+    </div>
+  </div>
+) : null}
 {generationError ? (
   <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
     {generationError}
