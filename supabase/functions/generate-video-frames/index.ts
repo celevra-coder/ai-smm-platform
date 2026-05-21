@@ -342,8 +342,8 @@ cartoon, animation, 3d render, cgi, unreal engine, fake, artificial, ai-looking,
 `.replace(/\s+/g, " ").trim();
 };
 
-    const images: string[] = [];
-for (let i = 0; i < 2; i++) {  const generationRes = await fetch("https://api.openai.com/v1/images/generations", {
+    const generateFrameImage = async (visual: string, index: number) => {
+  const generationRes = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -351,12 +351,12 @@ for (let i = 0; i < 2; i++) {  const generationRes = await fetch("https://api.op
     },
     body: JSON.stringify({
       model: "gpt-image-1",
-      prompt: buildImagePrompt(visuals[i]),
+      prompt: buildImagePrompt(visual),
       size: "1024x1024",
     }),
   });
 
-    const generationText = await generationRes.text();
+  const generationText = await generationRes.text();
 
   let generationData: any = null;
 
@@ -364,7 +364,7 @@ for (let i = 0; i < 2; i++) {  const generationRes = await fetch("https://api.op
     generationData = JSON.parse(generationText);
   } catch {
     throw new Error(
-      `OpenAI image generation returned non-JSON response | status=${generationRes.status} | body=${generationText.slice(0, 500)}`
+      `OpenAI image generation returned non-JSON response | frame=${index} | status=${generationRes.status} | body=${generationText.slice(0, 500)}`
     );
   }
 
@@ -376,13 +376,16 @@ for (let i = 0; i < 2; i++) {  const generationRes = await fetch("https://api.op
 
   if (!imageUrl) {
     throw new Error(
-      `OpenAI frame generation failed | status=${generationRes.status} | data=${JSON.stringify(generationData)}`
+      `OpenAI frame generation failed | frame=${index} | status=${generationRes.status} | data=${JSON.stringify(generationData)}`
     );
   }
 
-  images.push(imageUrl);
-}
+  return imageUrl;
+};
 
+const images = await Promise.all(
+  visuals.slice(0, 2).map((visual, index) => generateFrameImage(visual, index))
+);
     
     return new Response(
       JSON.stringify({

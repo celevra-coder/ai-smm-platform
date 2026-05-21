@@ -591,48 +591,87 @@ const handleGenerateVideo = async () => {
       : "Генерирай видео"}
 </button>
 {showPreviewModal ? (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-    <div className="w-full max-w-md rounded-[32px] bg-white p-6 shadow-2xl">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-[32px] bg-white p-5 shadow-2xl">
       {previewLoading ? (
-        <div className="text-center">
-          <div className="mx-auto mb-5 h-14 w-14 animate-spin rounded-full border-4 border-neutral-200 border-t-black" />
+        <div>
+          <div className="mb-5 text-center">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-neutral-500">
+              AI preview
+            </p>
 
-          <h2 className="text-2xl font-black text-neutral-950">
-            AI подготвя видеото...
-          </h2>
+            <h2 className="mt-2 text-2xl font-black text-neutral-950">
+              Подготвяме първите кадри...
+            </h2>
 
-          <div className="mt-5 space-y-2 text-sm font-semibold text-neutral-500">
-            <p>Създава сцени...</p>
-            <p>Добавя cinematic transitions...</p>
-            <p>Подготвя рекламни кадри...</p>
+            <p className="mt-2 text-sm leading-6 text-neutral-600">
+              Това може да отнеме малко време. Не затваряй прозореца.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="aspect-[9/16] animate-pulse rounded-2xl bg-gradient-to-b from-neutral-200 via-neutral-100 to-neutral-300" />
+            <div className="aspect-[9/16] animate-pulse rounded-2xl bg-gradient-to-b from-neutral-300 via-neutral-100 to-neutral-200" />
+          </div>
+
+          <div className="mt-5 overflow-hidden rounded-full bg-neutral-200">
+            <div className="h-3 w-2/3 animate-pulse rounded-full bg-black" />
+          </div>
+
+          <div className="mt-5 space-y-3 text-sm font-semibold text-neutral-700">
+            <div className="flex items-center gap-3 rounded-2xl bg-[#faf8f6] p-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-black text-white">
+                1
+              </span>
+              <p>AI анализира бизнеса и офертата...</p>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl bg-[#faf8f6] p-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-black text-white">
+                2
+              </span>
+              <p>Създава реалистични рекламни сцени...</p>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl bg-[#faf8f6] p-3">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-xs font-black text-white">
+                3
+              </span>
+              <p>Подготвя preview преди пълното видео...</p>
+            </div>
           </div>
         </div>
       ) : (
         <>
           <div className="mb-4">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-neutral-500">
-              Preview
+              Preview готов
             </p>
 
             <h2 className="mt-2 text-2xl font-black text-neutral-950">
-              Ето как може да изглежда видеото ти
+              Първите AI кадри са готови
             </h2>
+
+            <p className="mt-2 text-sm leading-6 text-neutral-600">
+              Това е визуална посока за видеото. Пълното видео се отключва след
+              потвърждение.
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-  {previewImages.map((image, index) => (
-    <img
-      key={`${image.slice(0, 24)}-${index}`}
-      src={image}
-      alt={`Preview ${index + 1}`}
-      className="aspect-[9/16] rounded-2xl object-cover"
-    />
-  ))}
-</div>
+            {previewImages.map((image, index) => (
+              <img
+                key={`${image.slice(0, 24)}-${index}`}
+                src={image}
+                alt={`Preview ${index + 1}`}
+                className="aspect-[9/16] rounded-2xl object-cover"
+              />
+            ))}
+          </div>
 
           <div className="mt-5 rounded-2xl bg-neutral-100 p-4">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-neutral-500">
-              AI Hook
+              Идея за видеото
             </p>
 
             <p className="mt-2 text-sm font-bold text-neutral-900">
