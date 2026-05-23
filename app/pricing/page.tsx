@@ -7,7 +7,7 @@ const plans = [
   {
   key: "mini",
   name: "Mini тест",
-  price: "0.50€",
+  price: "4€",
   credits: "40 кредита",
   description: "Подходящ за първи реален тест на платформата.",
 },
