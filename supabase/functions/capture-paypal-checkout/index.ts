@@ -2,10 +2,10 @@ import { serve } from "https://deno.land/std/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const plans: Record<string, { credits: number }> = {
-  mini: { credits: 30 },
-  starter: { credits: 90 },
-  growth: { credits: 180 },
-  pro: { credits: 330 },
+  mini: { credits: 40 },
+starter: { credits: 100 },
+growth: { credits: 220 },
+pro: { credits: 420 },
 };
 async function getPayPalAccessToken() {
   const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
