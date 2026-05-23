@@ -250,10 +250,14 @@ const handleGeneratePreview = async () => {
 
     setPreviewImages(data.images);
   } catch (error) {
-    console.error(error);
-    setShowPreviewModal(false);
-    setGenerationError("Не успяхме да създадем preview. Опитай отново.");
-  } finally {
+  console.error(error);
+  setShowPreviewModal(false);
+  setGenerationError(
+    error instanceof Error
+      ? error.message
+      : "Не успяхме да създадем preview. Опитай отново."
+  );
+} finally {
     setPreviewLoading(false);
   }
 };
