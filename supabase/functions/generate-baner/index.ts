@@ -5,8 +5,9 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Content-Type": "application/json",
 };
-
 type LayoutFamily =
   | "hero-left"
   | "centered-offer"
@@ -106,23 +107,36 @@ const supabase = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
 );
 
-// взимаме user от Authorization header
+// взимаме user от Authorization header, ако има
 const authHeader = req.headers.get("Authorization") || "";
-const token = authHeader.replace("Bearer ", "");
+const token = authHeader.replace("Bearer ", "").trim();
 
-const {
-  data: { user },
-  error: userError,
-} = await supabase.auth.getUser(token);
+const source = body?.source || "quick_banner";
+console.log("GENERATE BANER SOURCE DEBUG:", {
+  source,
+  bodySource: body?.source,
+  hasAuthHeader: Boolean(authHeader),
+  hasToken: Boolean(token),
+});
 
-if (userError || !user) {
+let user = null;
+let userError = null;
+
+if (token) {
+  const authResult = await supabase.auth.getUser(token);
+  user = authResult.data.user;
+  userError = authResult.error;
+}
+
+const isGuestBrandBanner = source === "brand_banner" && !user;
+
+if (!isGuestBrandBanner && (userError || !user)) {
   return new Response(
-    JSON.stringify({ error: "Unauthorized" }),
+    JSON.stringify({ error: "Unauthorized", source }),
     { status: 401, headers: corsHeaders }
   );
 }
 
-const source = body?.source || "quick_banner";
 
 // free режимът важи само за quick banner
 if (source === "quick_banner") {
@@ -575,7 +589,7 @@ SERVICE / PRODUCT SPECIFICITY RULES:
 - The image should visually confirm the promise from the text
 
 COPYWRITING RULES:
-
+- Never use generic headline text like "Рекламна оферта", "Специална оферта", "Нова оферта" or "Промо оферта". The headline must describe the actual business/service/offer from the user input.
 - Prefer headlines like:
   "Френски маникюр на специална цена"
   "Елегантен френски маникюр за безупречна визия"
@@ -1154,8 +1168,8 @@ if (safeImageUrl && safeImageUsageMode === "exact") {
 const { data: logRow } = await supabase
   .from("generation_logs")
   .insert({
-    user_id: user.id,
-    user_email: user.email,
+    user_id: user?.id || null,
+user_email: user?.email || null,
     generation_type: source,
     input_text: description || "",
     output_text: plan.headline + "\n" + plan.subtext,
@@ -1224,8 +1238,8 @@ const inputBlob = await downloadImageAsBlob(safeImageUrl);
 const { data: logRow } = await supabase
   .from("generation_logs")
   .insert({
-    user_id: user.id,
-    user_email: user.email,
+    user_id: user?.id || null,
+user_email: user?.email || null,
     generation_type: source,
     input_text: description || "",
     output_text: plan.headline + "\n" + plan.subtext,
@@ -1286,8 +1300,8 @@ if (!generatedImageUrl) {
 const { data: logRow } = await supabase
   .from("generation_logs")
   .insert({
-    user_id: user.id,
-    user_email: user.email,
+    user_id: user?.id || null,
+user_email: user?.email || null,
     generation_type: source,
     input_text: description || "",
     output_text: plan.headline + "\n" + plan.subtext,

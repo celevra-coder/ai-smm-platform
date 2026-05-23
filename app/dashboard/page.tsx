@@ -798,6 +798,23 @@ const {
 } = await supabase.auth.getSession();
 
 const accessToken = session?.access_token;
+const isGuest = !accessToken;
+
+if (isGuest) {
+  const guestBannerCount = Number(
+    localStorage.getItem("guest_banner_count") || "0"
+  );
+
+  if (guestBannerCount >= 2) {
+    setShowPaywallModal(true);
+    return;
+  }
+
+  localStorage.setItem(
+    "guest_banner_count",
+    String(guestBannerCount + 1)
+  );
+}
 
 // demo limit важи само за НЕлогнати потребители
 if (isDemo && !session?.user) {
@@ -911,7 +928,7 @@ const accessToken = session?.access_token;
         headers: {
   "Content-Type": "application/json",
   apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  Authorization: `Bearer ${accessToken}`,
+  ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
 },
         body: JSON.stringify({
           description: description.trim(),
@@ -940,7 +957,7 @@ const accessToken = session?.access_token;
           image_url: imageUrl.trim(),
           image_usage_mode: imageUsageMode,
           design_mode: "readable_editorial",
-source: "quick_banner",
+source: "brand_banner",
         }),
       });
 
@@ -1238,11 +1255,26 @@ const previewHeadlineSource = cleanHeadlineInput(
   ""
 );
   const getDisplayHeadline = () => {
+    const isGenericHeadline = (value?: string) =>
+  /^(рекламна оферта|специална оферта|нова оферта|промо оферта)$/i.test(
+    (value || "").trim()
+  );
+
+if (plan?.headline && !isGenericHeadline(plan.headline)) {
+  return clampText(plan.headline.trim(), 42);
+}
   if (quickBrandName.trim()) {
     return clampText(quickBrandName.trim(), 28);
   }
 
-  const sourceText = [quickBrandName, description, exactText, offerText, headline, plan?.headline]
+  const sourceText = [
+  quickBrandName,
+  description,
+  exactText,
+  offerText,
+  headline,
+  isGenericHeadline(plan?.headline) ? "" : plan?.headline,
+]
     .filter(Boolean)
     .join(" ");
 
@@ -1259,7 +1291,9 @@ const previewHeadlineSource = cleanHeadlineInput(
       .trim();
   }
 
-  const afterZaMatch = cleaned.match(/\bза\s+([^.\n,]{3,38})/i);
+  const afterZaMatch = cleaned.match(
+  /\bза\s+(?!банер\b|реклама\b|оферта\b)([^.\n,]{3,38})/i
+);
 
   const candidate = (afterZaMatch?.[1] || "")
     .replace(/\b(в|гр\.|град|ул\.|бул\.).*$/gi, "")
@@ -1314,8 +1348,15 @@ const previewHeadlineSource = cleanHeadlineInput(
     return "Замерване за вода";
   }
 
-  return "Рекламна оферта";
-};
+  return clampText(
+  offerText?.trim() ||
+    exactText?.trim() ||
+    description?.trim() ||
+    headline?.trim() ||
+    "Специална оферта",
+  42
+);
+  };
 
   const getDisplaySubtext = () => {
   const hasLocationLikeContent = (text: string) => {

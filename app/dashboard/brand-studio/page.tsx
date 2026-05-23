@@ -620,45 +620,68 @@ const {
 } = await supabase.auth.getSession();
 
 const accessToken = session?.access_token;
+const isGuest = !accessToken;
 
-const creditRes = await fetch(
-  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/spend-credit`,
-  {
-    method: "POST",
-    headers: {
-  "Content-Type": "application/json",
-  apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  Authorization: `Bearer ${accessToken}`,
-},
-    body: JSON.stringify({
-      action_type: "brand_banner",
-      cost: 2,
-    }),
+if (isGuest) {
+  const guestBannerCount = Number(
+    localStorage.getItem("guest_banner_count") || "0"
+  );
+
+  if (guestBannerCount >= 2) {
+    setShowPaywallModal(true);
+    return;
   }
-);
 
-const creditData = await creditRes.json().catch(() => null);
-console.log("BRAND BANNER CREDIT DEBUG", {
-  creditStatus: creditRes.status,
-  creditData,
-  accessTokenExists: Boolean(accessToken),
-});
-
-if (!creditRes.ok || !creditData?.success) {
-  setShowPaywallModal(true);
-  return;
+  localStorage.setItem(
+    "guest_banner_count",
+    String(guestBannerCount + 1)
+  );
 }
+
+if (!isGuest) {
+  const creditRes = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/spend-credit`,
+    {
+headers: {
+  "Content-Type": "application/json",
+  apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+  ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+},
+
+      
+      body: JSON.stringify({
+        action_type: "brand_banner",
+        cost: 2,
+      }),
+    }
+  );
+
+  const creditData = await creditRes.json().catch(() => null);
+
+  console.log("BRAND BANNER CREDIT DEBUG", {
+    creditStatus: creditRes.status,
+    creditData,
+    accessTokenExists: Boolean(accessToken),
+  });
+
+  if (!creditRes.ok || !creditData?.success) {
+    setShowPaywallModal(true);
+    return;
+  }
+}
+console.log("FRONTEND BANER BODY SOURCE:", "brand_banner");
 
       const bannerRes = await fetch(
         "https://aogtdpiaagekwzyrazyf.supabase.co/functions/v1/generate-baner",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-            Authorization: `Bearer ${accessToken}`,
-          },
+  "Content-Type": "application/json",
+  apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+  ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+},
           body: JSON.stringify({
+            source: "brand_banner",
     description: brandDesc || caption || rawText || headline,
   address: businessAddress || "",
   offer: offer || headline,
@@ -676,7 +699,7 @@ if (!creditRes.ok || !creditData?.success) {
   logo_url: logoUrl || null,
     image_url: uploadedImageUrl || null,
   image_usage_mode: uploadedImageUrl ? imageUsageMode : "auto",
-  source: "brand_banner",
+  
 }),
         }
       );
