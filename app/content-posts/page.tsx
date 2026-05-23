@@ -130,6 +130,17 @@ if (!supabaseUrl || !supabaseAnonKey) {
         const topicTitle = parsed.item?.title?.trim() || "избраната тема";
         const topicDescription = parsed.item?.description?.trim() || "";
         const topicFormat = parsed.item?.format?.trim() || "";
+        const lowerFormat = topicFormat.toLowerCase();
+
+const isEducational =
+  lowerFormat.includes("образовател") ||
+  lowerFormat.includes("educational");
+
+const isPromotional =
+  lowerFormat.includes("промо") ||
+  lowerFormat.includes("реклам") ||
+  lowerFormat.includes("оферта") ||
+  lowerFormat.includes("sales");
         const platformLabel = parsed.platform?.trim() || "Instagram";
         const periodLabel = parsed.period?.trim() || "";
         const frequencyLabel = parsed.frequency?.trim() || "";
@@ -156,14 +167,26 @@ const selectedTone = toneMap[parsed.tone || "Професионален"] || "so
           periodLabel ? `Период на календара: ${periodLabel}.` : "",
           frequencyLabel ? `Честота: ${frequencyLabel}.` : "",
           notesLabel ? `Допълнителни бележки: ${notesLabel}.` : "",
-          activeBrandPhone ? `Телефон за контакт: ${activeBrandPhone}.` : "",
+          !isEducational && activeBrandPhone
+  ? `Телефон за контакт: ${activeBrandPhone}.`
+  : "",
           "Постовете да са готови за публикуване, а не инструкции към клиента.",
           "Да не обясняват какво да се напише, а да бъдат самият готов текст.",
           "Да бъдат различни един от друг като hook, структура и звучене.",
           "Да са съобразени с темата и бизнеса, не шаблонни.",
-          "Когато темата позволява, направи поне 1 от 3-те варианта образователен пост.",
+          isEducational
+  ? "Всички постове трябва да бъдат ИЗЦЯЛО образователни."
+  : "Когато темата позволява, направи поне 1 от 3-те варианта образователен пост.",
+
 "Образователният пост трябва да обяснява полезно нещо на аудиторията: грешка, мит, процес, критерий за избор, често задаван въпрос или практичен съвет.",
-"Образователният пост не трябва да продава агресивно, а да изгражда доверие чрез стойност.",
+
+"При образователен тип съдържание НЕ добавяй телефон, CTA, 'свържи се с нас', продажбен завършек или агресивна реклама.",
+
+"Образователният пост трябва да звучи като полезна експертна информация, а не като реклама.",
+
+!isPromotional
+  ? "Не завършвай постовете с рекламни призиви като 'свържи се с нас', 'пиши ни', 'обади се', освен ако форматът не е изрично promotional."
+  : "",
 "За професионални обучения пиши за умения, практика, реализация, грешки при избор на курс и какво може да прави човек след обучението.",
 "За технически/специализирани услуги пиши с обяснение на процеса, проблема, риска и ползата от правилна диагностика.",
           "Използвай САМО факти, детайли и конкретика, които са изрично дадени в тази заявка.",
