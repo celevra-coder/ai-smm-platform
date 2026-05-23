@@ -50,9 +50,12 @@ if (data.user && data.user.identities?.length === 0) {
 setMessage("success");
 
 const pendingPlan = localStorage.getItem("pending_checkout_plan");
+const pendingProvider =
+  localStorage.getItem("pending_checkout_provider") || "paypal";
 
 if (pendingPlan) {
   localStorage.removeItem("pending_checkout_plan");
+  localStorage.removeItem("pending_checkout_provider");
 
   const {
     data: { session },
@@ -66,8 +69,13 @@ if (pendingPlan) {
     return;
   }
 
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-paypal-checkout`,
+  const checkoutFunction =
+  pendingProvider === "stripe"
+    ? "create-stripe-checkout"
+    : "create-paypal-checkout";
+
+const res = await fetch(
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/${checkoutFunction}`,
     {
       method: "POST",
       headers: {

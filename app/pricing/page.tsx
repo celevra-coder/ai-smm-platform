@@ -38,7 +38,7 @@ export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleCheckout = async (plan: string) => {
+  const handleCheckout = async (plan: string, provider: "stripe" | "paypal") => {
     try {
       setLoadingPlan(plan);
       setErrorMessage("");
@@ -53,12 +53,16 @@ export default function PricingPage() {
 
       if (!accessToken) {
   localStorage.setItem("pending_checkout_plan", plan);
+  localStorage.setItem("pending_checkout_provider", provider);
   window.location.href = "/register";
   return;
 }
 
-      const res = await fetch(
-                `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-paypal-checkout`,
+      const checkoutFunction =
+  provider === "stripe" ? "create-stripe-checkout" : "create-paypal-checkout";
+
+const res = await fetch(
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/${checkoutFunction}`,
         {
           method: "POST",
           headers: {
@@ -131,14 +135,25 @@ export default function PricingPage() {
                 {plan.description}
               </p>
 
-              <button
-                type="button"
-                onClick={() => handleCheckout(plan.key)}
-                disabled={loadingPlan === plan.key}
-                className="mt-6 w-full rounded-[20px] bg-neutral-950 px-5 py-3 text-[15px] font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                                {loadingPlan === plan.key ? "Отварям..." : "Купи с PayPal / карта"}
-              </button>
+              <div className="mt-6 space-y-3">
+  <button
+    type="button"
+    onClick={() => handleCheckout(plan.key, "stripe")}
+    disabled={loadingPlan === plan.key}
+    className="w-full rounded-[20px] bg-neutral-950 px-5 py-3 text-[15px] font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    {loadingPlan === plan.key ? "Отварям..." : "Купи с карта"}
+  </button>
+
+  <button
+    type="button"
+    onClick={() => handleCheckout(plan.key, "paypal")}
+    disabled={loadingPlan === plan.key}
+    className="w-full rounded-[20px] border border-neutral-300 bg-white px-5 py-3 text-[15px] font-bold text-neutral-950 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    PayPal
+  </button>
+</div>
             </div>
           ))}
         </div>
