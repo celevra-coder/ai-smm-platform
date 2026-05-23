@@ -65,7 +65,11 @@ try {
   console.error("Middleware auth error:", e);
 }
 const isPublicQuickDemo =
-  request.nextUrl.pathname === "/dashboard/quick-video";
+  request.nextUrl.pathname === "/dashboard/quick-video" ||
+  (
+    request.nextUrl.pathname === "/dashboard" &&
+    request.nextUrl.searchParams.get("mode") === "quick"
+  );
 
 // ако няма user и влиза в dashboard, позволяваме само публичния quick demo
 if (

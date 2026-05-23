@@ -255,8 +255,7 @@ const handleCardClick = (href: string) => {
     </p>
 
     <Link
-      href="/dashboard?mode=quick"
-      onClick={(e) => handleProtectedClick(e, "/dashboard?mode=quick")}
+  href="/dashboard?mode=quick"
       className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
     >
       Тествай безплатно
