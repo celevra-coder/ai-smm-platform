@@ -150,50 +150,20 @@ const uploadImage = async (file: File) => {
   }
 };
 const handleMiniPackageCheckout = async () => {
-  try {
-    setPaymentLoading(true);
-    setPaymentError("");
+  localStorage.setItem(
+    "pending_quick_video",
+    JSON.stringify({
+      businessName: businessName.trim(),
+      businessDescription: businessDescription.trim(),
+      videoIdea: videoIdea.trim(),
+      phone: phone.trim(),
+      duration,
+      imageUrl,
+      imageFileName,
+    })
+  );
 
-    const { createClient } = await import("@/lib/supabase-browser");
-    const supabase = createClient();
-
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    const accessToken = session?.access_token;
-
-    if (!accessToken) {
-      window.location.href = "/login";
-      return;
-    }
-
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-paypal-checkout`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ plan: "quick_video" }),
-      }
-    );
-
-    const data = await res.json().catch(() => null);
-
-    if (!res.ok || !data?.url) {
-      throw new Error(data?.error || "Неуспешно създаване на плащане.");
-    }
-
-    window.location.href = data.url;
-  } catch (error) {
-    console.error(error);
-    setPaymentError("Не успяхме да отворим плащането. Опитай отново.");
-  } finally {
-    setPaymentLoading(false);
-  }
+  window.location.href = "/pricing?source=quick-video";
 };
 const handleGeneratePreview = async () => {
   try {
@@ -330,9 +300,22 @@ const handleGenerateVideo = async () => {
     const creditData = await creditRes.json().catch(() => null);
 
     if (!creditRes.ok || !creditData?.success) {
-      setShowMiniPackageModal(true);
-      return;
-    }
+  localStorage.setItem(
+    "pending_quick_video",
+    JSON.stringify({
+      businessName: businessName.trim(),
+      businessDescription: businessDescription.trim(),
+      videoIdea: videoIdea.trim(),
+      phone: phone.trim(),
+      duration,
+      imageUrl,
+      imageFileName,
+    })
+  );
+
+  window.location.href = "/pricing?source=quick-video";
+  return;
+}
 
     const generateRes = await fetch(
   `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video`,
