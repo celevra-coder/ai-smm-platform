@@ -87,6 +87,14 @@ const [paymentSuccessMessage, setPaymentSuccessMessage] = useState("");
     return () => window.clearInterval(interval);
   }, [showcaseItems.length]);
   const handleProtectedClick = (e: React.MouseEvent, href: string) => {
+  const isPublicDemoRoute =
+    href === "/dashboard/quick-video" ||
+    href === "/dashboard?mode=quick";
+
+  if (isPublicDemoRoute) {
+    return;
+  }
+
   if (!authChecked) {
     e.preventDefault();
     return;
