@@ -14,8 +14,8 @@ const plans: Record<
   string,
   { credits: number; amount: number; name: string }
 > = {
-  mini: { credits: 40, amount: 400, name: "Mini тест пакет - 40 кредита" },
-  starter: { credits: 100, amount: 900, name: "Starter пакет - 100 кредита" },
+mini: { credits: 40, amount: 50, name: "Mini тест пакет - 40 кредита" },
+    starter: { credits: 100, amount: 900, name: "Starter пакет - 100 кредита" },
   growth: { credits: 220, amount: 1500, name: "Growth пакет - 220 кредита" },
   pro: { credits: 420, amount: 2500, name: "Pro пакет - 420 кредита" },
 };
