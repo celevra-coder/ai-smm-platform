@@ -294,9 +294,22 @@ const handleGenerateVideo = async () => {
     const accessToken = session?.access_token;
 
     if (!accessToken) {
-      window.location.href = "/login";
-      return;
-    }
+  localStorage.setItem(
+    "pending_quick_video",
+    JSON.stringify({
+      businessName: businessName.trim(),
+      businessDescription: businessDescription.trim(),
+      videoIdea: videoIdea.trim(),
+      phone: phone.trim(),
+      duration,
+      imageUrl,
+      imageFileName,
+    })
+  );
+
+  window.location.href = "/pricing?source=quick-video";
+  return;
+}
 
     const creditRes = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/consume-credit`,

@@ -5,24 +5,31 @@ import { createClient } from "@/lib/supabase-browser";
 
 const plans = [
   {
+    key: "mini",
+    name: "Mini тест",
+    price: "4€",
+    credits: "30 кредита",
+    description: "Подходящ за първи реален тест на платформата.",
+  },
+  {
     key: "starter",
     name: "Starter",
-    price: "15€",
-    credits: "150 кредита",
-    description: "Подходящ за първи тестове и малко съдържание.",
+    price: "9€",
+    credits: "90 кредита",
+    description: "За малко съдържание и първи кампании.",
   },
   {
     key: "growth",
     name: "Growth",
-    price: "25€",
-    credits: "300 кредита",
+    price: "15€",
+    credits: "180 кредита",
     description: "Най-балансираният пакет за активна работа.",
   },
   {
     key: "pro",
     name: "Pro",
-    price: "30€",
-    credits: "400 кредита",
+    price: "25€",
+    credits: "330 кредита",
     description: "Най-добра стойност, ако ще създаваш често.",
   },
 ];
@@ -45,9 +52,10 @@ export default function PricingPage() {
       const accessToken = session?.access_token;
 
       if (!accessToken) {
-        window.location.href = "/login";
-        return;
-      }
+  localStorage.setItem("pending_checkout_plan", plan);
+  window.location.href = "/register";
+  return;
+}
 
       const res = await fetch(
                 `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-paypal-checkout`,

@@ -2,12 +2,11 @@ import { serve } from "https://deno.land/std/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const plans: Record<string, { credits: number }> = {
-  starter: { credits: 150 },
-  growth: { credits: 300 },
-  pro: { credits: 400 },
-  quick_video: { credits: 50 },
+  mini: { credits: 30 },
+  starter: { credits: 90 },
+  growth: { credits: 180 },
+  pro: { credits: 330 },
 };
-
 async function getPayPalAccessToken() {
   const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
   const secret = Deno.env.get("PAYPAL_SECRET");
@@ -100,7 +99,7 @@ const selectedPlan = plans[planKey];
       console.error("PAYPAL ADD CREDITS ERROR:", error);
       return Response.redirect(`${siteUrl}/pricing?payment=failed`, 302);
     }
-return Response.redirect(`${siteUrl}/?payment=package_success`, 302);
+return Response.redirect(`${siteUrl}/dashboard/quick-video?payment=package_success`, 302);
       } catch (error) {
     console.error("CAPTURE PAYPAL CHECKOUT ERROR:", error);
 

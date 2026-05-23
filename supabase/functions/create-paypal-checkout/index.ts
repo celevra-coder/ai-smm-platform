@@ -13,12 +13,11 @@ const plans: Record<
   string,
   { credits: number; amount: string; name: string }
 > = {
-starter: { credits: 150, amount: "15.00", name: "Starter пакет - 150 кредита" },
-growth: { credits: 300, amount: "25.00", name: "Growth пакет - 300 кредита" },
-pro: { credits: 400, amount: "30.00", name: "Pro пакет - 400 кредита" },
-quick_video: { credits: 50, amount: "4.00", name: "Мини пакет AI видео - 50 кредита" },
-  };
-
+  mini: { credits: 30, amount: "4.00", name: "Mini тест пакет - 30 кредита" },
+  starter: { credits: 90, amount: "9.00", name: "Starter пакет - 90 кредита" },
+  growth: { credits: 180, amount: "15.00", name: "Growth пакет - 180 кредита" },
+  pro: { credits: 330, amount: "25.00", name: "Pro пакет - 330 кредита" },
+};
 async function getPayPalAccessToken() {
   const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
   const secret = Deno.env.get("PAYPAL_SECRET");

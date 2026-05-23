@@ -48,6 +48,49 @@ if (data.user && data.user.identities?.length === 0) {
 }
 
 setMessage("success");
+
+const pendingPlan = localStorage.getItem("pending_checkout_plan");
+
+if (pendingPlan) {
+  localStorage.removeItem("pending_checkout_plan");
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const accessToken = session?.access_token;
+
+  if (!accessToken) {
+    setLoading(false);
+    router.push("/login");
+    return;
+  }
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-paypal-checkout`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ plan: pendingPlan }),
+    }
+  );
+
+  const checkoutData = await res.json().catch(() => null);
+
+  if (res.ok && checkoutData?.url) {
+    window.location.href = checkoutData.url;
+    return;
+  }
+
+  setMessage("Регистрацията е успешна, но не успяхме да отворим плащането. Моля, избери пакета отново.");
+  setLoading(false);
+  return;
+}
+
 setLoading(false);
 
 setTimeout(() => {
