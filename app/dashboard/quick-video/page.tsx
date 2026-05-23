@@ -700,23 +700,7 @@ const handleGenerateVideo = async () => {
           </section>
 
           <section className="rounded-[32px] bg-neutral-950 p-5 text-white shadow-sm sm:p-7">
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-white/50">
-              Preview
-            </p>
-
-            <h2 className="mt-3 text-2xl font-black">
-              Какво ще получиш?
-            </h2>
-
-            <div className="mt-5 space-y-3 text-sm leading-6 text-white/75">
-              <p>• 2 кратки AI видеа за социални мрежи</p>
-              <p>• вертикален формат 9:16</p>
-              <p>• текст върху видеото</p>
-              <p>• музика и финален екран с бизнес име</p>
-              <p>• подходящо за Facebook, Instagram Reels и TikTok</p>
-            </div>
-
-            <div className="mt-8 overflow-hidden rounded-[28px] bg-black">
+  <div className="overflow-hidden rounded-[28px] bg-black">
               {generating ? (
   <div className="flex aspect-[9/16] w-full flex-col items-center justify-center bg-neutral-950 px-6 text-center">
     <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/20 border-t-white" />
