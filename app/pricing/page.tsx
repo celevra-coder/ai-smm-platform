@@ -135,14 +135,25 @@ const res = await fetch(
                 {plan.description}
               </p>
 
-              <button
-  type="button"
-  onClick={() => handleCheckout(plan.key, "paypal")}
-  disabled={loadingPlan === plan.key}
-  className="mt-6 w-full rounded-[20px] bg-neutral-950 px-5 py-3 text-[15px] font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
->
-  {loadingPlan === plan.key ? "Отварям..." : "Купи с PayPal"}
-</button>
+              <div className="mt-6 space-y-3">
+  <button
+    type="button"
+    onClick={() => handleCheckout(plan.key, "stripe")}
+    disabled={loadingPlan === plan.key}
+    className="w-full rounded-[20px] bg-neutral-950 px-5 py-3 text-[15px] font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    {loadingPlan === plan.key ? "Отварям..." : "Купи с карта"}
+  </button>
+
+  <button
+    type="button"
+    onClick={() => handleCheckout(plan.key, "paypal")}
+    disabled={loadingPlan === plan.key}
+    className="w-full rounded-[20px] border border-neutral-300 bg-white px-5 py-3 text-[15px] font-bold text-neutral-950 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    PayPal
+  </button>
+</div>
             </div>
           ))}
         </div>
