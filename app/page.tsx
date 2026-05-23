@@ -278,7 +278,6 @@ const handleCardClick = (href: string) => {
 
   <Link
     href="/dashboard/quick-video"
-onClick={(e) => handleProtectedClick(e, "/dashboard/quick-video")}
      className="mt-auto inline-flex w-full items-center justify-center rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
   >
     Генерирай видео

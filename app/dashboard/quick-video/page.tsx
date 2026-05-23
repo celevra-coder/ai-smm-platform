@@ -218,19 +218,7 @@ const handleGeneratePreview = async () => {
     setPreviewLoading(true);
     setShowPreviewModal(true);
 
-    const supabase = createClient();
-
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    const accessToken = session?.access_token;
-
-    if (!accessToken) {
-      window.location.href = "/login";
-      return;
-    }
-
+    
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video-frames`,
       {
@@ -238,7 +226,7 @@ const handleGeneratePreview = async () => {
         headers: {
           "Content-Type": "application/json",
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
         },
         body: JSON.stringify({
           brand_profile: {
@@ -290,7 +278,7 @@ const handleGenerateVideo = async () => {
       return;
     }
 
-    const supabase = createClient();
+            const supabase = createClient();
 
     const {
       data: { session },
@@ -303,10 +291,8 @@ const handleGenerateVideo = async () => {
       return;
     }
 
-    const videoCreditCost = duration >= 10 ? 35 : 25;
-
     const creditRes = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/spend-credit`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/consume-credit`,
       {
         method: "POST",
         headers: {
@@ -316,7 +302,7 @@ const handleGenerateVideo = async () => {
         },
         body: JSON.stringify({
           action_type: "video",
-          cost: videoCreditCost,
+          cost: duration === 5 ? 25 : 35,
         }),
       }
     );
@@ -329,14 +315,14 @@ const handleGenerateVideo = async () => {
     }
 
     const generateRes = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          Authorization: `Bearer ${accessToken}`,
-        },
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      Authorization: `Bearer ${accessToken}`,
+    },
         body: JSON.stringify({
           video_image_url: imageUrl || "",
           source_type: imageUrl ? "video-image" : "text-only",
