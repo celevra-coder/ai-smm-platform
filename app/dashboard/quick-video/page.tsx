@@ -245,8 +245,12 @@ const handleGeneratePreview = async () => {
     const data = await res.json().catch(() => null);
 
     if (!res.ok || !data?.success || !Array.isArray(data?.images)) {
-      throw new Error(data?.error || "Не успяхме да създадем preview кадри.");
-    }
+  throw new Error(
+    data?.error ||
+      data?.details ||
+      `Preview failed. Status: ${res.status}. Response: ${JSON.stringify(data)}`
+  );
+}
 
     setPreviewImages(data.images);
   } catch (error) {
