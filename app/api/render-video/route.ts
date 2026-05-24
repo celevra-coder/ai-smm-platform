@@ -210,20 +210,18 @@ const smartMainTexts = (() => {
   const text = cleanText(allVideoText).toLowerCase();
 
   if (isEnglishVideo) {
-    const englishTexts = [
-      ...visibleScenes.map((scene: any) => scene?.overlay_text || scene?.title || ""),
-      headline,
-      subtext,
-    ]
-      .map((item) => cleanOverlayCandidate(item))
-      .filter(Boolean)
-      .slice(0, 2);
+  const englishTexts = [
+    ...visibleScenes.map((scene: any) => scene?.overlay_text || scene?.title || ""),
+    headline,
+  ]
+    .map((item) => cleanOverlayCandidate(item))
+    .filter(Boolean)
+    .slice(0, 2);
 
-    return englishTexts.length
-      ? englishTexts
-      : ["A premium video ad", "Made for your business"];
-  }
-
+  return englishTexts.length
+    ? englishTexts
+    : ["A premium video ad", "Made for your business"];
+}
   if (/пиц|pizza|моцарела|mozzarella|итал|тесто/i.test(text)) {
     return [
       "Истинска италианска пица",
