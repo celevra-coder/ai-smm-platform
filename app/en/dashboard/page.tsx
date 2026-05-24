@@ -161,6 +161,40 @@ export default function EnglishDashboardPage() {
     }
   };
 
+    const handleDownloadBanner = async () => {
+    if (!generatedImageUrl) return;
+
+    const response = await fetch(generatedImageUrl);
+    const blob = await response.blob();
+
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = blobUrl;
+    link.download = "ai-smm-banner.png";
+    document.body.appendChild(link);
+    link.click();
+
+    link.remove();
+    window.URL.revokeObjectURL(blobUrl);
+  };
+
+  const handleCopyBannerText = async () => {
+    const text = [headline, subtext, cta].filter(Boolean).join("\n");
+
+    if (!text) return;
+
+    await navigator.clipboard.writeText(text);
+    setMessage("Banner text copied.");
+  };
+
+  const handleCopyBannerLink = async () => {
+    if (!generatedImageUrl) return;
+
+    await navigator.clipboard.writeText(generatedImageUrl);
+    setMessage("Banner image link copied.");
+  };
+
   return (
     <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-neutral-950 md:px-6 md:py-10">
       <div className="mx-auto max-w-7xl">
@@ -316,34 +350,64 @@ export default function EnglishDashboardPage() {
                     </p>
                   </div>
                 </div>
-              ) : generatedImageUrl ? (
-                <div className="relative aspect-square overflow-hidden bg-neutral-900">
-                  <img
-                    src={generatedImageUrl}
-                    alt="Generated banner"
-                    className="h-full w-full object-cover"
-                  />
+                            ) : generatedImageUrl ? (
+                <div>
+                  <div className="relative aspect-square overflow-hidden bg-neutral-900">
+                    <img
+                      src={generatedImageUrl}
+                      alt="Generated banner"
+                      className="h-full w-full object-cover"
+                    />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
-                  <div className="absolute inset-x-0 bottom-0 p-6 text-white">
-                    {headline ? (
-                      <h3 className="text-[26px] font-black leading-[1.05] tracking-[-0.03em]">
-                        {headline}
-                      </h3>
-                    ) : null}
+                    <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                      <div className="max-w-[88%] rounded-[24px] bg-black/45 p-4 backdrop-blur-sm">
+                        {headline ? (
+                          <h3 className="text-[24px] font-black leading-[1.05] tracking-[-0.03em]">
+                            {headline}
+                          </h3>
+                        ) : null}
 
-                    {subtext ? (
-                      <p className="mt-3 text-sm font-semibold leading-6 text-white/90">
-                        {subtext}
-                      </p>
-                    ) : null}
+                        {subtext ? (
+                          <p className="mt-2 text-sm font-semibold leading-5 text-white/90">
+                            {subtext}
+                          </p>
+                        ) : null}
 
-                    {cta ? (
-                      <p className="mt-4 inline-flex rounded-full bg-white px-4 py-2 text-sm font-black text-neutral-950">
-                        {cta}
-                      </p>
-                    ) : null}
+                        {cta ? (
+                          <p className="mt-3 inline-flex rounded-full bg-white px-4 py-2 text-xs font-black text-neutral-950">
+                            {cta}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <button
+                      type="button"
+                      onClick={() => void handleDownloadBanner()}
+                      className="rounded-full bg-neutral-950 px-4 py-3 text-sm font-bold text-white transition hover:opacity-90"
+                    >
+                      Download banner
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => void handleCopyBannerText()}
+                      className="rounded-full border border-black/10 bg-white px-4 py-3 text-sm font-bold text-neutral-950 transition hover:bg-[#f5f1ec]"
+                    >
+                      Copy text
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => void handleCopyBannerLink()}
+                      className="rounded-full border border-black/10 bg-white px-4 py-3 text-sm font-bold text-neutral-950 transition hover:bg-[#f5f1ec]"
+                    >
+                      Copy image link
+                    </button>
                   </div>
                 </div>
               ) : (

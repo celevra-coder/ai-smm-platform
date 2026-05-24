@@ -139,7 +139,7 @@ if (!isGuestBrandBanner && (userError || !user)) {
 
 
 // free режимът важи само за quick banner
-if (source === "quick_banner") {
+if (source === "quick_banner" || source === "en_quick_banner") {
   const quickBannerCost = 2;
 
   const { data: hasCredits, error: creditError } = await supabase.rpc(
@@ -528,10 +528,33 @@ const hasExactText = Boolean(safeExactText);
           .filter(Boolean)
       ).slice(0, 3);
     })();
+const ctaFallback = "";
 
-    const ctaFallback = "";
-    const exactModeInstruction = hasExactText
-      ? `
+const isEnglishBanner = source === "en_quick_banner";
+const bannerLanguageName = isEnglishBanner ? "English" : "Bulgarian";
+
+const visibleTextLanguageRules = isEnglishBanner
+  ? `
+ENGLISH BANNER MODE:
+- All visible banner text must be in English only.
+- Do not use Bulgarian words.
+- Do not use Cyrillic text.
+- Do not translate the user input into Bulgarian.
+- Use the user's English offer, discount, period, phone and address as the source of truth.
+- Keep the layout clean and not overcrowded.
+- Use maximum 3 short visible text blocks plus phone/address if provided.
+- Make the headline large, short and readable.
+- Make supporting text smaller and clearly separated.
+- Prefer clean premium ad composition, not too many text chips.
+`
+  : `
+BULGARIAN BANNER MODE:
+- All visible banner text must be in Bulgarian.
+- Use natural Bulgarian marketing copy.
+`;
+
+const exactModeInstruction = hasExactText
+          ? `
 EXACT TEXT MODE:
 - exact_text is the PRIMARY source for banner copy.
 - Preserve the user's intended meaning very closely.
@@ -553,7 +576,7 @@ CREATIVE MODE:
 - Be more creative, persuasive and ad-oriented.
 - Make the service and offer clearer than the raw input.
 - You may invent phrasing and marketing wording, but not facts.
-- Write like a strong local business ad in Bulgarian.
+- Write like a strong local business ad in ${bannerLanguageName}.
 - Make it feel sellable, not generic.
 - The headline should be punchy and not too long.
 - The subtext should clearly explain the offer.
@@ -561,10 +584,15 @@ CREATIVE MODE:
 `;
 
     const planningPrompt = `
-You are a senior Bulgarian-speaking performance creative director for local business Facebook and Instagram ads.
+${
+  isEnglishBanner
+    ? "You are a senior English-speaking performance creative director for local business Facebook and Instagram ads."
+    : "You are a senior Bulgarian-speaking performance creative director for local business Facebook and Instagram ads."
+}
 
 Return ONLY valid JSON. No markdown. No explanation.
 
+${visibleTextLanguageRules}
 Your job:
 Create a banner plan that balances:
 1) factual safety
@@ -628,8 +656,8 @@ COPY RULES:
 - Do NOT copy the user's request literally into the banner text.
 - Do NOT use phrases like "make a banner", "create a banner", "ad for", "banner for", or instruction-like wording in headline, subtext, support_lines, or offer_badge.
 - Treat the user's description as source meaning, not final ad copy.
-- Rewrite the text into short, natural, sales-oriented Bulgarian marketing copy.
-- Never turn constraints or instructions into visible banner text.
+
+- Never turn constraints or ins- Rewrite the text into short, natural, sales-oriented ${bannerLanguageName} marketing copy.tructions into visible banner text.
 - If the user says things like "without people", "use only the machine", "do not use background", these are visual instructions only and must never appear in headline, subtext, support_lines, or offer_badge.
 - Avoid repeating the same information across headline, subtext, offer_badge, and support_lines.
 - If price or discount exists, show it only once as the main promo element unless a second mention is clearly necessary.
@@ -644,7 +672,7 @@ COPY RULES:
 - Use numbers visually when present (2 for 1, % etc.)
 - Numbers should feel dominant in the composition.
 - You ARE allowed to improve wording, compress the message, and make it more persuasive.
-- Keep text commercially strong, readable, and natural in Bulgarian.
+- Keep text commercially strong, readable, and natural in ${bannerLanguageName}.
 - headline: strong and punchy, max 64 chars
 - subtext: useful support line, max 88 chars
 - support_lines: up to 3 short lines, max 52 chars each
@@ -1354,20 +1382,23 @@ generation_log_id: logRow?.id || null,
       refundError,
     });
   }
+const isEnglishBanner = source === "en_quick_banner";
+
 return new Response(
   JSON.stringify({
     error: "GENERATION_FAILED",
-    message: "Възникна системна грешка. Кредитите бяха възстановени.",
-    details:
-      error instanceof Error ? error.message : "Unknown error",
+    message: isEnglishBanner
+      ? "A system error occurred. Your credits were restored."
+      : "Възникна системна грешка. Кредитите бяха възстановени.",
+    details: error instanceof Error ? error.message : "Unknown error",
   }),
-      {
-      status: 500,
-      headers: {
-        ...corsHeaders,
-        "Content-Type": "application/json",
-      },
-    }
-  );
+  {
+    status: 500,
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+    },
+  }
+);
 }
 });
