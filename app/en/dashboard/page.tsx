@@ -242,41 +242,41 @@ export default function EnglishDashboardPage() {
   ctx.textBaseline = "alphabetic";
 
   // Headline
-  if (headline) {
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "900 64px Arial";
-    ctx.shadowColor = "rgba(0,0,0,0.35)";
-    ctx.shadowBlur = 18;
-    ctx.shadowOffsetY = 3;
+    if (headline) {
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.font = "900 56px Arial";
+    ctx.shadowColor = "rgba(0,0,0,0.26)";
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 2;
 
-    currentY = drawTextLines(headline, centerX, currentY, 850, 72, 2);
-    currentY += 44;
+    currentY = drawTextLines(headline, centerX, currentY, 760, 64, 2);
+    currentY += 40;
   }
 
   // Subtext
-  if (subtext) {
-    ctx.fillStyle = "rgba(255,255,255,0.96)";
-    ctx.font = "700 36px Arial";
-    ctx.shadowColor = "rgba(0,0,0,0.28)";
-    ctx.shadowBlur = 14;
+    if (subtext) {
+    ctx.fillStyle = "rgba(255,255,255,0.94)";
+    ctx.font = "700 34px Arial";
+    ctx.shadowColor = "rgba(0,0,0,0.22)";
+    ctx.shadowBlur = 10;
     ctx.shadowOffsetY = 2;
 
-    currentY = drawTextLines(subtext, centerX, currentY, 790, 46, 2);
-    currentY += 42;
+    currentY = drawTextLines(subtext, centerX, currentY, 760, 44, 2);
+    currentY += 46;
   }
 
   // Offer / discount / period as a separate elegant line
   const offerLine = [discountText, periodText].filter(Boolean).join(" • ");
 
-  if (offerLine) {
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "900 34px Arial";
-    ctx.shadowColor = "rgba(0,0,0,0.34)";
-    ctx.shadowBlur = 14;
+    if (offerLine) {
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.font = "900 32px Arial";
+    ctx.shadowColor = "rgba(0,0,0,0.24)";
+    ctx.shadowBlur = 10;
     ctx.shadowOffsetY = 2;
 
-    currentY = drawTextLines(offerLine, centerX, currentY, 780, 42, 1);
-    currentY += 50;
+    currentY = drawTextLines(offerLine, centerX, currentY, 760, 40, 1);
+    currentY += 54;
   }
 
   // CTA pill
@@ -306,25 +306,31 @@ export default function EnglishDashboardPage() {
   // Phone / address as a visible premium contact badge
   const contactLine = [phone, address].filter(Boolean).join(" • ");
 
-  if (contactLine) {
+    if (contactLine) {
     ctx.shadowColor = "transparent";
     ctx.shadowBlur = 0;
     ctx.shadowOffsetY = 0;
 
-    ctx.font = "900 31px Arial";
+    ctx.font = "900 32px Arial";
     const maxContactWidth = 860;
-    const measured = Math.min(ctx.measureText(contactLine).width + 72, maxContactWidth);
+    const measured = Math.min(ctx.measureText(contactLine).width + 84, maxContactWidth);
     const badgeX = centerX - measured / 2;
-    const badgeY = 820;
-    const badgeH = 68;
+    const badgeY = 822;
+    const badgeH = 72;
 
-    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.fillStyle = "rgba(20,20,20,0.28)";
     ctx.beginPath();
-    ctx.roundRect(badgeX, badgeY, measured, badgeH, 34);
+    ctx.roundRect(badgeX, badgeY, measured, badgeH, 36);
     ctx.fill();
 
-    ctx.fillStyle = "#171717";
-    drawTextLines(contactLine, centerX, badgeY + 44, measured - 60, 34, 1);
+    ctx.strokeStyle = "rgba(255,255,255,0.22)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(badgeX, badgeY, measured, badgeH, 36);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(255,255,255,0.96)";
+    drawTextLines(contactLine, centerX, badgeY + 46, measured - 70, 34, 1);
   }
 
   return await new Promise<Blob | null>((resolve) => {
@@ -553,13 +559,13 @@ const handleCopyBannerText = async () => {
                     <div className="absolute inset-0 flex items-center justify-center p-8 text-center text-white">
   <div className="max-w-[86%]">
                         {headline ? (
-  <h3 className="text-[34px] font-black leading-[1.08] tracking-[-0.03em] drop-shadow-md">
+  <h3 className="text-[30px] font-black leading-[1.1] tracking-[-0.03em] text-white/90 drop-shadow-md">
     {headline}
   </h3>
 ) : null}
 
                         {subtext ? (
-                          <p className="mt-5 text-[18px] font-bold leading-7 text-white/95 drop-shadow-md">
+                          <p className="mt-6 text-[17px] font-bold leading-7 text-white/90 drop-shadow-md">
                             {subtext}
                           </p>
                         ) : null}
@@ -570,13 +576,13 @@ const handleCopyBannerText = async () => {
                           </p>
                         ) : null}
                         {discountText || periodText ? (
-  <p className="mt-6 text-[18px] font-black text-white drop-shadow-md">
+  <p className="mt-7 text-[18px] font-black text-white/92 drop-shadow-md">
     {[discountText, periodText].filter(Boolean).join(" • ")}
   </p>
 ) : null}
 
 {phone || address ? (
-  <p className="mx-auto mt-8 inline-flex max-w-full rounded-full bg-white/95 px-5 py-3 text-[15px] font-black text-neutral-950 shadow-lg">
+  <p className="mx-auto mt-8 inline-flex max-w-full rounded-full border border-white/20 bg-black/25 px-6 py-3 text-[16px] font-black text-white backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
     {[phone, address].filter(Boolean).join(" • ")}
   </p>
 ) : null}
