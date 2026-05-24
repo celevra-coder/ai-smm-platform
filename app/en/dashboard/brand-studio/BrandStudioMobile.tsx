@@ -115,17 +115,17 @@ onContinueFromVideoSetup,
         </p>
 
         <h1 className="mt-2 text-[28px] font-black leading-none tracking-[-0.04em]">
-          Кампания
+          Campaign
         </h1>
 
         <p className="mt-2 text-xs leading-5 text-neutral-500">
-          Създай банер и видео за избрания пост.
+          Create a banner and video for the selected post.
         </p>
       </section>
 
       <section className="mt-3 rounded-[26px] bg-white p-4 shadow-sm">
         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400">
-          Бранд
+          Brand
         </p>
 
         <div className="mt-3 flex items-start gap-3">
@@ -145,7 +145,7 @@ onContinueFromVideoSetup,
             <h2 className="truncate text-xl font-black">{brandName}</h2>
             <p className="mt-1 line-clamp-2 text-xs leading-5 text-neutral-500">
               {workspace.brand_profile?.brand_description ||
-                "Няма brand description."}
+                "No brand description."}
             </p>
           </div>
         </div>
@@ -154,7 +154,7 @@ onContinueFromVideoSetup,
       <section className="mt-3 rounded-[26px] bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-neutral-400">
-            Избран пост
+            Selected post
           </p>
 
           <button
@@ -162,13 +162,14 @@ onContinueFromVideoSetup,
             onClick={onCopyPostText}
             className="rounded-full border border-black/10 bg-white px-3 py-2 text-xs font-bold"
           >
-            📋 Копирай
+            
+            📋 Copy
           </button>
         </div>
 
         <details className="mt-3 rounded-[18px] bg-[#f7f3ee] p-3">
           <summary className="cursor-pointer text-sm font-black">
-            Виж текста
+            View text
           </summary>
 
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-neutral-700">
@@ -184,14 +185,14 @@ onContinueFromVideoSetup,
         className="mt-3 w-full rounded-[22px] bg-black px-5 py-4 text-sm font-black text-white disabled:opacity-60"
       >
         {isGenerating || isGeneratingVideoFrames || isVideoGenerating
-          ? "Генериране..."
-          : "🚀 Генерирай цялата кампания"}
+          ? "Generating..."
+          : "🚀 Generate full campaign"}
       </button>
 
       <section className="mt-3 rounded-[26px] bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-[22px] font-black tracking-[-0.03em]">
-            Банер
+            Banner
           </h2>
 
           <button
@@ -200,7 +201,7 @@ onContinueFromVideoSetup,
             disabled={isGenerating}
             className="rounded-full bg-black px-4 py-2 text-xs font-bold text-white disabled:opacity-60"
           >
-            {isGenerating ? "..." : "Генерирай"}
+            {isGenerating ? "..." : "Generate"}
           </button>
         </div>
 
@@ -220,7 +221,7 @@ onContinueFromVideoSetup,
             disabled={!generatedBannerUrl}
             className="rounded-[18px] bg-black px-4 py-3 text-sm font-bold text-white disabled:opacity-40"
           >
-            ⬇ Свали
+            ⬇ Download
           </button>
 
           <button
@@ -229,13 +230,13 @@ onContinueFromVideoSetup,
             disabled={!generatedBannerUrl}
             className="rounded-[18px] border border-black/10 bg-white px-4 py-3 text-sm font-bold disabled:opacity-40"
           >
-            📋 Копирай
+            📋 Copy
           </button>
         </div>
 
         <details className="mt-4 rounded-[18px] bg-[#f7f3ee] p-3">
           <summary className="cursor-pointer text-sm font-black">
-            Качи снимка за банера
+            Upload an image for the banner
           </summary>
 
           <div className="mt-3 flex aspect-[4/5] items-center justify-center overflow-hidden rounded-[18px] bg-white text-center text-xs text-neutral-400">
@@ -247,7 +248,7 @@ onContinueFromVideoSetup,
               />
             ) : (
               <span className="px-5 leading-5">
-                По желание качи снимка за рекламния банер.
+                Optionally upload an image for the ad banner.
               </span>
             )}
           </div>
@@ -255,14 +256,14 @@ onContinueFromVideoSetup,
           {uploadedImageUrl ? (
             <div className="mt-3 grid gap-2">
               <p className="text-center text-[10px] font-bold uppercase tracking-[0.14em] text-neutral-400">
-                Как да се използва?
+                How should it be used?
               </p>
 
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { key: "exact", label: "1:1" },
-                  { key: "elements", label: "Елементи" },
-                  { key: "integrate", label: "Интегрирай" },
+                  { key: "elements", label: "Elements" },
+                  { key: "integrate", label: "Integrate" },
                 ].map((mode) => (
                   <button
                     key={mode.key}
@@ -287,7 +288,7 @@ onContinueFromVideoSetup,
 
           <div className="mt-3 grid grid-cols-2 gap-2">
             <label className="flex cursor-pointer items-center justify-center rounded-[18px] bg-black px-4 py-3 text-sm font-bold text-white">
-              Качи
+              Upload
               <input
                 type="file"
                 accept="image/*"
@@ -311,7 +312,7 @@ onContinueFromVideoSetup,
               disabled={!uploadedImageUrl}
               className="rounded-[18px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 disabled:opacity-40"
             >
-              Премахни
+              Remove
             </button>
           </div>
         </details>

@@ -60,7 +60,7 @@ onGenerateVideoFrames,
       <section className="mt-3 rounded-[26px] bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-[22px] font-black tracking-[-0.03em]">
-            Видео
+            Video
           </h2>
 
           <button
@@ -69,7 +69,7 @@ onGenerateVideoFrames,
             disabled={isVideoGenerating || isGeneratingVideoFrames}
             className="rounded-full bg-black px-4 py-2 text-xs font-bold text-white disabled:opacity-60"
           >
-            {isVideoGenerating || isGeneratingVideoFrames ? "..." : "Генерирай"}
+            {isVideoGenerating || isGeneratingVideoFrames ? "..." : "Generate"}
           </button>
         </div>
 
@@ -84,16 +84,16 @@ onGenerateVideoFrames,
             <div className="flex flex-col items-center gap-3 text-center">
               <div className="h-10 w-10 animate-spin rounded-full border-4 border-black/15 border-t-black" />
               <p className="text-sm font-bold text-neutral-600">
-                Генериране на видео...
+                Generating video...
               </p>
             </div>
                     ) : (
             <div className="px-6 text-center">
               <p className="text-sm font-black text-neutral-600">
-                Видеото още не е генерирано
+                The video has not been generated yet
               </p>
               <p className="mt-2 text-xs leading-5 text-neutral-400">
-                Натисни „Генерирай“, избери кадър или качи изображение, после продължи към създаване на видео.
+                Tap “Generate”, choose a frame or upload an image, then continue to create the video.
               </p>
             </div>
                     )}
@@ -102,10 +102,10 @@ onGenerateVideoFrames,
         {!generatedVideoUrl && (selectedVideoFrameUrl || uploadedVideoImageUrl) ? (
           <div className="mt-3 rounded-[18px] bg-[#f7f3ee] px-4 py-3 text-center">
             <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-neutral-400">
-              Избран кадър за видеото
+              Selected video frame
             </p>
             <p className="mt-1 text-sm font-black text-neutral-700">
-              {uploadedVideoImageUrl ? "Качено изображение" : "AI генериран кадър"}
+              {uploadedVideoImageUrl ? "Uploaded image" : "AI-generated frame"}
             </p>
           </div>
         ) : null}
@@ -116,7 +116,7 @@ onGenerateVideoFrames,
             download="video.mp4"
             className="mt-3 flex w-full items-center justify-center rounded-[18px] border border-black/10 bg-white px-4 py-3 text-sm font-bold"
           >
-            ⬇ Свали видео
+            ⬇ Download video
           </a>
         ) : null}
 
@@ -156,7 +156,7 @@ onGenerateVideoFrames,
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 p-3 pt-6 pb-24">
           <div className="w-full max-w-md rounded-[24px] bg-white p-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-black">Избери кадър</h3>
+              <h3 className="text-lg font-black">Choose a frame</h3>
 
               <button
                 onClick={() => setShowVideoSetupModal(false)}
@@ -170,12 +170,12 @@ onGenerateVideoFrames,
               {isGeneratingVideoFrames ? (
                 <div className="flex flex-col items-center gap-3 py-10">
                   <div className="h-10 w-10 animate-spin rounded-full border-4 border-black/15 border-t-black" />
-                  <p className="text-sm text-neutral-500">Генерирам кадри...</p>
+                  <p className="text-sm text-neutral-500">Generating frames...</p>
                 </div>
               ) : videoFrameOptions.length === 0 ? (
                 <div className="rounded-2xl bg-[#f7f3ee] p-4 text-center">
                   <p className="text-sm leading-6 text-neutral-500">
-                    Генерирай кадри за видеото или качи свое изображение.
+                    Generate frames for the video or upload your own image.
                   </p>
 
                   <button
@@ -183,7 +183,7 @@ onGenerateVideoFrames,
                     onClick={onGenerateVideoFrames}
                     className="mt-4 w-full rounded-full bg-black px-5 py-3 text-sm font-bold text-white"
                   >
-                    ✨ Генерирай кадри
+                    ✨ Generate frames
                   </button>
                 </div>
               ) : (
@@ -211,7 +211,7 @@ onGenerateVideoFrames,
 
             <div className="mt-4 rounded-2xl bg-[#f7f3ee] p-3">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-neutral-400">
-                Или качи свое изображение
+                Or upload your own image
               </p>
 
               <div className="mt-3 flex min-h-[160px] items-center justify-center overflow-hidden rounded-2xl bg-white text-center text-xs text-neutral-400">
@@ -222,13 +222,13 @@ onGenerateVideoFrames,
                     className="max-h-[260px] w-full object-contain"
                   />
                 ) : (
-                  "Няма качено изображение"
+                  "No uploaded image"
                 )}
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <label className="flex cursor-pointer items-center justify-center rounded-full bg-black px-4 py-3 text-sm font-bold text-white">
-                  Качи
+                  Upload
                   <input
                     type="file"
                     accept="image/*"
@@ -259,7 +259,7 @@ onGenerateVideoFrames,
                   disabled={!uploadedVideoImageUrl}
                   className="rounded-full border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 disabled:opacity-40"
                 >
-                  Премахни
+                  Remove
                 </button>
               </div>
             </div>
@@ -278,7 +278,7 @@ onGenerateVideoFrames,
                 disabled={!selectedVideoFrameUrl && !uploadedVideoImageUrl}
                 className="w-full rounded-full bg-black py-3 text-sm font-bold text-white disabled:opacity-40"
               >
-                Продължи
+                Continue
               </button>
             </div>
           </div>

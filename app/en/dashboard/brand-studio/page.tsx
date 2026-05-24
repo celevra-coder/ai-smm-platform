@@ -154,8 +154,8 @@ const mobileBannerExportRef = useRef<HTMLDivElement | null>(null);
 const showSystemBusyMessage = () => {
   setShowSystemBusyModal(true);
   setVideoErrorText(
-    "В момента системата е временно претоварена. Моля, опитайте отново по-късно."
-  );
+  "The system is temporarily busy. Please try again later."
+);
 };
   
 
@@ -218,7 +218,7 @@ const showSystemBusyMessage = () => {
 }, [generatedBannerUrl]);
 
   const brandName = useMemo(() => {
-    return workspace.brand_profile?.brand_name?.trim() || "Без избран бранд";
+    return workspace.brand_profile?.brand_name?.trim() || "No selected brand";
   }, [workspace]);
 
     const selectedPostText = useMemo(() => {
@@ -226,7 +226,7 @@ const showSystemBusyMessage = () => {
       workspace.selected_post?.raw_text ||
       workspace.selected_post?.caption ||
       workspace.selected_post?.headline ||
-      "Няма избран post"
+      "No selected post"
     );
   }, [workspace]);
 
@@ -259,11 +259,11 @@ const phonePadding = mobileExport
         <div className="flex flex-col items-center gap-3 text-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-black/15 border-t-black" />
           <div className="text-sm font-medium text-black/60">
-            Генериране на банер...
+            Generating banner...
           </div>
         </div>
       ) : (
-        "Преглед на банера"
+        "Banner preview"
       )}
     </div>
   );
@@ -577,17 +577,17 @@ lineHeight: 1,
 
     try {
       const brand =
-        workspace.brand_profile?.brand_name?.trim() || "Вашият бранд";
+        workspace.brand_profile?.brand_name?.trim() || "Your brand";
       const headline = workspace.selected_post?.headline?.trim() || "";
       const caption = workspace.selected_post?.caption?.trim() || "";
       const rawText = workspace.selected_post?.raw_text?.trim() || "";
       const offer = workspace.selected_post?.offer?.trim() || "";
-      const cta = workspace.selected_post?.cta?.trim() || "Пиши ни сега";
+      const cta = workspace.selected_post?.cta?.trim() || "Learn more";
 
       const generatedText = [
         headline || `${brand} представя ново предложение`,
         caption || workspace.brand_profile?.brand_description || "",
-        offer ? `Оферта: ${offer}` : "",
+        offer ? `Offer: ${offer}` : "",
         `CTA: ${cta}`,
       ]
         .filter(Boolean)
@@ -607,7 +607,7 @@ lineHeight: 1,
         headline,
         caption,
         rawText,
-                offer ? `Оферта: ${offer}` : "",
+                offer ? `Offer: ${offer}` : "",
         
         cta ? `CTA: ${cta}` : "",
       ]
@@ -688,9 +688,11 @@ console.log("FRONTEND BANER BODY SOURCE:", "brand_banner");
   phone: phone || "",
   exact_text: exactText,
   extra_requirements: [
-    "Банерът трябва да следва точно темата и офертата от текста. Да не измисля друга ниша или друг продукт.",
+    "LANGUAGE RULE: Generate all banner text only in English. Do not use Bulgarian language anywhere.",
+    "The banner must follow the exact selected topic, offer and post text. Do not invent another niche, product or service.",
+    "Keep the banner commercial but clear. Do not add fake prices, fake phone numbers, fake addresses or fake discounts.",
     preferredColors
-      ? `Използвай предпочитаните цветове на бранда като основна визуална посока: ${preferredColors}.`
+      ? `Use the brand preferred colors as the main visual direction: ${preferredColors}.`
       : "",
     
   ]
@@ -746,7 +748,7 @@ if (generateVideoAfterBanner) {
   const message =
     e instanceof Error
       ? e.message
-      : "Възникна грешка при генериране на кампанията.";
+      : "An error occurred while generating the campaign.";
 
     showSystemBusyMessage();
 } finally {
@@ -763,7 +765,7 @@ const handleDownloadBanner = async (source: "desktop" | "mobile" = "desktop") =>
     : bannerSectionRef.current || bannerCardRef.current || bannerExportRef.current;
 
   if (!sourceNode) {
-    alert("Не намирам банера за сваляне.");
+    alert("I cannot find the banner for download.");
     return;
   }
 
@@ -790,7 +792,7 @@ const handleDownloadBanner = async (source: "desktop" | "mobile" = "desktop") =>
     const message =
       error instanceof Error ? error.message : "Unknown download error";
 
-    alert(`Изтеглянето не беше успешно: ${message}`);
+    alert(`Download failed: ${message}`);
   }
 };
 const saveLastRealVideoUrl = (url: string) => {
@@ -902,11 +904,11 @@ const insertVideoGenerationLog = async (videoUrl: string) => {
 const handleCopyPostText = async () => {
   try {
     await navigator.clipboard.writeText(selectedPostText || "");
-    setToastMessage("Текстът е копиран");
+    setToastMessage("Text copied");
     setTimeout(() => setToastMessage(""), 2000);
   } catch (error) {
     console.error("Copy post text failed:", error);
-    alert("Копирането не беше успешно");
+    alert("Copy failed");
   }
 };
 
@@ -1106,7 +1108,7 @@ const handleCopyBanner = async () => {
         }),
       ]);
 
-      setToastMessage("Банерът е копиран");
+      setToastMessage("Banner copied");
       setTimeout(() => setToastMessage(""), 2000);
       return;
     }
@@ -1114,7 +1116,7 @@ const handleCopyBanner = async () => {
     throw new Error("Clipboard image copy is not supported on this device.");
   } catch (error) {
     console.error("Copy failed:", error);
-    alert("Копирането на изображение не се поддържа от този браузър. Използвай бутона Свали.");
+    alert("Image copy is not supported in this browser. Use the Download button instead.");
   }
 };
 const handleGenerateVideo = async (bannerUrlOverride?: string) => {
@@ -1134,7 +1136,7 @@ const handleGenerateVideo = async (bannerUrlOverride?: string) => {
       rawVideoUrl = localStorage.getItem(LAST_RAW_VIDEO_URL_KEY) || "";
 
       if (!rawVideoUrl) {
-        throw new Error("Няма последно сурово видео.");
+        throw new Error("No previous raw video found.");
       }
     } else {
       const supabase = createClient()
@@ -1575,12 +1577,12 @@ const handleGenerateVideoFrames = async () => {
         data?.error ||
           data?.message ||
           data?.details ||
-          "Генерирането на кадри не беше успешно."
+          "Frame generation failed."
       );
     }
 
     if (!Array.isArray(data?.images) || !data.images.length) {
-      setVideoErrorText("Генерирането на кадри не върна изображения.");
+      setVideoErrorText("Frame generation did not return images.");
       return;
     }
 
@@ -1606,7 +1608,7 @@ const openVideoSetupModal = async (
 
 const handleContinueFromVideoSetup = async () => {
   if (!selectedVideoFrameUrl && !uploadedVideoImageUrl) {
-    setVideoErrorText("Избери един кадър или качи свое изображение за видеото.");
+    setVideoErrorText("Choose one frame or upload your own image for the video.");
     return;
   }
 
@@ -1793,10 +1795,10 @@ logoUrl={workspace.brand_profile?.logo_url}
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-2xl font-black text-neutral-950">
-            Избери кадър за видеото
+            Choose a frame for the video
           </h3>
           <p className="mt-2 text-sm leading-6 text-neutral-600">
-            Избери един от трите кадъра, от който да генерираме видео, или качи свое изображение.
+            Choose one generated frame for the video, or upload your own image.
           </p>
         </div>
 
@@ -1805,7 +1807,7 @@ logoUrl={workspace.brand_profile?.logo_url}
           onClick={() => setShowVideoSetupModal(false)}
           className="rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-neutral-600"
         >
-          Затвори
+          Close
         </button>
       </div>
 
@@ -1814,13 +1816,13 @@ logoUrl={workspace.brand_profile?.logo_url}
           <div className="flex min-h-[360px] flex-col items-center justify-center gap-3 rounded-3xl bg-[#f7f3ee] text-center">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-black/15 border-t-black" />
             <p className="text-sm font-semibold text-black/60">
-              Генериране на кадри...
+              Generating frames...
             </p>
           </div>
         ) : videoFrameOptions.length === 0 ? (
           <div className="flex min-h-[360px] flex-col items-center justify-center gap-4 rounded-3xl bg-[#f7f3ee] text-center">
             <p className="max-w-md text-sm leading-6 text-black/55">
-              Можеш да генерираш кадри за видеото или да качиш свое изображение отдолу.
+              You can generate video frames or upload your own image below.
             </p>
 
             <button
@@ -1828,7 +1830,7 @@ logoUrl={workspace.brand_profile?.logo_url}
               onClick={handleGenerateVideoFrames}
               className="rounded-full border border-black/15 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:scale-[1.02] hover:bg-black hover:text-white"
             >
-              ✨ Генерирай кадри
+              ✨ Generate frames
             </button>
           </div>
         ) : (
@@ -1840,7 +1842,7 @@ logoUrl={workspace.brand_profile?.logo_url}
                 disabled={isGeneratingVideoFrames}
                 className="rounded-full border border-black/15 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:scale-[1.02] hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
               >
-                🔄 Генерирай отново
+                🔄 Generate again
               </button>
             </div>
 
@@ -1874,7 +1876,7 @@ logoUrl={workspace.brand_profile?.logo_url}
         <div className="mt-6 grid gap-5 md:grid-cols-[1fr_280px]">
           <div className="rounded-3xl border border-black/10 bg-[#f7f3ee] p-4">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-black/45">
-              Или качи свое изображение
+Or upload your own image
             </p>
 
             <div className="mt-4 flex min-h-[220px] items-center justify-center overflow-hidden rounded-2xl bg-white text-sm text-black/45">
@@ -1885,13 +1887,13 @@ logoUrl={workspace.brand_profile?.logo_url}
                   className="h-full max-h-[320px] w-full object-contain"
                 />
               ) : (
-                "Няма качено изображение"
+                "No uploaded image"
               )}
             </div>
 
             <div className="mt-4 flex flex-wrap justify-center gap-3">
               <label className="inline-flex cursor-pointer items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-semibold text-white">
-                Качи изображение
+                Upload image
                 <input
                   type="file"
                   accept="image/*"
@@ -1922,7 +1924,7 @@ logoUrl={workspace.brand_profile?.logo_url}
                   }}
                   className="rounded-full border border-red-200 bg-red-50 px-5 py-3 text-sm font-semibold text-red-600"
                 >
-                  Премахни
+                  Remove
                 </button>
               ) : null}
             </div>
@@ -1930,7 +1932,7 @@ logoUrl={workspace.brand_profile?.logo_url}
 
           <div className="rounded-3xl border border-black/10 bg-white p-4">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-black/45">
-              Дължина на видеото
+              Video length
             </p>
 
             <div className="mt-4 grid grid-cols-2 gap-3">
@@ -1968,8 +1970,8 @@ logoUrl={workspace.brand_profile?.logo_url}
               className="mt-5 w-full rounded-full bg-black px-6 py-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
               {videoSetupMode === "campaign"
-                ? "Продължи към банер и видео"
-                : "Продължи към видео"}
+                ? "Continue to banner and video"
+                : "Continue to video"}
             </button>
           </div>
         </div>
@@ -1982,11 +1984,11 @@ logoUrl={workspace.brand_profile?.logo_url}
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
     <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
       <h3 className="text-[24px] font-black text-neutral-900">
-        Системата е временно претоварена
+        The system is temporarily busy
       </h3>
 
       <p className="mt-3 text-sm leading-6 text-neutral-600">
-        В момента AI генерацията не може да бъде завършена. Моля, опитайте отново по-късно.
+        The AI generation cannot be completed right now. Please try again later.
       </p>
 
       <button
@@ -1994,7 +1996,7 @@ logoUrl={workspace.brand_profile?.logo_url}
         onClick={() => setShowSystemBusyModal(false)}
         className="mt-6 rounded-full bg-neutral-950 px-6 py-3 text-sm font-semibold text-white"
       >
-        Разбрах
+        Got it
       </button>
     </div>
   </div>
@@ -2003,29 +2005,29 @@ logoUrl={workspace.brand_profile?.logo_url}
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
     <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
       <h3 className="text-[24px] font-black text-neutral-900">
-        Готов/а ли си да направиш цялата кампания? 🙂
+        Ready to create the full campaign? 🙂
       </h3>
 
       <p className="mt-3 text-sm leading-6 text-neutral-600">
-        Brand Studio създава готова рекламна визия и видео за избрания пост.
-        Вземи пакет с кредити и продължи без ограничения.
+        Brand Studio creates a ready-to-use ad visual and video for the selected post.
+Choose a credits package and continue without limits.
       </p>
 
       <div className="mt-6 flex flex-col gap-3">
         <button
-          type="button"
-          onClick={() => router.push("/pricing")}
-          className="rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white"
-        >
-          Виж пакетите
-        </button>
+  type="button"
+  onClick={() => router.push("/en/pricing")}
+  className="rounded-full bg-neutral-950 px-5 py-3 text-sm font-semibold text-white"
+>
+  View plans
+</button>
 
         <button
           type="button"
           onClick={() => setShowPaywallModal(false)}
           className="text-sm text-neutral-500"
         >
-          Затвори
+          Close
         </button>
       </div>
     </div>

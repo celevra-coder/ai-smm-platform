@@ -92,7 +92,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
           Brand Studio
         </h1>
         <p className="mt-2 text-sm text-black/50">
-          Създай пост, банер и видео за своя бранд на едно място
+          Create a post, banner and video for your brand in one place
         </p>
       </div>
 
@@ -102,14 +102,14 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
         </p>
         <p className="mt-3 text-xl font-semibold text-black">{brandName}</p>
         <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-black/65">
-          {brandDescription || "Няма brand description."}
+          {brandDescription || "No brand description."}
         </p>
       </div>
 
       <div className="mb-8 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/45">
-            Избран пост
+            Selected post
           </p>
 
           <button
@@ -117,7 +117,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
             onClick={onCopyPostText}
             className="rounded-full border border-black/15 bg-white px-4 py-2 text-xs font-semibold text-black transition hover:bg-black hover:text-white"
           >
-            📋 Копирай
+            📋 Copy
           </button>
         </div>
 
@@ -132,7 +132,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
           disabled={isBusy}
           className="rounded-full border border-black/15 bg-white px-6 py-4 font-semibold text-black transition hover:scale-[1.02] hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 disabled:hover:bg-white disabled:hover:text-black"
         >
-          {isBusy ? "Генериране..." : "🚀 Генерирай цялата кампания"}
+          {isBusy ? "Generating..." : "🚀 Generate full campaign"}
         </button>
       </div>
 
@@ -142,7 +142,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
           className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm"
         >
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/45">
-            Рекламен банер
+            Ad banner
           </p>
 
           <div
@@ -168,7 +168,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
     <div className="flex flex-col items-center gap-3 text-center">
       <div className="h-10 w-10 animate-spin rounded-full border-4 border-black/15 border-t-black" />
       <div className="text-sm font-semibold text-black/55">
-        Генериране на банер...
+        Generating banner...
       </div>
     </div>
   ) : (
@@ -186,7 +186,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
               disabled={isGenerating}
               className="rounded-full bg-black px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {isGenerating ? "Генериране..." : "🖼 Генерирай банер"}
+              {isGenerating ? "Generating..." : "🖼 Generate banner"}
             </button>
 
             <button
@@ -195,7 +195,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
   disabled={!generatedBannerUrl || isGenerating}
   className="rounded-full border border-black/15 bg-white px-5 py-2 text-sm font-semibold text-black transition hover:bg-black hover:text-white hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white disabled:hover:text-black disabled:hover:scale-100"
 >
-  ⬇ Изтегли
+  ⬇ Download
 </button>
 
             <button
@@ -210,7 +210,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
 
           <div className="mt-6 rounded-2xl border border-black/10 bg-[#f7f3ee] p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-black/45">
-              Качено изображение
+              Uploaded image
             </p>
 
             <div className="flex aspect-[4/5] items-center justify-center overflow-hidden rounded-xl bg-white text-sm text-black/40">
@@ -222,7 +222,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
                 />
               ) : (
                 <div className="px-6 text-center leading-relaxed">
-                  По желание качи своя снимка, която ще бъде използвана за рекламния банер
+                  Optionally upload your own image to use for the ad banner
                 </div>
               )}
             </div>
@@ -230,14 +230,14 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
             {uploadedImageUrl ? (
               <div className="mt-4 grid gap-2">
                 <p className="text-center text-xs font-semibold uppercase tracking-[0.18em] text-black/45">
-                  Как да се използва снимката?
+                  How should the image be used?
                 </p>
 
                 <div className="flex flex-wrap justify-center gap-2">
                   {[
                     { key: "exact", label: "1:1" },
-                    { key: "elements", label: "Само елементи" },
-                    { key: "integrate", label: "Интегрирай" },
+                    { key: "elements", label: "Elements only" },
+                    { key: "integrate", label: "Integrate" },
                   ].map((mode) => (
                     <button
                       key={mode.key}
@@ -262,7 +262,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
 
             <div className="mt-4 flex justify-center gap-3">
               <label className="inline-flex cursor-pointer items-center justify-center rounded-full bg-black px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90">
-                Качи снимка
+                Upload image
                 <input
                   type="file"
                   accept="image/*"
@@ -289,7 +289,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
                   }}
                   className="rounded-full border border-red-200 bg-red-50 px-5 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-600 hover:text-white"
                 >
-                  🗑 Премахни
+                  🗑 Remove
                 </button>
               ) : null}
             </div>
@@ -298,7 +298,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
 
         <section className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-black/45">
-            Видео
+            Video
           </p>
 
           <div className="mt-4 flex aspect-[9/16] items-center justify-center overflow-hidden rounded-2xl bg-[#f7f3ee] text-sm text-black/50">
@@ -312,7 +312,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
               <div className="flex flex-col items-center justify-center gap-3 text-center">
                 <div className="h-10 w-10 animate-spin rounded-full border-4 border-black/15 border-t-black" />
                 <div className="text-sm font-medium text-black/60">
-                  Генериране на видео...
+                  Generating video...
                 </div>
               </div>
             ) : (
@@ -327,7 +327,7 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
                 download="video.mp4"
                 className="rounded-full border border-black/15 bg-white px-5 py-2 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
               >
-                ⬇ Изтегли видео
+                ⬇ Download video
               </a>
             </div>
           ) : null}
@@ -340,8 +340,8 @@ const subtextText = generatedBannerPlan?.subtext?.trim() || "";
               className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isVideoGenerating || isGeneratingVideoFrames
-                ? "Генериране..."
-                : "🎬 Генерирай видео"}
+                ? "Generating..."
+                : "🎬 Generate video"}
             </button>
           </div>
 
