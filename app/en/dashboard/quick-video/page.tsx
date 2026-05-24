@@ -176,6 +176,8 @@ text, subtitles, captions, letters, typography, logo, watermark, UI, distorted a
   const handleGenerateVideo = async () => {
     try {
       setGenerating(true);
+      console.log("EN QUICK VIDEO: handleGenerateVideo started");
+console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
       setGenerationError("");
       setGeneratedVideoUrl("");
 
@@ -208,8 +210,13 @@ text, subtitles, captions, letters, typography, logo, watermark, UI, distorted a
         return;
       }
 
-      const creditRes = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/consume-credit`,
+      console.log(
+  "EN QUICK VIDEO: calling consume-credit",
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/consume-credit`
+);
+
+const creditRes = await fetch(
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/consume-credit`,
         {
           method: "POST",
           headers: {
@@ -232,8 +239,13 @@ text, subtitles, captions, letters, typography, logo, watermark, UI, distorted a
         return;
       }
 
-      const generateRes = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video`,
+      console.log(
+  "EN QUICK VIDEO: calling generate-video",
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video`
+);
+
+const generateRes = await fetch(
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video`,
         {
           method: "POST",
           headers: {
@@ -281,8 +293,13 @@ text, subtitles, captions, letters, typography, logo, watermark, UI, distorted a
       for (let i = 0; i < 40; i++) {
         await new Promise((resolve) => setTimeout(resolve, 4000));
 
-        const statusRes = await fetch(
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video-status?request_id=${requestId}`,
+        console.log(
+  "EN QUICK VIDEO: calling generate-video-status",
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video-status?request_id=${requestId}`
+);
+
+const statusRes = await fetch(
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video-status?request_id=${requestId}`,
           {
             headers: {
               apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -306,7 +323,9 @@ text, subtitles, captions, letters, typography, logo, watermark, UI, distorted a
         throw new Error("The video was not ready in time. Please try again.");
       }
 
-      const renderRes = await fetch("/api/render-video", {
+      console.log("EN QUICK VIDEO: calling /api/render-video", rawVideoUrl);
+
+const renderRes = await fetch("/api/render-video", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
