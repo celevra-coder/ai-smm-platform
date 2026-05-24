@@ -640,21 +640,20 @@ if (isGuest) {
 
 if (!isGuest) {
   const creditRes = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/spend-credit`,
-    {
-headers: {
-  "Content-Type": "application/json",
-  apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-  ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-},
-
-      
-      body: JSON.stringify({
-        action_type: "brand_banner",
-        cost: 2,
-      }),
-    }
-  );
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/spend-credit`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+    body: JSON.stringify({
+      action_type: "brand_banner",
+      cost: 2,
+    }),
+  }
+);
 
   const creditData = await creditRes.json().catch(() => null);
 
