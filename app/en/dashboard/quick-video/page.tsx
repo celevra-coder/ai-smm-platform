@@ -216,7 +216,7 @@ console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 );
 
 const creditRes = await fetch(
-  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/consume-credit`,
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/spend-credit`,
         {
           method: "POST",
           headers: {
@@ -240,8 +240,8 @@ const creditRes = await fetch(
       }
 
       console.log(
-  "EN QUICK VIDEO: calling generate-video",
-  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-video`
+  "EN QUICK VIDEO: calling spend-credit",
+  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/spend-credit`
 );
 
 const generateRes = await fetch(
