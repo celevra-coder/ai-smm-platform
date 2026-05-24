@@ -107,15 +107,19 @@ export default function EnglishLoginPage() {
       localStorage.setItem("pending_checkout_locale", "en");
     }
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    document.cookie = "ai_smm_auth_next=/en; path=/; max-age=600";
+
+const { error } = await supabase.auth.signInWithOAuth({
+  provider: "google",
+  options: {
+    redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+      "/en"
+    )}`,
+  },
+});
 
     if (error) {
-      setMessage("Google login failed. Please try again.");
+      setMessage("Google login failed. Please try again.")
       setLoading(false);
     }
   }

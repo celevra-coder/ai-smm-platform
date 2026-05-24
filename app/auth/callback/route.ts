@@ -4,8 +4,20 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
+  const nextParam = requestUrl.searchParams.get("next");
+const nextCookie = request.cookies.get("ai_smm_auth_next")?.value;
+const next = nextParam || nextCookie || "/";
 
-  let response = NextResponse.redirect(new URL("/", request.url));
+const safeNext =
+  next.startsWith("/") && !next.startsWith("//") ? next : "/";
+
+let response = NextResponse.redirect(new URL(safeNext, request.url));
+
+response.cookies.set("ai_smm_auth_next", "", {
+  path: "/",
+  maxAge: 0,
+});
+
   if (code) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

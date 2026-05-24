@@ -22,25 +22,26 @@ useEffect(() => {
 
       if (error) {
         console.log("RESET EXCHANGE ERROR:", error);
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
 
-  if (session?.user) {
-    setIsReady(true);
-    setMessage("");
-    return;
-  }
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-  setMessage("Линкът за смяна на парола е изтекъл или невалиден.");
-  setIsReady(false);
-  return;
-}
+        if (session?.user) {
+          setIsReady(true);
+          setMessage("");
+          return;
+        }
 
-setIsReady(true);
-setMessage("");
-return;
-}
+        setMessage("Линкът за смяна на парола е изтекъл или невалиден.");
+        setIsReady(false);
+        return;
+      }
+
+      setIsReady(true);
+      setMessage("");
+      return;
+    }
 
     const hash = window.location.hash;
 
@@ -71,7 +72,8 @@ return;
     } = await supabase.auth.getSession();
 
     if (session?.user) {
-      setIsReady(true);
+      router.push("/");
+      router.refresh();
       return;
     }
 
@@ -80,7 +82,7 @@ return;
   };
 
   void handleRecovery();
-}, [supabase]);
+}, [supabase, router]);
 
   async function handleReset(e: React.FormEvent) {
     e.preventDefault();

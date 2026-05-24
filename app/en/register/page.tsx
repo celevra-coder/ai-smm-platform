@@ -19,17 +19,20 @@ export default function EnglishRegisterPage() {
     const pendingPlan = localStorage.getItem("pending_checkout_plan");
     const pendingProvider =
       localStorage.getItem("pending_checkout_provider") || "paypal";
+document.cookie = "ai_smm_auth_next=/en; path=/; max-age=600";
 
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
-      },
-    });
+await supabase.auth.signInWithOAuth({
+  provider: "google",
+  options: {
+    redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
+      "/en"
+    )}`,
+    queryParams: {
+      access_type: "offline",
+      prompt: "consent",
+    },
+  },
+});
 
     if (pendingPlan) {
       localStorage.setItem("pending_checkout_plan", pendingPlan);
