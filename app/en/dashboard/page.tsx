@@ -15,6 +15,11 @@ export default function EnglishDashboardPage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [extraText, setExtraText] = useState("");
+const [logoUrl, setLogoUrl] = useState("");
+const [imageUrl, setImageUrl] = useState("");
+const [imageUsageMode, setImageUsageMode] = useState("auto");
+const [logoUploading, setLogoUploading] = useState(false);
+const [imageUploading, setImageUploading] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -27,7 +32,7 @@ const [showBannerZoom, setShowBannerZoom] = useState(false);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
 
   const handleGenerate = async () => {
-    if (loading) return;
+    if (loading || logoUploading || imageUploading) return;
 
     if (!description.trim()) {
       setMessage("Please describe the banner you want to create.");
@@ -116,13 +121,19 @@ const [showBannerZoom, setShowBannerZoom] = useState(false);
           period: periodText.trim(),
           phone: phone.trim(),
           exact_text: "",
-          extra_requirements: extraText.trim(),
+          extra_requirements: [
+  extraText.trim(),
+  imageUrl.trim() ? `Image usage mode: ${imageUsageMode}` : "",
+  logoUrl.trim() ? "Use the uploaded logo if it fits naturally." : "",
+]
+  .filter(Boolean)
+  .join("\n"),
           keyword: fullPrompt,
           product: "quick-ad-banner",
           city: "",
-          logo_url: "",
-          image_url: "",
-          image_usage_mode: "auto",
+          logo_url: logoUrl.trim(),
+image_url: imageUrl.trim(),
+image_usage_mode: imageUsageMode,
           design_mode: "readable_editorial",
           source: "en_quick_banner",
         }),
@@ -162,7 +173,66 @@ const [showBannerZoom, setShowBannerZoom] = useState(false);
       setLoading(false);
     }
   };
+const uploadQuickBannerFile = async (
+  file: File,
+  type: "logo" | "image"
+) => {
+  const supabase = createClient();
 
+  const fileExtension = file.name.split(".").pop() || "file";
+  const filePath = `quick-banner/${type}/${crypto.randomUUID()}.${fileExtension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("videos")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type || undefined,
+    });
+
+  if (uploadError) {
+    console.error("EN QUICK BANNER FILE UPLOAD ERROR:", uploadError);
+    setMessage(`Could not upload ${type}. Please try again.`);
+    return "";
+  }
+
+  const { data } = supabase.storage.from("videos").getPublicUrl(filePath);
+  return data.publicUrl;
+};
+
+const handleLogoUpload = async (file: File | null) => {
+  if (!file) return;
+
+  setLogoUploading(true);
+  setMessage("Uploading logo...");
+
+  try {
+    const url = await uploadQuickBannerFile(file, "logo");
+    if (url) {
+      setLogoUrl(url);
+      setMessage("Logo uploaded.");
+    }
+  } finally {
+    setLogoUploading(false);
+  }
+};
+
+const handleImageUpload = async (file: File | null) => {
+  if (!file) return;
+
+  setImageUploading(true);
+  setMessage("Uploading image...");
+
+  try {
+    const url = await uploadQuickBannerFile(file, "image");
+    if (url) {
+      setImageUrl(url);
+      setMessage("Image uploaded.");
+    }
+  } finally {
+    setImageUploading(false);
+  }
+};
     const createComposedBannerBlob = async () => {
   if (!generatedImageUrl) return null;
 
@@ -543,6 +613,116 @@ const handleCopyBannerText = async () => {
                   className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-[15px] text-neutral-900 outline-none transition focus:border-black/30"
                 />
               </label>
+              <div className="md:col-span-2 grid gap-4 md:grid-cols-2">
+  <div className="rounded-[22px] border border-black/10 bg-white p-4">
+    <p className="text-sm font-bold text-neutral-900">Logo</p>
+    <p className="mt-1 text-xs leading-5 text-neutral-500">
+      Optional. Upload your logo if you want it included in the banner.
+    </p>
+
+    <label className="mt-4 inline-flex cursor-pointer rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90">
+      {logoUploading ? "Uploading..." : logoUrl ? "Change logo" : "Upload logo"}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0] || null;
+          void handleLogoUpload(file);
+          e.target.value = "";
+        }}
+      />
+    </label>
+
+    {logoUrl ? (
+      <div className="mt-4 flex items-center gap-3">
+        <img
+          src={logoUrl}
+          alt="Uploaded logo"
+          className="h-14 w-14 rounded-2xl border border-black/10 object-contain"
+        />
+        <button
+          type="button"
+          onClick={() => setLogoUrl("")}
+          className="text-xs font-bold text-red-600 underline"
+        >
+          Remove
+        </button>
+      </div>
+    ) : null}
+  </div>
+
+  <div className="rounded-[22px] border border-black/10 bg-white p-4">
+    <p className="text-sm font-bold text-neutral-900">Reference image</p>
+    <p className="mt-1 text-xs leading-5 text-neutral-500">
+      Optional. Upload a product, place, dish, room, person or example image.
+    </p>
+
+    <label className="mt-4 inline-flex cursor-pointer rounded-full bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90">
+      {imageUploading ? "Uploading..." : imageUrl ? "Change image" : "Upload image"}
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0] || null;
+          void handleImageUpload(file);
+          e.target.value = "";
+        }}
+      />
+    </label>
+
+    {imageUrl ? (
+      <div className="mt-4">
+        <img
+          src={imageUrl}
+          alt="Uploaded reference"
+          className="h-28 w-full rounded-2xl border border-black/10 object-cover"
+        />
+
+        <div className="mt-3 grid gap-2 text-xs font-bold text-neutral-700">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              checked={imageUsageMode === "auto"}
+              onChange={() => setImageUsageMode("auto")}
+            />
+            Auto — use it intelligently
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              checked={imageUsageMode === "integrate"}
+              onChange={() => setImageUsageMode("integrate")}
+            />
+            Integrate into the scene
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              checked={imageUsageMode === "exact"}
+              onChange={() => setImageUsageMode("exact")}
+            />
+            Keep it almost unchanged
+          </label>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setImageUrl("");
+            setImageUsageMode("auto");
+          }}
+          className="mt-3 text-xs font-bold text-red-600 underline"
+        >
+          Remove image
+        </button>
+      </div>
+    ) : null}
+  </div>
+</div>
             </div>
 
             <div className="mt-8">
@@ -552,7 +732,11 @@ const handleCopyBannerText = async () => {
                 disabled={loading}
                 className="rounded-[20px] bg-neutral-950 px-6 py-3 text-[15px] font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loading ? "Generating..." : "Generate banner"}
+                {logoUploading || imageUploading
+  ? "Uploading..."
+  : loading
+  ? "Generating..."
+  : "Generate banner"}
               </button>
             </div>
 
