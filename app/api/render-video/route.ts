@@ -313,8 +313,7 @@ if (brandParts.length) {
   dialogues.push(
     `Dialogue: 9,${assTime(brandStart)},${assTime(
       totalDurationSec
-    )},${brandStyle},,0,0,0,,{\\an5\\fs${brandFontSize}\\pos(360,${brandY})}${brandParts
-      .map(assSafe)
+    )  },${brandStyle},,0,0,0,,{\\an5\\fnRoboto\\i1\\b1\\fs${brandFontSize}\\pos(360,${brandY})}${brandParts    .map(assSafe)
       .join("\\N")}`
   );
 }
@@ -358,9 +357,9 @@ Style: Main,Roboto,42,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,1
 Style: Brand,Roboto,72,&H00FFFFFF,&H00FFFFFF,&H00000000,&HAA000000,-1,0,0,0,100,100,0,0,1,6,3,8,36,36,230,1
 Style: Contact,Roboto,50,&H00A8E7FF,&H00FFFFFF,&H00000000,&HAA000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,165,1
 Style: Address,Roboto,30,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,2,40,40,110,1
-Style: BrandEn,Times New Roman,86,&H00FFFFFF,&H00FFFFFF,&H00000000,&HAA000000,-1,-1,0,0,100,100,0.5,0,1,6,3,8,36,36,230,1
-Style: ContactEn,Times New Roman,46,&H00FFFFFF,&H00FFFFFF,&H00000000,&HAA000000,-1,-1,0,0,100,100,0.3,0,1,5,2,2,40,40,165,1
-Style: AddressEn,Times New Roman,34,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,-1,0,0,100,100,0.2,0,1,4,2,2,40,40,110,1
+Style: BrandEn,Roboto,86,&H00FFFFFF,&H00FFFFFF,&H00000000,&HAA000000,-1,-1,0,0,100,100,0.5,0,1,6,3,8,36,36,230,1
+Style: ContactEn,Roboto,46,&H00FFFFFF,&H00FFFFFF,&H00000000,&HAA000000,-1,-1,0,0,100,100,0.3,0,1,5,2,2,40,40,165,1
+Style: AddressEn,Roboto,34,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,-1,0,0,100,100,0.2,0,1,4,2,2,40,40,110,1
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 ${dialogues.join("\n")}
