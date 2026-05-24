@@ -68,13 +68,13 @@ function renderVideoWithMusic({
   brandName,
   scenes,
   totalDurationSec,
-  textColor,
+    textColor,
   cta,
-  websit  phone,
+  website,
+  phone,
   address,
   locale,
 }: {
-
     inputPath: string;
   outputPath: string;
   musicPath: string;
