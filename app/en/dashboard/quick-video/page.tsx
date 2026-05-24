@@ -325,8 +325,8 @@ imageUrl: imageUrl.trim(),
 
       let rawVideoUrl = "";
 
-      for (let i = 0; i < 40; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 4000));
+      for (let i = 0; i < 45; i++) {
+  await new Promise((resolve) => setTimeout(resolve, 4000));
 
         console.log(
   "EN QUICK VIDEO: calling generate-video-status",
@@ -353,10 +353,31 @@ const statusRes = await fetch(
 
         if (rawVideoUrl) break;
       }
+if (!rawVideoUrl) {
+  await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/spend-credit`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        action_type: "video",
+        cost: duration === 5 ? 25 : 35,
+        mode: "refund",
+      }),
+    }
+  ).catch((refundError) => {
+    console.error("EN QUICK VIDEO REFUND ERROR:", refundError);
+  });
 
-      if (!rawVideoUrl) {
-        throw new Error("The video was not ready in time. Please try again.");
-      }
+  throw new Error(
+    "The video is taking longer than expected. Your credits were restored. Please try again with a shorter or simpler prompt."
+  );
+}
+      
 
       console.log("EN QUICK VIDEO: calling /api/render-video", rawVideoUrl);
 
