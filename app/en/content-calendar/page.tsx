@@ -166,13 +166,30 @@ export default function EnglishContentCalendarPage() {
             businessType,
             services: specificServices,
             notes: [
-              notes,
-              "IMPORTANT: Generate the entire content calendar in English.",
-              "Use English post titles, descriptions, formats and days.",
-              "This is for an international local business market, not Bulgarian language content.",
-            ]
-              .filter(Boolean)
-              .join("\n"),
+  notes,
+  "LANGUAGE RULE: Generate the entire content calendar ONLY in English.",
+  "Do not use Bulgarian language anywhere.",
+  "Use English post titles, descriptions, formats and days.",
+  "This is for an international local business market, not Bulgarian language content.",
+
+  tone === "Educational"
+    ? "EDUCATIONAL TONE RULE: Every topic must be useful educational content. Do not create team introduction posts, meet-the-team posts, direct sales posts, generic brand awareness posts, discount posts or promotional posts."
+    : "",
+
+  tone === "Educational"
+    ? "For educational calendars, topics should teach practical knowledge, common mistakes, step-by-step processes, myths, warning signs, how-to guidance, comparison, preparation, aftercare, FAQs, or expert explanations."
+    : "",
+
+  tone === "Educational"
+    ? "For a dental clinic, educational topics should be about oral hygiene, dental check-ups, plaque, tartar, gum health, whitening safety, fear of the dentist, treatment planning, prevention, common mistakes, and step-by-step care."
+    : "",
+
+  tone === "Educational"
+    ? "Do not include topics like 'Meet our team', 'Visit our clinic', 'Book your appointment', 'Special offer', 'Why choose us', or other promotional angles."
+    : "",
+]
+  .filter(Boolean)
+  .join("\n"),
             tone,
             platform,
             period,

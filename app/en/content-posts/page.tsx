@@ -182,7 +182,8 @@ export default function EnglishContentPostsPage() {
         const selectedTone = toneMap[parsed.tone || "Professional"] || "soft";
 
         const userRequest = [
-          `Write 3 different ready-to-publish social media posts in English for ${businessLabel}.`,
+          `LANGUAGE RULE: Write the entire response ONLY in English. Do not use Bulgarian words, Bulgarian phrases, Bulgarian hashtags or Bulgarian CTA text.`,
+`Write 3 different ready-to-publish social media posts in English for ${businessLabel}.`,
           `Topic: ${topicTitle}.`,
           topicDescription ? `Topic context: ${topicDescription}.` : "",
           topicFormat ? `Preferred format: ${topicFormat}.` : "",
@@ -195,15 +196,23 @@ export default function EnglishContentPostsPage() {
             : "",
 
           "The posts must be complete final captions, ready to publish.",
+"Every post body and every hashtag must be in English only.",
+"Do not translate the topic into Bulgarian. Do not answer in Bulgarian even if the backend default language is Bulgarian.",
           "Do not explain what should be written. Write the actual post text.",
           "Make the 3 versions different in hook, structure and angle.",
-          "Keep them specific to the selected topic and business. Avoid generic AI wording.",
+          "Keep every post tightly focused on the selected topic. Do not drift into general advertising, clinic promotion, service selling or unrelated dental services.",
+"Use the selected topic as the main subject of every post.",
+"Do not replace a how-to educational topic with a promotional description of a professional service.",
+"Write practical, useful information that directly answers the topic.",
+"Avoid generic AI wording.",
 
           isEducational
             ? "All posts must be fully educational."
             : "When the topic allows, make at least 1 of the 3 versions educational.",
 
           "An educational post should teach something useful: a mistake, myth, process, selection criteria, FAQ, practical tip or expert explanation.",
+"If the topic asks for a step-by-step process, write actual numbered or clearly separated steps. Do not turn it into a promotional service description.",
+"For a topic like 'How to clean your teeth step by step', explain the daily home care process: brushing technique, duration, toothpaste amount, gumline, interdental cleaning, tongue cleaning, rinsing habits and consistency.",
 
           "For educational content, do NOT add phone numbers, hard CTA, 'contact us', 'book now', sales ending or aggressive advertising.",
 
