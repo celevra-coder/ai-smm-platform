@@ -350,7 +350,20 @@ text, subtitles, captions, letters, typography, logo, watermark, UI, distorted a
       setGenerating(false);
     }
   };
+const handleMainVideoClick = async () => {
+  const supabase = createClient();
 
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (session?.access_token) {
+    await handleGenerateVideo();
+    return;
+  }
+
+  await handleGeneratePreview();
+};
   return (
     <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-neutral-950">
       <div className="mx-auto max-w-6xl">
@@ -456,17 +469,17 @@ text, subtitles, captions, letters, typography, logo, watermark, UI, distorted a
               </div>
 
               <button
-                type="button"
-                onClick={() => void handleGeneratePreview()}
-                disabled={generating || previewLoading}
-                className="w-full rounded-full bg-neutral-950 px-5 py-4 text-sm font-black text-white disabled:opacity-60"
-              >
-                {previewLoading
-                  ? "Preparing preview..."
-                  : generating
-                    ? "Generating video..."
-                    : "Generate video preview"}
-              </button>
+  type="button"
+  onClick={() => void handleMainVideoClick()}
+  disabled={generating || previewLoading}
+  className="w-full rounded-full bg-neutral-950 px-5 py-4 text-sm font-black text-white disabled:opacity-60"
+>
+  {previewLoading
+    ? "Preparing preview..."
+    : generating
+      ? "Generating video..."
+      : "Generate video"}
+</button>
 
               {generationError ? (
                 <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
