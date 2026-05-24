@@ -9,7 +9,9 @@ export default function EnglishQuickVideoPage() {
   const [businessDescription, setBusinessDescription] = useState("");
   const [videoIdea, setVideoIdea] = useState("");
   const [phone, setPhone] = useState("");
-  const [duration, setDuration] = useState<5 | 10>(5);
+const [duration, setDuration] = useState<5 | 10>(5);
+const [imageUrl, setImageUrl] = useState("");
+const [imageUploading, setImageUploading] = useState(false);
 
   const [generating, setGenerating] = useState(false);
   const [generatedVideoUrl, setGeneratedVideoUrl] = useState("");
@@ -103,6 +105,38 @@ text, subtitles, captions, letters, typography, logo, watermark, UI, distorted a
 
     localStorage.setItem("pending_quick_video_locale", "en");
   };
+  const uploadQuickVideoImage = async (file: File | null) => {
+  if (!file) return;
+
+  setImageUploading(true);
+  setGenerationError("");
+
+  try {
+    const supabase = createClient();
+
+    const fileExtension = file.name.split(".").pop() || "jpg";
+    const filePath = `quick-video/images/${crypto.randomUUID()}.${fileExtension}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("videos")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type || undefined,
+      });
+
+    if (uploadError) {
+      console.error("EN QUICK VIDEO IMAGE UPLOAD ERROR:", uploadError);
+      setGenerationError("Could not upload the image. Please try again.");
+      return;
+    }
+
+    const { data } = supabase.storage.from("videos").getPublicUrl(filePath);
+    setImageUrl(data.publicUrl);
+  } finally {
+    setImageUploading(false);
+  }
+};
 
   const handleGeneratePreview = async () => {
     try {
@@ -254,9 +288,10 @@ const generateRes = await fetch(
             Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({
-            video_image_url: "",
-            source_type: "text-only",
+            video_image_url: imageUrl.trim(),
+source_type: imageUrl.trim() ? "image-to-video" : "text-only",
             duration,
+imageUrl: imageUrl.trim(),
             brand_profile: {
               brand_name: businessName.trim(),
               brand_description: businessDescription.trim(),
@@ -331,22 +366,23 @@ const renderRes = await fetch("/api/render-video", {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          videoUrl: rawVideoUrl,
-          headline: videoIdea.trim(),
-          brandName: businessName.trim(),
-          scenes: [
-            {
-              title: "Quick video",
-              overlay_text: buildQuickOverlayText(),
-              duration_sec: duration,
-            },
-          ],
-          totalDurationSec: duration,
-          cta: phone.trim() ? "Call now" : "Message us now",
-          phone: phone.trim(),
-          address: "",
-          musicStyle: "modern social ad",
-        }),
+  videoUrl: rawVideoUrl,
+  headline: videoIdea.trim(),
+  brandName: businessName.trim(),
+  scenes: [
+    {
+      title: "Quick video",
+      overlay_text: buildQuickOverlayText(),
+      duration_sec: duration,
+    },
+  ],
+  totalDurationSec: duration,
+  cta: phone.trim() ? "Call now" : "Message us now",
+  phone: phone.trim(),
+  address: "",
+  musicStyle: "modern social ad",
+  locale: "en",
+}),
       });
 
       if (!renderRes.ok) {
@@ -454,6 +490,48 @@ const handleMainVideoClick = async () => {
                   className="w-full rounded-2xl border border-black/10 px-4 py-3 text-sm outline-none focus:border-black/30"
                 />
               </label>
+              <div className="rounded-[24px] border border-black/10 bg-[#faf8f6] p-4">
+  <p className="text-sm font-bold text-neutral-950">
+    Reference image, optional
+  </p>
+
+  <p className="mt-1 text-xs leading-5 text-neutral-500">
+    Upload a photo of a product, place, dish, dessert, room or visual style.
+    If uploaded, the video will be created from this image.
+  </p>
+
+  <label className="mt-4 inline-flex cursor-pointer rounded-full bg-neutral-950 px-5 py-3 text-sm font-black text-white transition hover:opacity-90">
+    {imageUploading ? "Uploading..." : imageUrl ? "Change image" : "Upload image"}
+    <input
+      type="file"
+      accept="image/*"
+      className="hidden"
+      onChange={(e) => {
+        const file = e.target.files?.[0] || null;
+        void uploadQuickVideoImage(file);
+        e.target.value = "";
+      }}
+    />
+  </label>
+
+  {imageUrl ? (
+    <div className="mt-4">
+      <img
+        src={imageUrl}
+        alt="Uploaded reference"
+        className="aspect-[9/16] max-h-72 w-full rounded-[22px] border border-black/10 object-cover"
+      />
+
+      <button
+        type="button"
+        onClick={() => setImageUrl("")}
+        className="mt-3 text-xs font-bold text-red-600 underline"
+      >
+        Remove image
+      </button>
+    </div>
+  ) : null}
+</div>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-bold">
@@ -490,10 +568,12 @@ const handleMainVideoClick = async () => {
               <button
   type="button"
   onClick={() => void handleMainVideoClick()}
-  disabled={generating || previewLoading}
+  disabled={generating || previewLoading || imageUploading}
   className="w-full rounded-full bg-neutral-950 px-5 py-4 text-sm font-black text-white disabled:opacity-60"
 >
-  {previewLoading
+  {imageUploading
+  ? "Uploading image..."
+  : previewLoading
     ? "Preparing preview..."
     : generating
       ? "Generating video..."
