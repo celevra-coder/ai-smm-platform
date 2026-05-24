@@ -183,12 +183,21 @@ export default function EnglishDashboardPage() {
 
   ctx.drawImage(image, 0, 0, size, size);
 
-  // Soft readable overlay, not a heavy dark bottom block
-  const centerGradient = ctx.createLinearGradient(0, size * 0.15, 0, size * 0.75);
-  centerGradient.addColorStop(0, "rgba(0,0,0,0.08)");
-  centerGradient.addColorStop(0.45, "rgba(0,0,0,0.34)");
-  centerGradient.addColorStop(1, "rgba(0,0,0,0.12)");
-  ctx.fillStyle = centerGradient;
+  // Elegant center readability layer, not a bottom black box
+  const gradient = ctx.createRadialGradient(
+    size / 2,
+    size / 2,
+    120,
+    size / 2,
+    size / 2,
+    720
+  );
+
+  gradient.addColorStop(0, "rgba(0,0,0,0.42)");
+  gradient.addColorStop(0.55, "rgba(0,0,0,0.24)");
+  gradient.addColorStop(1, "rgba(0,0,0,0.06)");
+
+  ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, size, size);
 
   const drawTextLines = (
@@ -218,6 +227,7 @@ export default function EnglishDashboardPage() {
     if (line) lines.push(line);
 
     const visibleLines = lines.slice(0, maxLines);
+
     visibleLines.forEach((lineText, index) => {
       ctx.fillText(lineText, x, y + index * lineHeight);
     });
@@ -226,63 +236,95 @@ export default function EnglishDashboardPage() {
   };
 
   const centerX = size / 2;
-  let currentY = 330;
+  let currentY = 295;
 
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
 
-  // Main headline, like the Brand Studio style
+  // Headline
   if (headline) {
     ctx.fillStyle = "#ffffff";
-    ctx.font = "800 54px Arial";
-    currentY = drawTextLines(headline, centerX, currentY, 820, 62, 3);
-    currentY += 28;
+    ctx.font = "900 64px Arial";
+    ctx.shadowColor = "rgba(0,0,0,0.35)";
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 3;
+
+    currentY = drawTextLines(headline, centerX, currentY, 850, 72, 2);
+    currentY += 44;
   }
 
-  // Offer / subtext
+  // Subtext
   if (subtext) {
     ctx.fillStyle = "rgba(255,255,255,0.96)";
-    ctx.font = "600 32px Arial";
-    currentY = drawTextLines(subtext, centerX, currentY, 780, 40, 2);
-    currentY += 26;
+    ctx.font = "700 36px Arial";
+    ctx.shadowColor = "rgba(0,0,0,0.28)";
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 2;
+
+    currentY = drawTextLines(subtext, centerX, currentY, 790, 46, 2);
+    currentY += 42;
   }
 
+  // Offer / discount / period as a separate elegant line
   const offerLine = [discountText, periodText].filter(Boolean).join(" • ");
 
   if (offerLine) {
-    ctx.fillStyle = "rgba(255,255,255,0.96)";
-    ctx.font = "700 28px Arial";
-    currentY = drawTextLines(offerLine, centerX, currentY, 760, 36, 1);
-    currentY += 24;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "900 34px Arial";
+    ctx.shadowColor = "rgba(0,0,0,0.34)";
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 2;
+
+    currentY = drawTextLines(offerLine, centerX, currentY, 780, 42, 1);
+    currentY += 50;
   }
 
-  // CTA as a clean pill
+  // CTA pill
   if (cta) {
-    ctx.font = "800 26px Arial";
-    const ctaText = cta;
-    const ctaWidth = Math.min(ctx.measureText(ctaText).width + 56, 520);
-    const ctaHeight = 48;
-    const ctaX = centerX - ctaWidth / 2;
-    const ctaY = currentY - 8;
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
 
-    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.font = "900 30px Arial";
+    const ctaText = cta;
+    const ctaWidth = Math.min(ctx.measureText(ctaText).width + 68, 560);
+    const ctaHeight = 58;
+    const ctaX = centerX - ctaWidth / 2;
+    const ctaY = currentY - 12;
+
+    ctx.fillStyle = "rgba(255,255,255,0.96)";
     ctx.beginPath();
-    ctx.roundRect(ctaX, ctaY, ctaWidth, ctaHeight, 24);
+    ctx.roundRect(ctaX, ctaY, ctaWidth, ctaHeight, 29);
     ctx.fill();
 
     ctx.fillStyle = "#111111";
-    ctx.fillText(ctaText, centerX, ctaY + 33);
+    ctx.fillText(ctaText, centerX, ctaY + 39);
 
-    currentY += 72;
+    currentY += 86;
   }
 
-  // Phone and address at the bottom, clean and readable
+  // Phone / address as a visible premium contact badge
   const contactLine = [phone, address].filter(Boolean).join(" • ");
 
   if (contactLine) {
-    ctx.fillStyle = "rgba(255,255,255,0.96)";
-    ctx.font = "700 25px Arial";
-    drawTextLines(contactLine, centerX, 900, 850, 34, 2);
+    ctx.shadowColor = "transparent";
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    ctx.font = "900 31px Arial";
+    const maxContactWidth = 860;
+    const measured = Math.min(ctx.measureText(contactLine).width + 72, maxContactWidth);
+    const badgeX = centerX - measured / 2;
+    const badgeY = 820;
+    const badgeH = 68;
+
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.beginPath();
+    ctx.roundRect(badgeX, badgeY, measured, badgeH, 34);
+    ctx.fill();
+
+    ctx.fillStyle = "#171717";
+    drawTextLines(contactLine, centerX, badgeY + 44, measured - 60, 34, 1);
   }
 
   return await new Promise<Blob | null>((resolve) => {
@@ -509,32 +551,32 @@ const handleCopyBannerText = async () => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
                     <div className="absolute inset-0 flex items-center justify-center p-8 text-center text-white">
-  <div className="max-w-[82%]">
+  <div className="max-w-[86%]">
                         {headline ? (
-                          <h3 className="text-[24px] font-black leading-[1.05] tracking-[-0.03em]">
-                            {headline}
-                          </h3>
-                        ) : null}
+  <h3 className="text-[34px] font-black leading-[1.08] tracking-[-0.03em] drop-shadow-md">
+    {headline}
+  </h3>
+) : null}
 
                         {subtext ? (
-                          <p className="mt-2 text-sm font-semibold leading-5 text-white/90">
+                          <p className="mt-5 text-[18px] font-bold leading-7 text-white/95 drop-shadow-md">
                             {subtext}
                           </p>
                         ) : null}
 
                         {cta ? (
-                          <p className="mt-3 inline-flex rounded-full bg-white px-4 py-2 text-xs font-black text-neutral-950">
+                          <p className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-black text-neutral-950 shadow-lg">
                             {cta}
                           </p>
                         ) : null}
                         {discountText || periodText ? (
-  <p className="mt-4 text-sm font-bold text-white/95">
+  <p className="mt-6 text-[18px] font-black text-white drop-shadow-md">
     {[discountText, periodText].filter(Boolean).join(" • ")}
   </p>
 ) : null}
 
 {phone || address ? (
-  <p className="mt-2 text-xs font-bold text-white/90">
+  <p className="mx-auto mt-8 inline-flex max-w-full rounded-full bg-white/95 px-5 py-3 text-[15px] font-black text-neutral-950 shadow-lg">
     {[phone, address].filter(Boolean).join(" • ")}
   </p>
 ) : null}
