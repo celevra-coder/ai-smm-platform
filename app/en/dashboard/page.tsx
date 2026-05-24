@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase-browser";
 import { useRouter } from "next/navigation";
@@ -19,6 +19,8 @@ export default function EnglishDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [generatedImageUrl, setGeneratedImageUrl] = useState("");
+  const [composedBannerUrl, setComposedBannerUrl] = useState("");
+const [showBannerZoom, setShowBannerZoom] = useState(false);
   const [headline, setHeadline] = useState("");
   const [subtext, setSubtext] = useState("");
   const [cta, setCta] = useState("");
@@ -337,14 +339,45 @@ export default function EnglishDashboardPage() {
     canvas.toBlob((blob) => resolve(blob), "image/png", 0.95);
   });
 };
+useEffect(() => {
+  let objectUrl = "";
+
+  const updateComposedPreview = async () => {
+    if (!generatedImageUrl) {
+      setComposedBannerUrl("");
+      return;
+    }
+
+    const blob = await createComposedBannerBlob();
+
+    if (!blob) {
+      setComposedBannerUrl("");
+      return;
+    }
+
+    objectUrl = window.URL.createObjectURL(blob);
+    setComposedBannerUrl(objectUrl);
+  };
+
+  void updateComposedPreview();
+
+  return () => {
+    if (objectUrl) {
+      window.URL.revokeObjectURL(objectUrl);
+    }
+  };
+}, [generatedImageUrl, headline, subtext, cta, discountText, periodText, phone, address]);
 
 const handleDownloadBanner = async () => {
-  const blob = await createComposedBannerBlob();
+  const sourceUrl = composedBannerUrl || generatedImageUrl;
 
-  if (!blob) {
+  if (!sourceUrl) {
     setMessage("Could not prepare the banner for download.");
     return;
   }
+
+  const response = await fetch(sourceUrl);
+  const blob = await response.blob();
 
   const blobUrl = window.URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -359,14 +392,17 @@ const handleDownloadBanner = async () => {
 };
 
 const handleCopyBannerImage = async () => {
-  const blob = await createComposedBannerBlob();
+  const sourceUrl = composedBannerUrl || generatedImageUrl;
 
-  if (!blob) {
+  if (!sourceUrl) {
     setMessage("Could not copy the banner image.");
     return;
   }
 
   try {
+    const response = await fetch(sourceUrl);
+    const blob = await response.blob();
+
     await navigator.clipboard.write([
       new ClipboardItem({
         "image/png": blob,
@@ -548,47 +584,19 @@ const handleCopyBannerText = async () => {
                             ) : generatedImageUrl ? (
                 <div>
                   <div className="relative aspect-square overflow-hidden bg-neutral-900">
-                    <img
-                      src={generatedImageUrl}
-                      alt="Generated banner"
-                      className="h-full w-full object-cover"
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-
-                    <div className="absolute inset-0 flex items-center justify-center p-8 text-center text-white">
-  <div className="max-w-[86%]">
-                        {headline ? (
-  <h3 className="text-[30px] font-black leading-[1.1] tracking-[-0.03em] text-white/90 drop-shadow-md">
-    {headline}
-  </h3>
-) : null}
-
-                        {subtext ? (
-                          <p className="mt-6 text-[17px] font-bold leading-7 text-white/90 drop-shadow-md">
-                            {subtext}
-                          </p>
-                        ) : null}
-
-                        {cta ? (
-                          <p className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-black text-neutral-950 shadow-lg">
-                            {cta}
-                          </p>
-                        ) : null}
-                        {discountText || periodText ? (
-  <p className="mt-7 text-[18px] font-black text-white/92 drop-shadow-md">
-    {[discountText, periodText].filter(Boolean).join(" • ")}
-  </p>
-) : null}
-
-{phone || address ? (
-  <p className="mx-auto mt-8 inline-flex max-w-full rounded-full border border-white/20 bg-black/25 px-6 py-3 text-[16px] font-black text-white backdrop-blur-md shadow-[0_8px_24px_rgba(0,0,0,0.18)]">
-    {[phone, address].filter(Boolean).join(" • ")}
-  </p>
-) : null}
-                      </div>
-                    </div>
-                  </div>
+  <button
+    type="button"
+    onDoubleClick={() => setShowBannerZoom(true)}
+    className="block h-full w-full cursor-zoom-in"
+    title="Double click to enlarge"
+  >
+    <img
+      src={composedBannerUrl || generatedImageUrl}
+      alt="Generated banner"
+      className="h-full w-full object-cover"
+    />
+  </button>
+</div>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
   <button
@@ -632,7 +640,31 @@ const handleCopyBannerText = async () => {
           </div>
         </section>
       </div>
+{showBannerZoom && (composedBannerUrl || generatedImageUrl) ? (
+  <div
+    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+    onClick={() => setShowBannerZoom(false)}
+  >
+    <div
+      className="relative max-h-[92vh] max-w-[92vw]"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        onClick={() => setShowBannerZoom(false)}
+        className="absolute right-3 top-3 z-10 rounded-full bg-white/90 px-4 py-2 text-sm font-black text-black shadow-lg"
+      >
+        Close
+      </button>
 
+      <img
+        src={composedBannerUrl || generatedImageUrl}
+        alt="Generated banner enlarged"
+        className="max-h-[92vh] max-w-[92vw] rounded-[28px] object-contain shadow-2xl"
+      />
+    </div>
+  </div>
+) : null}
       {showPaywallModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-md rounded-[28px] bg-white p-6 text-center shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
