@@ -65,21 +65,31 @@ export default function EnglishContentPostsPage() {
         })
       );
 
-      const workspacePayload: VideoWorkspacePayload = {
-        source: "brand-post",
-        user_request: selectedData?.notes || selectedData?.item?.description || "",
-        brand_profile: {
-          brand_name: selectedData?.businessType || "",
-          brand_description:
-            selectedData?.notes || selectedData?.item?.description || "",
-        },
-        selected_post: {
-          id: post.id,
-          headline: selectedData?.item?.title || post.title,
-          caption: post.body,
-          raw_text: [post.body, post.hashtags].filter(Boolean).join("\n\n"),
-        },
-      };
+      const cleanBrandDescription = [
+  selectedData?.businessType
+    ? `Business type: ${selectedData.businessType}`
+    : "",
+  selectedData?.item?.description
+    ? `Selected content topic: ${selectedData.item.description}`
+    : "",
+]
+  .filter(Boolean)
+  .join("\n");
+
+const workspacePayload: VideoWorkspacePayload = {
+  source: "brand-post",
+  user_request: selectedData?.item?.description || post.body || "",
+  brand_profile: {
+    brand_name: selectedData?.businessType || "",
+    brand_description: cleanBrandDescription,
+  },
+  selected_post: {
+    id: post.id,
+    headline: selectedData?.item?.title || post.title,
+    caption: post.body,
+    raw_text: [post.body, post.hashtags].filter(Boolean).join("\n\n"),
+  },
+};
 
       localStorage.setItem(
         WORKSPACE_STORAGE_KEY,
