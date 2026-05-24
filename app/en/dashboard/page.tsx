@@ -183,32 +183,23 @@ export default function EnglishDashboardPage() {
 
   ctx.drawImage(image, 0, 0, size, size);
 
-  const gradient = ctx.createLinearGradient(0, size * 0.35, 0, size);
-  gradient.addColorStop(0, "rgba(0,0,0,0)");
-  gradient.addColorStop(0.55, "rgba(0,0,0,0.18)");
-  gradient.addColorStop(1, "rgba(0,0,0,0.72)");
-  ctx.fillStyle = gradient;
+  // Soft readable overlay, not a heavy dark bottom block
+  const centerGradient = ctx.createLinearGradient(0, size * 0.15, 0, size * 0.75);
+  centerGradient.addColorStop(0, "rgba(0,0,0,0.08)");
+  centerGradient.addColorStop(0.45, "rgba(0,0,0,0.34)");
+  centerGradient.addColorStop(1, "rgba(0,0,0,0.12)");
+  ctx.fillStyle = centerGradient;
   ctx.fillRect(0, 0, size, size);
 
-  const boxX = 70;
-  const boxY = 620;
-  const boxW = 760;
-  const boxH = 280;
-  const radius = 34;
-
-  ctx.fillStyle = "rgba(0,0,0,0.48)";
-  ctx.beginPath();
-  ctx.roundRect(boxX, boxY, boxW, boxH, radius);
-  ctx.fill();
-
-  const wrapText = (
+  const drawTextLines = (
     text: string,
     x: number,
     y: number,
     maxWidth: number,
-    lineHeight: number
+    lineHeight: number,
+    maxLines: number
   ) => {
-    const words = text.split(" ");
+    const words = text.split(" ").filter(Boolean);
     let line = "";
     const lines: string[] = [];
 
@@ -226,53 +217,72 @@ export default function EnglishDashboardPage() {
 
     if (line) lines.push(line);
 
-    lines.slice(0, 3).forEach((lineText, index) => {
+    const visibleLines = lines.slice(0, maxLines);
+    visibleLines.forEach((lineText, index) => {
       ctx.fillText(lineText, x, y + index * lineHeight);
     });
 
-    return y + Math.min(lines.length, 3) * lineHeight;
+    return y + visibleLines.length * lineHeight;
   };
 
-  let currentY = boxY + 62;
+  const centerX = size / 2;
+  let currentY = 330;
 
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+
+  // Main headline, like the Brand Studio style
   if (headline) {
     ctx.fillStyle = "#ffffff";
     ctx.font = "800 54px Arial";
-    currentY = wrapText(headline, boxX + 44, currentY, boxW - 88, 58);
-    currentY += 16;
+    currentY = drawTextLines(headline, centerX, currentY, 820, 62, 3);
+    currentY += 28;
   }
 
+  // Offer / subtext
   if (subtext) {
-    ctx.fillStyle = "rgba(255,255,255,0.92)";
-    ctx.font = "600 30px Arial";
-    currentY = wrapText(subtext, boxX + 44, currentY, boxW - 88, 36);
+    ctx.fillStyle = "rgba(255,255,255,0.96)";
+    ctx.font = "600 32px Arial";
+    currentY = drawTextLines(subtext, centerX, currentY, 780, 40, 2);
+    currentY += 26;
+  }
+
+  const offerLine = [discountText, periodText].filter(Boolean).join(" • ");
+
+  if (offerLine) {
+    ctx.fillStyle = "rgba(255,255,255,0.96)";
+    ctx.font = "700 28px Arial";
+    currentY = drawTextLines(offerLine, centerX, currentY, 760, 36, 1);
     currentY += 24;
   }
 
-  const contactLine = [phone, address].filter(Boolean).join(" • ");
-
-  if (contactLine) {
-    ctx.fillStyle = "rgba(255,255,255,0.88)";
-    ctx.font = "600 24px Arial";
-    wrapText(contactLine, boxX + 44, currentY, boxW - 88, 30);
-  }
-
+  // CTA as a clean pill
   if (cta) {
-    const ctaText = cta;
     ctx.font = "800 26px Arial";
-    const textWidth = ctx.measureText(ctaText).width;
-    const ctaX = boxX + 44;
-    const ctaY = boxY + boxH - 64;
-    const ctaW = textWidth + 46;
-    const ctaH = 44;
+    const ctaText = cta;
+    const ctaWidth = Math.min(ctx.measureText(ctaText).width + 56, 520);
+    const ctaHeight = 48;
+    const ctaX = centerX - ctaWidth / 2;
+    const ctaY = currentY - 8;
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
     ctx.beginPath();
-    ctx.roundRect(ctaX, ctaY, ctaW, ctaH, 22);
+    ctx.roundRect(ctaX, ctaY, ctaWidth, ctaHeight, 24);
     ctx.fill();
 
     ctx.fillStyle = "#111111";
-    ctx.fillText(ctaText, ctaX + 23, ctaY + 30);
+    ctx.fillText(ctaText, centerX, ctaY + 33);
+
+    currentY += 72;
+  }
+
+  // Phone and address at the bottom, clean and readable
+  const contactLine = [phone, address].filter(Boolean).join(" • ");
+
+  if (contactLine) {
+    ctx.fillStyle = "rgba(255,255,255,0.96)";
+    ctx.font = "700 25px Arial";
+    drawTextLines(contactLine, centerX, 900, 850, 34, 2);
   }
 
   return await new Promise<Blob | null>((resolve) => {
@@ -498,8 +508,8 @@ const handleCopyBannerText = async () => {
 
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
 
-                    <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-                      <div className="max-w-[88%] rounded-[24px] bg-black/45 p-4 backdrop-blur-sm">
+                    <div className="absolute inset-0 flex items-center justify-center p-8 text-center text-white">
+  <div className="max-w-[82%]">
                         {headline ? (
                           <h3 className="text-[24px] font-black leading-[1.05] tracking-[-0.03em]">
                             {headline}
@@ -517,6 +527,17 @@ const handleCopyBannerText = async () => {
                             {cta}
                           </p>
                         ) : null}
+                        {discountText || periodText ? (
+  <p className="mt-4 text-sm font-bold text-white/95">
+    {[discountText, periodText].filter(Boolean).join(" • ")}
+  </p>
+) : null}
+
+{phone || address ? (
+  <p className="mt-2 text-xs font-bold text-white/90">
+    {[phone, address].filter(Boolean).join(" • ")}
+  </p>
+) : null}
                       </div>
                     </div>
                   </div>
