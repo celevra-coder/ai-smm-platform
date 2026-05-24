@@ -124,7 +124,7 @@ export default function EnglishHomePage() {
         <div className="absolute bottom-[-120px] left-[18%] h-[300px] w-[300px] rounded-full bg-[#ddd0c3] blur-3xl" />
       </div>
 
-      <EnglishHomePageMobile />
+      <EnglishHomePageMobile handleProtectedClick={handleProtectedClick} />
 
       <div className="hidden sm:block">
         <section className="mx-auto max-w-7xl px-4 pb-8 pt-4 sm:px-6 lg:px-8">
