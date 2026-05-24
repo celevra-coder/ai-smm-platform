@@ -161,39 +161,176 @@ export default function EnglishDashboardPage() {
     }
   };
 
-    const handleDownloadBanner = async () => {
-    if (!generatedImageUrl) return;
+    const createComposedBannerBlob = async () => {
+  if (!generatedImageUrl) return null;
 
-    const response = await fetch(generatedImageUrl);
-    const blob = await response.blob();
+  const image = new Image();
+  image.crossOrigin = "anonymous";
+  image.src = generatedImageUrl;
 
-    const blobUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error("Could not load banner image."));
+  });
 
-    link.href = blobUrl;
-    link.download = "ai-smm-banner.png";
-    document.body.appendChild(link);
-    link.click();
+  const size = 1024;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
 
-    link.remove();
-    window.URL.revokeObjectURL(blobUrl);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  ctx.drawImage(image, 0, 0, size, size);
+
+  const gradient = ctx.createLinearGradient(0, size * 0.35, 0, size);
+  gradient.addColorStop(0, "rgba(0,0,0,0)");
+  gradient.addColorStop(0.55, "rgba(0,0,0,0.18)");
+  gradient.addColorStop(1, "rgba(0,0,0,0.72)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  const boxX = 70;
+  const boxY = 620;
+  const boxW = 760;
+  const boxH = 280;
+  const radius = 34;
+
+  ctx.fillStyle = "rgba(0,0,0,0.48)";
+  ctx.beginPath();
+  ctx.roundRect(boxX, boxY, boxW, boxH, radius);
+  ctx.fill();
+
+  const wrapText = (
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    lineHeight: number
+  ) => {
+    const words = text.split(" ");
+    let line = "";
+    const lines: string[] = [];
+
+    for (const word of words) {
+      const testLine = line ? `${line} ${word}` : word;
+      const metrics = ctx.measureText(testLine);
+
+      if (metrics.width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = testLine;
+      }
+    }
+
+    if (line) lines.push(line);
+
+    lines.slice(0, 3).forEach((lineText, index) => {
+      ctx.fillText(lineText, x, y + index * lineHeight);
+    });
+
+    return y + Math.min(lines.length, 3) * lineHeight;
   };
 
-  const handleCopyBannerText = async () => {
-    const text = [headline, subtext, cta].filter(Boolean).join("\n");
+  let currentY = boxY + 62;
 
-    if (!text) return;
+  if (headline) {
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "800 54px Arial";
+    currentY = wrapText(headline, boxX + 44, currentY, boxW - 88, 58);
+    currentY += 16;
+  }
 
-    await navigator.clipboard.writeText(text);
-    setMessage("Banner text copied.");
-  };
+  if (subtext) {
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.font = "600 30px Arial";
+    currentY = wrapText(subtext, boxX + 44, currentY, boxW - 88, 36);
+    currentY += 24;
+  }
 
-  const handleCopyBannerLink = async () => {
-    if (!generatedImageUrl) return;
+  const contactLine = [phone, address].filter(Boolean).join(" • ");
 
-    await navigator.clipboard.writeText(generatedImageUrl);
-    setMessage("Banner image link copied.");
-  };
+  if (contactLine) {
+    ctx.fillStyle = "rgba(255,255,255,0.88)";
+    ctx.font = "600 24px Arial";
+    wrapText(contactLine, boxX + 44, currentY, boxW - 88, 30);
+  }
+
+  if (cta) {
+    const ctaText = cta;
+    ctx.font = "800 26px Arial";
+    const textWidth = ctx.measureText(ctaText).width;
+    const ctaX = boxX + 44;
+    const ctaY = boxY + boxH - 64;
+    const ctaW = textWidth + 46;
+    const ctaH = 44;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.roundRect(ctaX, ctaY, ctaW, ctaH, 22);
+    ctx.fill();
+
+    ctx.fillStyle = "#111111";
+    ctx.fillText(ctaText, ctaX + 23, ctaY + 30);
+  }
+
+  return await new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), "image/png", 0.95);
+  });
+};
+
+const handleDownloadBanner = async () => {
+  const blob = await createComposedBannerBlob();
+
+  if (!blob) {
+    setMessage("Could not prepare the banner for download.");
+    return;
+  }
+
+  const blobUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = blobUrl;
+  link.download = "ai-smm-banner.png";
+  document.body.appendChild(link);
+  link.click();
+
+  link.remove();
+  window.URL.revokeObjectURL(blobUrl);
+};
+
+const handleCopyBannerImage = async () => {
+  const blob = await createComposedBannerBlob();
+
+  if (!blob) {
+    setMessage("Could not copy the banner image.");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "image/png": blob,
+      }),
+    ]);
+
+    setMessage("Banner image copied.");
+  } catch (error) {
+    console.error("COPY BANNER IMAGE ERROR:", error);
+    setMessage("Your browser blocked image copy. Please use Download banner.");
+  }
+};
+
+const handleCopyBannerText = async () => {
+  const contactLine = [phone, address].filter(Boolean).join(" • ");
+  const text = [headline, subtext, cta, contactLine].filter(Boolean).join("\n");
+
+  if (!text) return;
+
+  await navigator.clipboard.writeText(text);
+  setMessage("Banner text copied.");
+};
 
   return (
     <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-neutral-950 md:px-6 md:py-10">
@@ -385,30 +522,30 @@ export default function EnglishDashboardPage() {
                   </div>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    <button
-                      type="button"
-                      onClick={() => void handleDownloadBanner()}
-                      className="rounded-full bg-neutral-950 px-4 py-3 text-sm font-bold text-white transition hover:opacity-90"
-                    >
-                      Download banner
-                    </button>
+  <button
+    type="button"
+    onClick={() => void handleDownloadBanner()}
+    className="rounded-full bg-neutral-950 px-4 py-3 text-sm font-bold text-white transition hover:opacity-90"
+  >
+    Download banner
+  </button>
 
-                    <button
-                      type="button"
-                      onClick={() => void handleCopyBannerText()}
-                      className="rounded-full border border-black/10 bg-white px-4 py-3 text-sm font-bold text-neutral-950 transition hover:bg-[#f5f1ec]"
-                    >
-                      Copy text
-                    </button>
+  <button
+    type="button"
+    onClick={() => void handleCopyBannerImage()}
+    className="rounded-full border border-black/10 bg-white px-4 py-3 text-sm font-bold text-neutral-950 transition hover:bg-[#f5f1ec]"
+  >
+    Copy banner
+  </button>
 
-                    <button
-                      type="button"
-                      onClick={() => void handleCopyBannerLink()}
-                      className="rounded-full border border-black/10 bg-white px-4 py-3 text-sm font-bold text-neutral-950 transition hover:bg-[#f5f1ec]"
-                    >
-                      Copy image link
-                    </button>
-                  </div>
+  <button
+    type="button"
+    onClick={() => void handleCopyBannerText()}
+    className="rounded-full border border-black/10 bg-white px-4 py-3 text-sm font-bold text-neutral-950 transition hover:bg-[#f5f1ec]"
+  >
+    Copy text
+  </button>
+</div>
                 </div>
               ) : (
                 <div className="flex aspect-square items-center justify-center p-8 text-center">

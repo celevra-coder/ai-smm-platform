@@ -657,7 +657,8 @@ COPY RULES:
 - Do NOT use phrases like "make a banner", "create a banner", "ad for", "banner for", or instruction-like wording in headline, subtext, support_lines, or offer_badge.
 - Treat the user's description as source meaning, not final ad copy.
 
-- Never turn constraints or ins- Rewrite the text into short, natural, sales-oriented ${bannerLanguageName} marketing copy.tructions into visible banner text.
+- Rewrite the text into short, natural, sales-oriented ${bannerLanguageName} marketing copy.
+- Never turn constraints or instructions into visible banner text.
 - If the user says things like "without people", "use only the machine", "do not use background", these are visual instructions only and must never appear in headline, subtext, support_lines, or offer_badge.
 - Avoid repeating the same information across headline, subtext, offer_badge, and support_lines.
 - If price or discount exists, show it only once as the main promo element unless a second mention is clearly necessary.
@@ -675,7 +676,7 @@ COPY RULES:
 - Keep text commercially strong, readable, and natural in ${bannerLanguageName}.
 - headline: strong and punchy, max 64 chars
 - subtext: useful support line, max 88 chars
-- support_lines: up to 3 short lines, max 52 chars each
+-support_lines: ${isEnglishBanner ? "up to 2 short lines, max 42 chars each" : "up to 3 short lines, max 52 chars each"}
 - cta: short CTA, max 22 chars
 - offer_badge: only from actual discount/price/period data
 - phone: only from input phone
@@ -695,6 +696,7 @@ VISUAL RULES:
 - For education / courses, prefer clear trust-building direction
 - For water / beverage delivery, prefer fresh clean direction
 
+
 TEXT COMPOSITION RULES:
 - support_style can be:
   - "chips" = all support lines work as soft visual labels
@@ -707,6 +709,27 @@ TEXT COMPOSITION RULES:
 - Do not force circle if the badge text is long
 - Do not make every banner look like the same template
 
+${
+  isEnglishBanner
+    ? `
+ENGLISH QUICK BANNER LAYOUT RULES:
+- Keep the banner clean, premium and easy to read.
+- Use no more than 3 main visible text zones.
+- Do not scatter many small text blocks around the image.
+- Do not place important text over faces, hands, food, products or busy details.
+- Use one clear large headline.
+- Use one smaller supporting line or offer line.
+- Use one CTA/contact line if needed.
+- If discount or price exists, make it clear but do not repeat it in multiple places.
+- Prefer layout_family "hero-left", "bottom-card" or "split-layout".
+- Avoid "promo-heavy" unless the input is clearly a strong discount campaign.
+- Prefer support_style "plain_list" or "mixed" instead of too many chips.
+- Use generous margins and strong text hierarchy.
+- Avoid tiny text, crowded badges and too many decorative labels.
+- The final result should look like a modern English Facebook/Instagram ad, not a poster full of text.
+`
+    : ""
+}
 Allowed layout_family values:
 hero-left | centered-offer | split-layout | promo-heavy | bottom-card
 
