@@ -338,7 +338,7 @@ const handleDownloadVideo = async (url: string, fileName: string) => {
     return (
       <main className="min-h-screen bg-[#f5f1ec] px-4 py-10 text-neutral-900">
         <div className="mx-auto max-w-5xl rounded-[28px] bg-white p-6">
-          Зареждане...
+          Loading...
         </div>
       </main>
     );
@@ -361,7 +361,7 @@ onSelectBrand={(profile) => {
           localStorage.setItem("active_brand_profile", JSON.stringify(profile));
           localStorage.setItem("active_brand_user_id", email);
           setActiveBrandId(profile.id);
-          setMessage(`Избран бизнес: ${profile.brand_name || "Без име"}`);
+          setMessage(`Избран бизнес: ${profile.brand_name || "Untitled"}`);
         }}
         onOpenLastCalendar={handleOpenLastCalendar}
         onDeleteLastCalendar={handleDeleteLastCalendar}
@@ -380,7 +380,7 @@ onSelectBrand={(profile) => {
             </p>
 
             <h1 className="mt-3 text-[34px] font-black leading-none tracking-[-0.04em] text-neutral-950 md:text-[48px]">
-              Моят профил
+              My account
             </h1>
 
             <p className="mt-3 text-sm font-medium text-neutral-500">
@@ -391,7 +391,7 @@ onSelectBrand={(profile) => {
     href="/en/contact"
     className="inline-flex items-center gap-2 rounded-full bg-black px-5 py-2 text-sm font-bold text-white"
   >
-    📩 Връзка с нас
+    📩 Contact us
   </a>
 </div>
 
@@ -400,7 +400,7 @@ onSelectBrand={(profile) => {
     href="/admin/video-orders"
     className="mt-4 inline-flex rounded-[18px] bg-black px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
   >
-    Админ панел
+    Admin panel
   </Link>
 )}
 </div>
@@ -409,25 +409,25 @@ onSelectBrand={(profile) => {
 <div className="mt-8 grid gap-4 md:grid-cols-4">
           <div className="rounded-[26px] border border-[#d8cfc2] bg-[#e8ded1] p-5 text-neutral-950 shadow-sm">
   <p className="text-xs font-bold uppercase tracking-[0.16em] text-neutral-500">
-    Оставащи кредити
+   Remaining credits
   </p>
   <p className="mt-3 text-[46px] font-black leading-none">
     {subscription?.credits ?? 0}
   </p>
-  <p className="mt-2 text-xs font-medium text-neutral-500">общ баланс</p>
+  <p className="mt-2 text-xs font-medium text-neutral-500">total balance</p>
 </div>
 
           {[
             {
-              label: "Quick банери",
+              label: "Quick banners",
               value: subscription?.quick_banner_credits ?? 0,
             },
             {
-              label: "Brand постове",
+              label: "Brand posts",
               value: subscription?.brand_post_credits ?? 0,
             },
             {
-              label: "Контент календар",
+              label: "Content calendar",
               value: subscription?.content_calendar_credits ?? 0,
             },
           ].map((item) => (
@@ -442,7 +442,7 @@ onSelectBrand={(profile) => {
                 {item.value}
               </p>
               <p className="mt-2 text-xs font-medium text-neutral-400">
-                безплатни оставащи
+                free remaining
               </p>
             </div>
           ))}
@@ -454,29 +454,29 @@ onSelectBrand={(profile) => {
       <section className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
         <div className="rounded-[32px] border border-black/10 bg-white p-6 shadow-[0_18px_60px_rgba(0,0,0,0.06)]">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-neutral-400">
-            Бързи действия
+            Quick actions
           </p>
 
           <h2 className="mt-3 text-[28px] font-black tracking-[-0.03em] text-neutral-950">
-            Какво искаш да създадеш?
+            What do you want to create?
           </h2>
 
           <div className="mt-6 grid gap-3">
             {[
               {
                 href: "/en/dashboard?mode=quick",
-                title: "Бърз рекламен банер",
-                text: "Създай визия за Facebook / Instagram.",
+                title: "Quick ad banner",
+                text: "Create a visual for Facebook / Instagram.",
               },
               {
                 href: "/en/dashboard/brand-studio",
                 title: "Brand posts",
-                text: "Генерирай постове по бизнес профил.",
+                text: "Generate posts based on your business profile.",
               },
               {
                 href: "/en/content-calendar",
                 title: "Контент календар",
-                text: "Планирай идеи за публикации.",
+                text: "Plan social media post ideas.",
               },
             ].map((item) => (
               <Link
@@ -497,15 +497,15 @@ onSelectBrand={(profile) => {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-neutral-400">
-                Бизнес профили
+                Business profiles
               </p>
 
               <h2 className="mt-3 text-[28px] font-black tracking-[-0.03em] text-neutral-950">
-                Запазени бизнеси
+                Saved businesses
               </h2>
 
               <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-500">
-                Данните се използват за бранд режим, банери, постове и видео.
+                These details are used for brand mode, banners, posts and videos.
               </p>
             </div>
 
@@ -513,7 +513,7 @@ onSelectBrand={(profile) => {
               href="/en/dashboard?mode=brand"
               className="rounded-[18px] bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
             >
-              Добави бизнес
+              Add business
             </Link>
           </div>
 
@@ -569,7 +569,7 @@ onSelectBrand={(profile) => {
             </h3>
 
             <p className="mt-2 text-sm text-neutral-600">
-              {profile.brand_description || "Няма описание."}
+              {profile.brand_description || "No description."}
             </p>
 
             <div className="mt-5 flex flex-wrap gap-3">
@@ -578,7 +578,7 @@ onSelectBrand={(profile) => {
                 onClick={(e) => e.stopPropagation()}
                 className="text-sm font-bold underline"
               >
-                Редактирай
+                Edit
               </Link>
               <span
                 onClick={(e) => {
@@ -587,7 +587,7 @@ onSelectBrand={(profile) => {
                 }}
                 className="cursor-pointer text-sm font-bold text-red-700 underline"
               >
-                Изтрий бранд
+                Delete brand
               </span>
               {savedCalendar ? (
                 <>
@@ -598,7 +598,7 @@ onSelectBrand={(profile) => {
                     }}
                     className="cursor-pointer text-sm font-bold text-blue-600 underline"
                   >
-                    Отвори календар
+                    Open calendar
                   </span>
 
                   <span
@@ -608,7 +608,7 @@ onSelectBrand={(profile) => {
                     }}
                     className="cursor-pointer text-sm font-bold text-red-600 underline"
                   >
-                    Изтрий
+                    Delete
                   </span>
                 </>
               ) : null}
@@ -621,14 +621,14 @@ onSelectBrand={(profile) => {
 ) : (
   <div className="rounded-[28px] border border-dashed border-black/10 bg-[#fcfaf7] p-8 text-center">
     <p className="text-lg font-black text-neutral-950">
-      Все още няма запазен бизнес профил.
+      You do not have a saved business profile yet.
     </p>
 
     <Link
       href="/dashboard?mode=brand"
       className="mt-5 inline-flex rounded-[18px] bg-neutral-950 px-5 py-3 text-sm font-bold text-white"
     >
-      Добави бизнес
+      Add business
     </Link>
   </div>
 )}
@@ -640,15 +640,15 @@ onSelectBrand={(profile) => {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-neutral-400">
-              Видео поръчки
+              Video orders
             </p>
 
             <h2 className="mt-3 text-[28px] font-black tracking-[-0.03em] text-neutral-950">
-              Моите видео поръчки
+              My video orders
             </h2>
 
             <p className="mt-2 text-sm leading-6 text-neutral-500">
-              Тук ще виждаш статуса и готовите видеа.
+              Here you can track the status of your ordered videos and download the final files.
             </p>
           </div>
 
@@ -656,7 +656,7 @@ onSelectBrand={(profile) => {
             href="/order-video"
             className="rounded-[18px] bg-neutral-950 px-5 py-3 text-sm font-bold text-white transition hover:opacity-90"
           >
-            Поръчай видео
+            Order video
           </Link>
         </div>
 
@@ -675,7 +675,7 @@ onSelectBrand={(profile) => {
                     </h3>
 
                     <p className="mt-2 text-sm text-neutral-600">
-                      {order.price_eur}€ • статус:{" "}
+                      {order.price_eur}€ • status:{" "}
                       <span
   className={`rounded-full px-3 py-1 text-xs font-bold ${
     order.status === "pending_payment"
@@ -690,12 +690,12 @@ onSelectBrand={(profile) => {
   }`}
 >
  {order.status === "delivered"
-  ? "Готово"
+  ? "Delivered"
   : order.status === "in_progress"
-  ? "В процес"
+  ? "In progress"
   : order.status === "paid"
-  ? "Платено"
-  : "Чака плащане"}
+  ? "Paid"
+  : "Waiting for payment"}
 </span>
                     </p>
 
@@ -726,14 +726,14 @@ onSelectBrand={(profile) => {
   }
   className="mt-3 inline-flex rounded-full bg-black px-5 py-2 text-sm font-bold text-white"
 >
-  ⬇ Свали видеото
+  ⬇ Download video
 </button>
 
                     <Link
                       href={`/video-revision?order_id=${order.id}`}
                       className="mt-4 inline-flex rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold text-neutral-950 transition hover:bg-black hover:text-white"
                     >
-                      Искам корекция
+                      Request revision
                     </Link>
                   </div>
                 ) : null}
@@ -742,14 +742,14 @@ onSelectBrand={(profile) => {
           ) : (
             <div className="rounded-[26px] border border-dashed border-black/10 bg-[#fcfaf7] p-8 text-center">
               <p className="text-lg font-black text-neutral-950">
-                Все още нямаш видео поръчки.
+                You do not have any video orders yet.
               </p>
 
               <Link
                 href="/order-video"
                 className="mt-5 inline-flex rounded-[18px] bg-neutral-950 px-5 py-3 text-sm font-bold text-white"
               >
-                Поръчай първото видео
+                Order your first video
               </Link>
             </div>
           )}
