@@ -743,12 +743,25 @@ if (generateVideoAfterBanner) {
     } catch (e) {
   console.error(e);
 
-  const message =
+    const message =
     e instanceof Error
       ? e.message
       : "Възникна грешка при генериране на кампанията.";
 
-    showSystemBusyMessage();
+  console.error("BRAND STUDIO CAMPAIGN ERROR:", message, e);
+
+  if (
+    message.includes("NO_CREDITS") ||
+    message.includes("PAYMENT_REQUIRED") ||
+    message.toLowerCase().includes("credit")
+  ) {
+    setShowPaywallModal(true);
+    setVideoErrorText("");
+    return;
+  }
+
+  setShowSystemBusyModal(true);
+  setVideoErrorText(message);
 } finally {
   setIsGenerating(false);
 }
@@ -1986,8 +1999,9 @@ logoUrl={workspace.brand_profile?.logo_url}
       </h3>
 
       <p className="mt-3 text-sm leading-6 text-neutral-600">
-        В момента AI генерацията не може да бъде завършена. Моля, опитайте отново по-късно.
-      </p>
+  {videoErrorText ||
+    "В момента AI генерацията не може да бъде завършена. Моля, опитайте отново след малко."}
+</p>
 
       <button
         type="button"
