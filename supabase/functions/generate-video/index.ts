@@ -726,9 +726,21 @@ Do not add subtitles.
 Do not add captions.
 Do not add logo.
 Do not add watermark.
-
 All text overlays will be added later by the app.
 The generated video must be clean visual footage only.
+
+CRITICAL TEXT RULES:
+- The raw generated video must contain ZERO written content.
+- Do not create any headline, slogan, title, caption, label, logo, brand text, price, discount, phone number, address or call-to-action inside the raw video.
+- Do not animate, move, copy, recreate, improve or redesign any text that may appear in the uploaded image.
+- If the uploaded image contains text, treat it only as layout/style inspiration and remove all readable or unreadable text from the generated motion.
+- Do not place text at the top, middle, bottom, corners or background.
+- Do not create beautiful typography.
+- Do not create decorative letters.
+- Do not create fake language.
+- Do not create menu text, packaging text, wall signs, shop signs, labels, stickers, posters, banners or UI text.
+- Keep the video as pure cinematic footage only.
+- The app will add all advertising text later as a separate overlay.
 
 Avoid changing the business category, location, product, or main subject.
 Avoid inventing new objects.
@@ -737,6 +749,7 @@ Avoid morphing.
 Avoid distorted anatomy.
 Avoid fake UI.
 Avoid any written content anywhere in the frame.
+
 `
   : `
 Vertical 9:16 realistic commercial video.

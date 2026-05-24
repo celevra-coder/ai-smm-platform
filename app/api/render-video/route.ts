@@ -209,6 +209,21 @@ const allVideoText = [
 const smartMainTexts = (() => {
   const text = cleanText(allVideoText).toLowerCase();
 
+  if (isEnglishVideo) {
+    const englishTexts = [
+      ...visibleScenes.map((scene: any) => scene?.overlay_text || scene?.title || ""),
+      headline,
+      subtext,
+    ]
+      .map((item) => cleanOverlayCandidate(item))
+      .filter(Boolean)
+      .slice(0, 2);
+
+    return englishTexts.length
+      ? englishTexts
+      : ["A premium video ad", "Made for your business"];
+  }
+
   if (/пиц|pizza|моцарела|mozzarella|итал|тесто/i.test(text)) {
     return [
       "Истинска италианска пица",
@@ -423,17 +438,20 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-
-    const videoUrl = body?.videoUrl as string;
-    const headline = (body?.headline as string) || "Видео реклама";
-    const subtext = (body?.subtext as string) || "";
-    const brandName = (body?.brandName as string) || "";
-        const cta = (body?.cta as string) || "";
-    const website = (body?.website as string) || "";
-    const phone = (body?.phone as string) || "";
-    const address = (body?.address as string) || "";
+const videoUrl = body?.videoUrl as string;
 const locale = (body?.locale as string) || "bg";
-          const totalDurationSec = Number(body?.totalDurationSec) || 10;
+const isEnglishRequest = locale === "en";
+
+const headline =
+  (body?.headline as string) || (isEnglishRequest ? "Video ad" : "Видео реклама");
+
+const subtext = (body?.subtext as string) || "";
+const brandName = (body?.brandName as string) || "";
+const cta = (body?.cta as string) || "";
+const website = (body?.website as string) || "";
+const phone = (body?.phone as string) || "";
+const address = (body?.address as string) || "";
+              const totalDurationSec = Number(body?.totalDurationSec) || 10;
 
     let scenes = Array.isArray(body?.scenes) ? body.scenes : [];
 
@@ -441,7 +459,8 @@ const locale = (body?.locale as string) || "bg";
       scenes = [
         {
           title: "Main",
-          overlay_text: headline || subtext || brandName || "Видео реклама",
+          overlay_text:
+  headline || subtext || brandName || (isEnglishRequest ? "Video ad" : "Видео реклама"),
           duration_sec: Math.max(totalDurationSec - 2.4, 1),
         },
       ];
