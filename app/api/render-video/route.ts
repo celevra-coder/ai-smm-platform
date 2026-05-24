@@ -70,11 +70,12 @@ function renderVideoWithMusic({
   totalDurationSec,
   textColor,
   cta,
-  website,
-  phone,
+  websit  phone,
   address,
+  locale,
 }: {
-  inputPath: string;
+
+    inputPath: string;
   outputPath: string;
   musicPath: string;
   headline: string;
@@ -86,8 +87,9 @@ function renderVideoWithMusic({
   website: string;
   phone: string;
   address: string;
+  locale: string;
 }) {
-  const subtitlePath = path.join(path.dirname(outputPath), "captions.ass");
+    const subtitlePath = path.join(path.dirname(outputPath), "captions.ass");
 
   const cleanText = (value: string) =>
     (value || "")
@@ -137,6 +139,7 @@ function renderVideoWithMusic({
   };
   const dialogues: string[] = [];
 const visibleScenes = Array.isArray(scenes) ? scenes : [];
+const isEnglishVideo = locale === "en";
 
 const cleanOverlayCandidate = (value: string) => {
   let result = cleanText(value);
@@ -277,36 +280,70 @@ mainTexts.forEach((text, textIndex) => {
 const brandStart = Math.max(totalDurationSec - 3, 0);
 
 const finalBrandText = cleanText(brandName || headline || "Brand");
-const brandParts = splitLines(finalBrandText, 24).slice(0, 2);
+
+const brandParts = isEnglishVideo
+  ? splitLines(finalBrandText, 18).slice(0, 3)
+  : splitLines(finalBrandText, 24).slice(0, 2);
+
+const brandStyle = isEnglishVideo ? "BrandEn" : "Brand";
+const contactStyle = isEnglishVideo ? "ContactEn" : "Contact";
+const addressStyle = isEnglishVideo ? "AddressEn" : "Address";
+
+const brandFontSize = isEnglishVideo
+  ? brandParts.length >= 3
+    ? 76
+    : 88
+  : 72;
+
+const brandY = isEnglishVideo
+  ? brandParts.length >= 3
+    ? 410
+    : 445
+  : 470;
+
+const contactY = isEnglishVideo
+  ? brandParts.length >= 3
+    ? 700
+    : 670
+  : 660;
+
+const addressY = isEnglishVideo ? 790 : 780;
 
 if (brandParts.length) {
   dialogues.push(
     `Dialogue: 9,${assTime(brandStart)},${assTime(
       totalDurationSec
-    )},Brand,,0,0,0,,{\\an5\\fs72\\pos(360,470)}${brandParts
+    )},${brandStyle},,0,0,0,,{\\an5\\fs${brandFontSize}\\pos(360,${brandY})}${brandParts
       .map(assSafe)
       .join("\\N")}`
   );
 }
 
 if (phone) {
+  const formattedPhone = isEnglishVideo ? phone : `ТЕЛ: ${phone}`;
+
   dialogues.push(
     `Dialogue: 9,${assTime(brandStart)},${assTime(
       totalDurationSec
-    )},Contact,,0,0,0,,{\\an5\\fs52\\pos(360,660)}${assSafe(`ТЕЛ: ${phone}`)}`
+    )},${contactStyle},,0,0,0,,{\\an5\\fs${
+      isEnglishVideo ? 46 : 52
+    }\\pos(360,${contactY})}${assSafe(formattedPhone)}`
   );
 }
 
 if (address) {
-  const formattedAddress =
-    address.length > 30
-      ? `АДРЕС: ${address.replace(/,\s*/g, " ")}`
-      : `АДРЕС: ${address}`;
+  const formattedAddress = isEnglishVideo
+    ? address.replace(/,\s*/g, " ")
+    : address.length > 30
+    ? `АДРЕС: ${address.replace(/,\s*/g, " ")}`
+    : `АДРЕС: ${address}`;
 
   dialogues.push(
     `Dialogue: 9,${assTime(brandStart)},${assTime(
       totalDurationSec
-    )},Address,,0,0,0,,{\\an5\\fs34\\pos(360,780)}${assSafe(formattedAddress)}`
+    )},${addressStyle},,0,0,0,,{\\an5\\fs${
+      isEnglishVideo ? 34 : 34
+    }\\pos(360,${addressY})}${assSafe(formattedAddress)}`
   );
 }
     const assContent = `[Script Info]
@@ -321,6 +358,9 @@ Style: Main,Roboto,42,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,1
 Style: Brand,Roboto,72,&H00FFFFFF,&H00FFFFFF,&H00000000,&HAA000000,-1,0,0,0,100,100,0,0,1,6,3,8,36,36,230,1
 Style: Contact,Roboto,50,&H00A8E7FF,&H00FFFFFF,&H00000000,&HAA000000,-1,0,0,0,100,100,0,0,1,5,2,2,40,40,165,1
 Style: Address,Roboto,30,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,0,0,0,100,100,0,0,1,4,2,2,40,40,110,1
+Style: BrandEn,Times New Roman,86,&H00FFFFFF,&H00FFFFFF,&H00000000,&HAA000000,-1,-1,0,0,100,100,0.5,0,1,6,3,8,36,36,230,1
+Style: ContactEn,Times New Roman,46,&H00FFFFFF,&H00FFFFFF,&H00000000,&HAA000000,-1,-1,0,0,100,100,0.3,0,1,5,2,2,40,40,165,1
+Style: AddressEn,Times New Roman,34,&H00FFFFFF,&H00FFFFFF,&H00000000,&H99000000,-1,-1,0,0,100,100,0.2,0,1,4,2,2,40,40,110,1
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 ${dialogues.join("\n")}
@@ -393,6 +433,7 @@ export async function POST(req: Request) {
     const website = (body?.website as string) || "";
     const phone = (body?.phone as string) || "";
     const address = (body?.address as string) || "";
+const locale = (body?.locale as string) || "bg";
           const totalDurationSec = Number(body?.totalDurationSec) || 10;
 
     let scenes = Array.isArray(body?.scenes) ? body.scenes : [];
@@ -451,10 +492,10 @@ if (!fs.existsSync(musicPath)) {
       textColor,
       cta,
       website,
-      phone,
-      address,  
+            phone,
+      address,
+      locale,  
     });
-
     if (!fs.existsSync(outputPath)) {
       throw new Error(`Rendered video file was not created: ${outputPath}`);
     }

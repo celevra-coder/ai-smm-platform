@@ -1374,9 +1374,10 @@ const generatedMusicUrl = `/audio/${musicFolder}/${musicDurationFolder}/${random
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        videoUrl: rawVideoUrl,
-        bannerUrl: bannerSource,
-        headline: videoHeadlineText,
+  locale: "en",
+  videoUrl: rawVideoUrl,
+  bannerUrl: bannerSource,
+  headline: videoHeadlineText,
 subtext: videoSubtextText,
         brandName: workspace.brand_profile?.brand_name || "",
                 phone: workspace.brand_profile?.phone || "",
