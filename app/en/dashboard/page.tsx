@@ -1,12 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase-browser";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function EnglishDashboardPage() {
+type Mode = "quick-ad" | "brand";
+
+type StoredBrandProfile = {
+  brand_name: string;
+  business_address: string;
+  phone: string;
+  brand_description: string;
+  preferred_colors: string;
+  logo_url: string;
+};
+
+function EnglishDashboardPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const modeParam =
+    searchParams.get("mode") ||
+    (typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("mode")
+      : null);
+
+  const mode: Mode = modeParam === "brand" ? "brand" : "quick-ad";
 
   const [description, setDescription] = useState("");
   const [offerText, setOfferText] = useState("");
@@ -29,7 +49,20 @@ const [showBannerZoom, setShowBannerZoom] = useState(false);
   const [headline, setHeadline] = useState("");
   const [subtext, setSubtext] = useState("");
   const [cta, setCta] = useState("");
-  const [showPaywallModal, setShowPaywallModal] = useState(false);
+    const [showPaywallModal, setShowPaywallModal] = useState(false);
+
+  const [brandName, setBrandName] = useState("");
+  const [brandBusinessAddress, setBrandBusinessAddress] = useState("");
+  const [brandPhone, setBrandPhone] = useState("");
+  const [brandDescription, setBrandDescription] = useState("");
+  const [brandPreferredColors, setBrandPreferredColors] = useState("");
+  const [brandLogoUrl, setBrandLogoUrl] = useState("");
+  const [brandLogoFileName, setBrandLogoFileName] = useState("");
+  const [brandLogoUploadMessage, setBrandLogoUploadMessage] = useState("");
+  const [brandLogoUploading, setBrandLogoUploading] = useState(false);
+  const [brandSaving, setBrandSaving] = useState(false);
+  const [brandMessage, setBrandMessage] = useState("");
+  const [brandProfileSaved, setBrandProfileSaved] = useState(false);
 
   const handleGenerate = async () => {
     if (loading || logoUploading || imageUploading) return;
@@ -496,6 +529,210 @@ const handleCopyBannerText = async () => {
   setMessage("Banner text copied.");
 };
 
+const handleSaveBrandProfile = async () => {
+  if (brandSaving || brandLogoUploading) return;
+
+  if (!brandName.trim()) {
+    setBrandMessage("Please enter the brand name.");
+    return;
+  }
+
+  if (!brandDescription.trim()) {
+    setBrandMessage("Please describe what the brand does.");
+    return;
+  }
+
+  setBrandSaving(true);
+  setBrandMessage("");
+
+  try {
+    const supabase = createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      router.push("/en/login");
+      return;
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl) {
+      throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL.");
+    }
+
+    if (!supabaseAnonKey) {
+      throw new Error("Missing NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+    }
+
+    const payload: StoredBrandProfile & { user_id: string } = {
+      user_id: user.id,
+      brand_name: brandName.trim(),
+      business_address: brandBusinessAddress.trim(),
+      phone: brandPhone.trim(),
+      brand_description: brandDescription.trim(),
+      preferred_colors: brandPreferredColors.trim(),
+      logo_url: brandLogoUrl.trim(),
+    };
+
+    const response = await fetch(`${supabaseUrl}/rest/v1/brand_profiles`, {
+      method: "POST",
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      throw new Error(data?.message || data?.error || "Could not save brand profile.");
+    }
+
+    localStorage.setItem("active_brand_profile", JSON.stringify(payload));
+    localStorage.setItem("active_brand_user_id", user.id);
+
+    setBrandProfileSaved(true);
+    setBrandMessage("Brand profile saved. Opening the workspace...");
+
+    router.push("/en/dashboard/brand-workspace");
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Could not save brand profile.";
+    setBrandMessage(errorMessage);
+  } finally {
+    setBrandSaving(false);
+  }
+};
+
+if (mode === "brand") {
+  return (
+    <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-neutral-950 md:px-6 md:py-10">
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <Link href="/en" className="text-sm font-semibold text-neutral-500">
+            ← Back to home
+          </Link>
+
+          <Link
+            href="/en/pricing"
+            className="rounded-full bg-neutral-950 px-4 py-2 text-sm font-bold text-white"
+          >
+            Pricing
+          </Link>
+        </div>
+
+        <section className="rounded-[32px] border border-black/10 bg-white p-6 shadow-[0_20px_60px_rgba(0,0,0,0.08)] md:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">
+            Brand Mode
+          </p>
+
+          <h1 className="mt-3 text-[34px] font-black leading-none tracking-[-0.04em] text-neutral-950 md:text-[48px]">
+            Create your brand profile
+          </h1>
+
+          <p className="mt-4 max-w-2xl text-[15px] leading-7 text-neutral-600">
+            Save your business details once and use them to generate post ideas,
+            banners and video concepts with consistent brand direction.
+          </p>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-neutral-800">
+                Brand name
+              </span>
+              <input
+                value={brandName}
+                onChange={(e) => setBrandName(e.target.value)}
+                placeholder="Example: Dolce Bakery"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-[15px] text-neutral-900 outline-none transition focus:border-black/30"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-neutral-800">
+                Business address
+              </span>
+              <input
+                value={brandBusinessAddress}
+                onChange={(e) => setBrandBusinessAddress(e.target.value)}
+                placeholder="Example: London, Baker Street 25"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-[15px] text-neutral-900 outline-none transition focus:border-black/30"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-neutral-800">
+                Phone
+              </span>
+              <input
+                value={brandPhone}
+                onChange={(e) => setBrandPhone(e.target.value)}
+                placeholder="Example: +44 7000 000000"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-[15px] text-neutral-900 outline-none transition focus:border-black/30"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-sm font-semibold text-neutral-800">
+                Preferred colors / style
+              </span>
+              <input
+                value={brandPreferredColors}
+                onChange={(e) => setBrandPreferredColors(e.target.value)}
+                placeholder="Example: warm beige, premium, elegant"
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-[15px] text-neutral-900 outline-none transition focus:border-black/30"
+              />
+            </label>
+
+            <label className="block md:col-span-2">
+              <span className="mb-2 block text-sm font-semibold text-neutral-800">
+                What does the business do?
+              </span>
+              <textarea
+                value={brandDescription}
+                onChange={(e) => setBrandDescription(e.target.value)}
+                rows={5}
+                placeholder="Describe the business, services, target customers, offer style and what makes it different."
+                className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-[15px] text-neutral-900 outline-none transition focus:border-black/30"
+              />
+            </label>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => void handleSaveBrandProfile()}
+              disabled={brandSaving || brandLogoUploading}
+              className="rounded-[20px] bg-neutral-950 px-6 py-3 text-[15px] font-bold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {brandSaving ? "Saving..." : "Save brand profile"}
+            </button>
+
+            {brandProfileSaved ? (
+              <span className="text-sm font-semibold text-emerald-700">
+                Brand profile saved
+              </span>
+            ) : null}
+          </div>
+
+          {brandMessage ? (
+            <div className="mt-5 rounded-2xl border border-black/10 bg-[#f8f5ef] px-4 py-3 text-sm font-medium text-neutral-700">
+              {brandMessage}
+            </div>
+          ) : null}
+        </section>
+      </div>
+    </main>
+  );
+}
+
   return (
     <main className="min-h-screen bg-[#f5f1ec] px-4 py-8 text-neutral-950 md:px-6 md:py-10">
       <div className="mx-auto max-w-7xl">
@@ -881,5 +1118,12 @@ const handleCopyBannerText = async () => {
         </div>
       ) : null}
     </main>
+  );
+}
+export default function EnglishDashboardPage() {
+  return (
+    <Suspense fallback={null}>
+      <EnglishDashboardPageContent />
+    </Suspense>
   );
 }
