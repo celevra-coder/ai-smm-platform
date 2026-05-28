@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { createClient } from "@/lib/supabase-browser";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -58,17 +58,17 @@ const toneOptions: {
 }[] = [
   {
     value: "soft",
-    label: "ðŸ’– Soft / emotional",
+    label: "Soft / emotional",
     description: "A softer, warmer and more emotional tone.",
   },
   {
     value: "luxury",
-    label: "ðŸ’Ž Luxury / premium",
+    label: "Luxury / premium",
     description: "A more elegant, stylish and premium tone of voice.",
   },
   {
     value: "aggressive",
-    label: "âš¡ Direct sales",
+    label: "Direct sales",
     description: "A stronger CTA, more urgency and a more direct sales angle.",
   },
 ];
@@ -678,7 +678,7 @@ const accessToken = session?.access_token;
 
       <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
         <div className="mb-4 inline-flex rounded-full border border-black/10 bg-[#f7f3ee] px-3 py-1 text-sm font-semibold text-black/70">
-          Ð¤Ð¸Ð½Ð°Ð»ÐµÐ½ Ð¸Ð·Ð±Ð¾Ñ€
+          Финален избор
         </div>
 
         {selectedVariation ? (
@@ -713,7 +713,7 @@ const accessToken = session?.access_token;
                 onClick={handleCopyText}
                 className="w-full rounded-full border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
               >
-                ÐšÐ¾Ð¿Ð¸Ñ€Ð°Ð¹ Ñ‚ÐµÐºÑÑ‚Ð°
+                Копирай текста
               </button>
 
               <button
@@ -745,5 +745,3 @@ const accessToken = session?.access_token;
   </>
 );
 }
-
-
