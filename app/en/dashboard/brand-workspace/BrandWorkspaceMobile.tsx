@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 type ToneOption = "soft" | "luxury" | "aggressive";
 
@@ -106,7 +106,7 @@ export default function BrandWorkspaceMobile({
 
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700">
-                  Активен бранд
+                  ÐÐºÑ‚Ð¸Ð²ÐµÐ½ Ð±Ñ€Ð°Ð½Ð´
                 </p>
                 <h2 className="mt-1 truncate text-xl font-black">
                   {brandProfile.brand_name}
@@ -121,27 +121,27 @@ export default function BrandWorkspaceMobile({
 
             <details className="mt-3 rounded-[18px] bg-[#f7f3ee] p-3">
               <summary className="cursor-pointer text-sm font-black">
-                Данни за бранда
+                Ð”Ð°Ð½Ð½Ð¸ Ð·Ð° Ð±Ñ€Ð°Ð½Ð´Ð°
               </summary>
 
               <div className="mt-3 grid gap-2 text-xs text-neutral-700">
                 {brandProfile.business_address ? (
                   <p>
-                    <span className="font-bold">Адрес:</span>{" "}
+                    <span className="font-bold">ÐÐ´Ñ€ÐµÑ:</span>{" "}
                     {brandProfile.business_address}
                   </p>
                 ) : null}
 
                 {brandProfile.phone ? (
                   <p>
-                    <span className="font-bold">Телефон:</span>{" "}
+                    <span className="font-bold">Ð¢ÐµÐ»ÐµÑ„Ð¾Ð½:</span>{" "}
                     {brandProfile.phone}
                   </p>
                 ) : null}
 
                 {brandProfile.preferred_colors ? (
                   <p>
-                    <span className="font-bold">Цветове:</span>{" "}
+                    <span className="font-bold">Ð¦Ð²ÐµÑ‚Ð¾Ð²Ðµ:</span>{" "}
                     {brandProfile.preferred_colors}
                   </p>
                 ) : null}
@@ -152,13 +152,13 @@ export default function BrandWorkspaceMobile({
           <section className="mt-3 rounded-[26px] bg-white p-4 shadow-sm">
             <label className="block">
               <span className="mb-2 block text-sm font-black">
-                Какво искаш да създадем?
+                ÐšÐ°ÐºÐ²Ð¾ Ð¸ÑÐºÐ°Ñˆ Ð´Ð° ÑÑŠÐ·Ð´Ð°Ð´ÐµÐ¼?
               </span>
               <textarea
                 value={userRequest}
                 onChange={(e) => setUserRequest(e.target.value)}
                 rows={5}
-                placeholder="Напр. Instagram пост за промоция, нова услуга, оферта..."
+                placeholder="ÐÐ°Ð¿Ñ€. Instagram Ð¿Ð¾ÑÑ‚ Ð·Ð° Ð¿Ñ€Ð¾Ð¼Ð¾Ñ†Ð¸Ñ, Ð½Ð¾Ð²Ð° ÑƒÑÐ»ÑƒÐ³Ð°, Ð¾Ñ„ÐµÑ€Ñ‚Ð°..."
                 className="w-full rounded-[20px] border border-black/10 bg-[#f7f3ee] px-4 py-3 text-sm leading-6 outline-none"
               />
             </label>
@@ -166,7 +166,7 @@ export default function BrandWorkspaceMobile({
             {promoHelperMessage ? (
               <details className="mt-3 rounded-[18px] border border-amber-200 bg-amber-50 p-3">
                 <summary className="cursor-pointer text-sm font-black text-amber-900">
-                  Промо данни
+                  ÐŸÑ€Ð¾Ð¼Ð¾ Ð´Ð°Ð½Ð½Ð¸
                 </summary>
 
                 <p className="mt-3 text-xs leading-5 text-amber-800">
@@ -177,14 +177,14 @@ export default function BrandWorkspaceMobile({
                   <input
                     value={promoPhone}
                     onChange={(e) => setPromoPhone(e.target.value)}
-                    placeholder="Телефон"
+                    placeholder="Ð¢ÐµÐ»ÐµÑ„Ð¾Ð½"
                     className="w-full rounded-[16px] border border-black/10 bg-white px-3 py-3 text-sm outline-none"
                   />
 
                   <input
                     value={promoAddress}
                     onChange={(e) => setPromoAddress(e.target.value)}
-                    placeholder="Адрес"
+                    placeholder="ÐÐ´Ñ€ÐµÑ"
                     className="w-full rounded-[16px] border border-black/10 bg-white px-3 py-3 text-sm outline-none"
                   />
                 </div>
@@ -324,7 +324,7 @@ export default function BrandWorkspaceMobile({
           {selectedVariation ? (
             <section className="mt-3 rounded-[26px] bg-white p-4 shadow-sm">
               <h2 className="text-[22px] font-black tracking-[-0.03em]">
-                Финален избор
+                Ð¤Ð¸Ð½Ð°Ð»ÐµÐ½ Ð¸Ð·Ð±Ð¾Ñ€
               </h2>
 
               <div className="mt-3 rounded-[20px] bg-[#f7f3ee] p-4">
@@ -347,7 +347,7 @@ export default function BrandWorkspaceMobile({
                   onClick={onCopyText}
                   className="rounded-[18px] border border-black/10 bg-white px-4 py-3 text-sm font-bold"
                 >
-                  Копирай текста
+                  ÐšÐ¾Ð¿Ð¸Ñ€Ð°Ð¹ Ñ‚ÐµÐºÑÑ‚Ð°
                 </button>
 
                 <button
@@ -365,3 +365,4 @@ export default function BrandWorkspaceMobile({
     </main>
   );
 }
+

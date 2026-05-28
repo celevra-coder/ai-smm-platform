@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { createClient } from "@/lib/supabase-browser";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -58,18 +58,18 @@ const toneOptions: {
 }[] = [
   {
     value: "soft",
-    label: "💖 Нежен / женствен",
-    description: "По-мек, емоционален и деликатен тон.",
+    label: "ðŸ’– Soft / emotional",
+    description: "A softer, warmer and more emotional tone.",
   },
   {
     value: "luxury",
-    label: "💎 Луксозен / премиум",
-    description: "По-елегантен, стилен и премиум tone of voice.",
+    label: "ðŸ’Ž Luxury / premium",
+    description: "A more elegant, stylish and premium tone of voice.",
   },
   {
     value: "aggressive",
-    label: "⚡ Агресивно продаващ",
-    description: "По-силен CTA, urgency и по-директна продажба.",
+    label: "âš¡ Direct sales",
+    description: "A stronger CTA, more urgency and a more direct sales angle.",
   },
 ];
 
@@ -124,13 +124,13 @@ export default function BrandWorkspacePage() {
           .toLowerCase();
 
         const isPromoFlow =
-          /оферта|промо|промоция|намалени|намаление|отстъпк|специална цена|2 за 1|подарък|бонус|promo/i.test(
+          /offer|promo|promotion|discount|sale|special price|2 for 1|gift|bonus|deal/i.test(
             promoText
           );
 
         if (isPromoFlow) {
                     setBrandProfile({
-            brand_name: parsedCalendar?.businessType || "Бранд",
+            brand_name: parsedCalendar?.businessType || "Brand",
             business_address: "",
             phone: "",
             brand_description: parsedCalendar?.notes || item?.description || "",
@@ -143,7 +143,7 @@ export default function BrandWorkspacePage() {
           );
 
           setPromoHelperMessage(
-            "Това е промо пост от контент календара. Първо напиши реалната оферта, цена, отстъпка или бонус. Ако имаш – добави телефон и адрес, за да направим рекламата по-конвертираща."
+            "This is a promo post from the content calendar. First, write the real offer, price, discount or bonus. If you have them, add a phone number and address to make the ad more conversion-focused."
           );
 
           setPageLoading(false);
@@ -176,16 +176,18 @@ export default function BrandWorkspacePage() {
       return;
     }
 
-        const finalUserRequest = [
+            const finalUserRequest = [
+      "Write everything in English.",
+      "Create content for an English-speaking audience.",
       userRequest.trim(),
       brandProfile.business_address?.trim()
-        ? `Адрес на бизнеса: ${brandProfile.business_address.trim()}`
+        ? `Business address: ${brandProfile.business_address.trim()}`
         : "",
       brandProfile.preferred_colors?.trim()
-        ? `Предпочитани цветове на бранда: ${brandProfile.preferred_colors.trim()}`
+        ? `Preferred brand colors/style: ${brandProfile.preferred_colors.trim()}`
         : "",
-      promoPhone.trim() ? `Телефон: ${promoPhone.trim()}` : "",
-      promoAddress.trim() ? `Адрес: ${promoAddress.trim()}` : "",
+      promoPhone.trim() ? `Phone: ${promoPhone.trim()}` : "",
+      promoAddress.trim() ? `Address: ${promoAddress.trim()}` : "",
     ]
       .filter(Boolean)
       .join("\n");
@@ -199,7 +201,7 @@ export default function BrandWorkspacePage() {
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      setError("Липсват NEXT_PUBLIC_SUPABASE_URL или NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+      setError("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY.");
       return;
     }
 
@@ -230,7 +232,9 @@ const accessToken = session?.access_token;
   brand_profile: brandProfile,
   user_request: finalUserRequest,
   tone,
-  source: "brand_post",
+  source: "en_brand_post",
+  locale: "en",
+  language: "English",
 }),
         }
       );
@@ -258,7 +262,7 @@ const accessToken = session?.access_token;
 
     try {
       await navigator.clipboard.writeText(selectedVariation.post_text);
-      setCopyMessage("Текстът е копиран.");
+      setCopyMessage("Text copied.");
     } catch (err) {
       console.error("Copy text failed:", err);
       setError("Could not copy the text.");
@@ -287,8 +291,8 @@ const accessToken = session?.access_token;
         brand_profile: brandProfile,
         user_request: [
           userRequest,
-          promoPhone.trim() ? `Телефон: ${promoPhone.trim()}` : "",
-          promoAddress.trim() ? `Адрес: ${promoAddress.trim()}` : "",
+          
+          promoAddress.trim() ? `Address: ${promoAddress.trim()}` : "",
         ]
           .filter(Boolean)
           .join("\n"),
@@ -315,8 +319,8 @@ const accessToken = session?.access_token;
     source: "brand-post",
     user_request: [
       userRequest,
-      promoPhone.trim() ? `Телефон: ${promoPhone.trim()}` : "",
-      promoAddress.trim() ? `Адрес: ${promoAddress.trim()}` : "",
+      
+      promoAddress.trim() ? `Address: ${promoAddress.trim()}` : "",
     ]
       .filter(Boolean)
       .join("\n"),
@@ -357,7 +361,7 @@ const accessToken = session?.access_token;
     <main className="min-h-screen bg-[#f5f1ec] px-6 py-10 text-black">
       <div className="mx-auto max-w-7xl">
         <div className="animate-pulse rounded-3xl border border-black/10 bg-white p-8 shadow-sm">
-          Зареждане...
+          Loading...
         </div>
       </div>
     </main>
@@ -414,7 +418,7 @@ const accessToken = session?.access_token;
               <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
                 <div className="flex-1">
                   <div className="mb-4 inline-flex rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-sm text-emerald-300">
-                    Активен бранд
+                    Active brand
                   </div>
 
                   <h2 className="text-2xl font-semibold text-black">{brandProfile.brand_name}</h2>
@@ -429,7 +433,7 @@ const accessToken = session?.access_token;
                                         {brandProfile.business_address ? (
                       <div className="rounded-2xl border border-black/10 bg-[#f7f3ee] p-4">
                         <p className="text-xs uppercase tracking-wider text-black/45">
-                          Адрес
+                          Address
                         </p>
                         <p className="mt-1 break-words text-sm font-semibold text-black">
                           {brandProfile.business_address}
@@ -439,7 +443,7 @@ const accessToken = session?.access_token;
 
                     {brandProfile.phone ? (
   <div className="rounded-2xl border border-black/10 bg-[#f7f3ee] p-4">
-    <p className="text-xs uppercase tracking-wider text-black/45">Телефон</p>
+    <p className="text-xs uppercase tracking-wider text-black/45">Phone</p>
     <p className="mt-1 text-base font-semibold text-black">{brandProfile.phone}</p>
   </div>
 ) : null}
@@ -449,7 +453,7 @@ const accessToken = session?.access_token;
                                         {brandProfile.preferred_colors ? (
                       <div className="rounded-2xl border border-black/10 bg-[#f7f3ee] p-4 sm:col-span-2">
                         <p className="text-xs uppercase tracking-wider text-black/45">
-                          Предпочитани цветове
+                          Preferred colors
                         </p>
                         <p className="mt-1 text-sm font-semibold text-black">
                           {brandProfile.preferred_colors}
@@ -479,7 +483,7 @@ const accessToken = session?.access_token;
       htmlFor="brand-request"
       className="block text-xl font-semibold text-black"
     >
-      Какво искаш да създадем днес?
+      What do you want to create today?
     </label>
     <p className="mt-2 text-sm leading-6 text-black/55">
       Describe what type of ad you want for this brand and choose the right text style.
@@ -494,24 +498,24 @@ const accessToken = session?.access_token;
       <div className="mb-4 grid gap-4 md:grid-cols-2">
         <label className="block">
           <span className="mb-2 block text-sm font-semibold text-neutral-800">
-            Телефон за промо поста
+            Phone for this promo post
           </span>
           <input
             value={promoPhone}
             onChange={(e) => setPromoPhone(e.target.value)}
-            placeholder="Напр. 0888 123 456"
+            placeholder="Example: your business phone number"
             className="w-full rounded-2xl border border-black/10 bg-[#f7f3ee] px-4 py-3 text-[15px] text-black outline-none transition focus:border-black/20"
           />
         </label>
 
         <label className="block">
           <span className="mb-2 block text-sm font-semibold text-neutral-800">
-            Адрес за промо поста
+            Address for this promo post
           </span>
           <input
             value={promoAddress}
             onChange={(e) => setPromoAddress(e.target.value)}
-            placeholder="Напр. бул. България 25, София"
+            placeholder="Example: your business address or service area"
             className="w-full rounded-2xl border border-black/10 bg-[#f7f3ee] px-4 py-3 text-[15px] text-black outline-none transition focus:border-black/20"
           />
         </label>
@@ -523,7 +527,7 @@ const accessToken = session?.access_token;
     id="brand-request"
     value={userRequest}
     onChange={(e) => setUserRequest(e.target.value)}
-    placeholder="Пример: Напиши Instagram пост за пролетна промоция на лазерна епилация с нежен, женствен и продаващ тон."
+    placeholder="Example: Write an Instagram post for a spring promotion, a new service, a special offer or a brand campaign."
     className="min-h-[170px] w-full rounded-3xl border border-black/10 bg-[#f7f3ee] px-5 py-4 text-[15px] leading-7 text-black outline-none transition focus:border-black/20"
   />
 
@@ -674,7 +678,7 @@ const accessToken = session?.access_token;
 
       <div className="rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
         <div className="mb-4 inline-flex rounded-full border border-black/10 bg-[#f7f3ee] px-3 py-1 text-sm font-semibold text-black/70">
-          Финален избор
+          Ð¤Ð¸Ð½Ð°Ð»ÐµÐ½ Ð¸Ð·Ð±Ð¾Ñ€
         </div>
 
         {selectedVariation ? (
@@ -709,7 +713,7 @@ const accessToken = session?.access_token;
                 onClick={handleCopyText}
                 className="w-full rounded-full border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-black hover:text-white"
               >
-                Копирай текста
+                ÐšÐ¾Ð¿Ð¸Ñ€Ð°Ð¹ Ñ‚ÐµÐºÑÑ‚Ð°
               </button>
 
               <button
@@ -741,3 +745,4 @@ const accessToken = session?.access_token;
   </>
 );
 }
+
