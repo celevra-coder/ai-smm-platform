@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
@@ -371,7 +371,7 @@ const handleImageUpload = async (file: File | null) => {
   }
 
   // Offer / discount / period as a separate elegant line
-  const offerLine = [discountText, periodText].filter(Boolean).join(" • ");
+  const offerLine = [discountText, periodText].filter(Boolean).join(" â€¢ ");
 
     if (offerLine) {
     ctx.fillStyle = "rgba(255,255,255,0.95)";
@@ -409,7 +409,7 @@ const handleImageUpload = async (file: File | null) => {
   }
 
   // Phone / address as a visible premium contact badge
-  const contactLine = [phone, address].filter(Boolean).join(" • ");
+  const contactLine = [phone, address].filter(Boolean).join(" â€¢ ");
 
     if (contactLine) {
     ctx.shadowColor = "transparent";
@@ -520,7 +520,7 @@ const handleCopyBannerImage = async () => {
 };
 
 const handleCopyBannerText = async () => {
-  const contactLine = [phone, address].filter(Boolean).join(" • ");
+  const contactLine = [phone, address].filter(Boolean).join(" â€¢ ");
   const text = [headline, subtext, cta, contactLine].filter(Boolean).join("\n");
 
   if (!text) return;
@@ -617,7 +617,7 @@ if (mode === "brand") {
       <div className="mx-auto max-w-4xl">
         <div className="mb-8 flex items-center justify-between gap-4">
           <Link href="/en" className="text-sm font-semibold text-neutral-500">
-            ← Back to home
+            â† Back to home
           </Link>
 
           <Link
@@ -674,7 +674,7 @@ if (mode === "brand") {
               <input
                 value={brandPhone}
                 onChange={(e) => setBrandPhone(e.target.value)}
-                placeholder="Example: +44 7000 000000"
+                placeholder="Example: your business phone number"
                 className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-[15px] text-neutral-900 outline-none transition focus:border-black/30"
               />
             </label>
@@ -738,7 +738,7 @@ if (mode === "brand") {
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex items-center justify-between gap-4">
           <Link href="/en" className="text-sm font-semibold text-neutral-500">
-            ← Back to home
+            â† Back to home
           </Link>
 
           <Link
@@ -797,7 +797,7 @@ if (mode === "brand") {
                 <input
                   value={discountText}
                   onChange={(e) => setDiscountText(e.target.value)}
-                  placeholder="-20% / 9.99€"
+                  placeholder="-20% / 9.99â‚¬"
                   className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-[15px] text-neutral-900 outline-none transition focus:border-black/30"
                 />
               </label>
@@ -924,7 +924,7 @@ if (mode === "brand") {
               checked={imageUsageMode === "auto"}
               onChange={() => setImageUsageMode("auto")}
             />
-            Auto — use it intelligently
+            Auto â€” use it intelligently
           </label>
 
           <label className="flex items-center gap-2">
@@ -1052,7 +1052,7 @@ if (mode === "brand") {
                       No banner generated yet
                     </div>
                     <p className="mt-2 text-sm leading-[1.6] text-neutral-500">
-                      Fill in the form and click “Generate banner”.
+                      Fill in the form and click â€œGenerate bannerâ€.
                     </p>
                   </div>
                 </div>
