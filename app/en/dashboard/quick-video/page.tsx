@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -445,7 +445,7 @@ const handleMainVideoClick = async () => {
       <div className="mx-auto max-w-6xl">
         <div className="mb-6">
           <Link href="/en" className="text-sm font-semibold text-neutral-600">
-            ← Back to home
+            â† Back to home
           </Link>
 
           <h1 className="mt-4 text-3xl font-black tracking-tight sm:text-5xl">
@@ -635,7 +635,7 @@ const handleMainVideoClick = async () => {
                 />
               ) : (
                 <video
-                  src="/showcase/video-1.mp4"
+                  src="/showcase/video-2-en.mp4"
                   autoPlay
                   muted
                   loop
