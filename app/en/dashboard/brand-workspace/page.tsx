@@ -232,7 +232,7 @@ const accessToken = session?.access_token;
   brand_profile: brandProfile,
   user_request: finalUserRequest,
   tone,
-  source: "en_brand_post",
+  source: "brand_post",
   locale: "en",
   language: "English",
 }),
