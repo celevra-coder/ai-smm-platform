@@ -135,7 +135,7 @@ export default function EnglishHomePage() {
               </div>
 
               <h1 className="mt-6 max-w-3xl text-[2.35rem] font-black leading-[1.05] tracking-tight text-neutral-950 sm:text-5xl lg:text-6xl">
-                Create ads in minutes â€”
+                Create ads in minutes -
                 <span className="block text-[#7a6d62]">
                   banners or AI videos for your business.
                 </span>
@@ -144,7 +144,7 @@ export default function EnglishHomePage() {
               <p className="mt-5 max-w-2xl text-base leading-7 text-neutral-600 sm:text-lg sm:leading-8">
                 Describe your business, offer or idea. AI SMM Studio helps you
                 create ready-to-use ad visuals, short videos and content ideas
-                for social media â€” without a designer and without a complicated
+                for social media - without a designer and without a complicated
                 process.
               </p>
 
@@ -332,7 +332,7 @@ export default function EnglishHomePage() {
               </h3>
 
               <p className="mt-3 text-sm leading-6 text-neutral-600 sm:mt-4 sm:text-base sm:leading-7">
-                Describe the banner you want â€” promotion, city, discount,
+                Describe the banner you want - promotion, city, discount,
                 period, product, service or a specific campaign idea. You can
                 also upload a logo or image.
               </p>
@@ -377,7 +377,7 @@ export default function EnglishHomePage() {
 
               <p className="mt-3 text-sm leading-6 text-neutral-600 sm:mt-4 sm:text-base sm:leading-7">
                 For businesses that want consistent style and a stronger
-                marketing structure across social media â€” with brand
+                marketing structure across social media - with brand
                 information, direction and next content formats.
               </p>
 
@@ -420,7 +420,7 @@ export default function EnglishHomePage() {
               </h3>
 
               <p className="mt-3 text-sm leading-6 text-neutral-600 sm:mt-4 sm:text-base sm:leading-7">
-                Generate a structured content calendar for your business â€”
+                Generate a structured content calendar for your business -
                 topics, post ideas, formats and daily or weekly directions.
               </p>
 
@@ -523,7 +523,7 @@ export default function EnglishHomePage() {
 
                 <p className="mt-3 text-sm leading-6 text-white/75">
                   Order a professional video and our team will create it for you
-                  â€” with editing, subtitles, effects, music and a polished ad
+                  - with editing, subtitles, effects, music and a polished ad
                   look.
                 </p>
 
@@ -581,7 +581,7 @@ export default function EnglishHomePage() {
       {paymentSuccessMessage ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-[28px] bg-white p-7 text-center shadow-2xl">
-            <div className="mb-3 text-4xl">ðŸŽ‰</div>
+            <div className="mb-3 text-4xl">OK</div>
 
             <h2 className="text-xl font-black text-neutral-950">
               Payment successful
@@ -604,3 +604,4 @@ export default function EnglishHomePage() {
     </main>
   );
 }
+
