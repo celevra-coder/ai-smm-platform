@@ -39,7 +39,21 @@ button{background:#202020;color:#fff;border:0;cursor:pointer}
 <div class="small">Символът показва типа на съоръжението, а цветът при минералните сондажи показва температурата.</div>
 
 <div class="grid">
-<div class="full"><input id="search" placeholder="Търси сондаж, находище или населено място"></div>
+<div class="full"><input id="search" placeholder="Търси сондаж, находище или населено място">
+<button
+  type="button"
+  id="coordinate-search-button"
+  onclick="searchCoordinates()"
+  style="margin-top:8px;width:100%;padding:9px;cursor:pointer;"
+>
+  ????? ?? ??????????
+</button>
+
+<div
+  id="coordinate-search-status"
+  style="margin-top:6px;font-size:12px;"
+></div>
+</div>
 <div><select id="basin"><option value="">Всички дирекции</option></select></div>
 <div><select id="category"><option value="">Всички категории</option></select></div>
 <div><input id="tempMin" type="number" step="0.1" placeholder="Температура от °C"></div>
@@ -583,6 +597,135 @@ legend.onAdd=()=>{
  return d;
 };
 legend.addTo(map);
+
+
+/* ===== ??????? ?? ?????????? ===== */
+
+let coordinateSearchMarker = null;
+
+function parseCoordinates(value) {
+  const raw = String(value || "")
+    .trim()
+    .replace(/[??]/g, " ")
+    .replace(/[;|]/g, " ")
+    .replace(/\s+/g, " ");
+
+  let numbers;
+
+  /*
+    ?????????? ???????:
+    42.1354, 24.7453
+    42.1354 24.7453
+    42,1354 24,7453
+  */
+  const decimalCommaFormat =
+    raw.match(/(-?\d{1,3}),(\d+)\s+(-?\d{1,3}),(\d+)/);
+
+  if (decimalCommaFormat) {
+    numbers = [
+      decimalCommaFormat[1] + "." + decimalCommaFormat[2],
+      decimalCommaFormat[3] + "." + decimalCommaFormat[4]
+    ];
+  } else {
+    numbers = raw.match(/-?\d+(?:\.\d+)?/g);
+  }
+
+  if (!numbers || numbers.length < 2) {
+    return null;
+  }
+
+  let first = Number(numbers[0]);
+  let second = Number(numbers[1]);
+
+  if (!Number.isFinite(first) || !Number.isFinite(second)) {
+    return null;
+  }
+
+  let latitude = first;
+  let longitude = second;
+
+  /*
+    ??? ?? ???????? ????:
+    24.7453, 42.1354
+    ??????????? ?? ???????.
+  */
+  if (
+    first >= 20 &&
+    first <= 30 &&
+    second >= 40 &&
+    second <= 45
+  ) {
+    latitude = second;
+    longitude = first;
+  }
+
+  if (
+    latitude < -90 ||
+    latitude > 90 ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
+    return null;
+  }
+
+  return { latitude, longitude };
+}
+
+function searchCoordinates() {
+  const input = document.getElementById("search");
+  const status = document.getElementById(
+    "coordinate-search-status"
+  );
+
+  const coordinates = parseCoordinates(input.value);
+
+  if (!coordinates) {
+    status.textContent =
+      "?????? ????????: 42.1354, 24.7453";
+    return;
+  }
+
+  const latitude = coordinates.latitude;
+  const longitude = coordinates.longitude;
+
+  if (coordinateSearchMarker) {
+    map.removeLayer(coordinateSearchMarker);
+  }
+
+  coordinateSearchMarker = L.marker([
+    latitude,
+    longitude
+  ]).addTo(map);
+
+  coordinateSearchMarker
+    .bindPopup(
+      "<strong>??????? ??????????</strong><br>" +
+      latitude.toFixed(7) +
+      ", " +
+      longitude.toFixed(7)
+    )
+    .openPopup();
+
+  map.setView([latitude, longitude], 16);
+
+  status.textContent =
+    "???????? ?????: " +
+    latitude.toFixed(7) +
+    ", " +
+    longitude.toFixed(7);
+}
+
+document
+  .getElementById("search")
+  .addEventListener("keydown", function (event) {
+    if (event.key === "Enter" && parseCoordinates(this.value)) {
+      event.preventDefault();
+      searchCoordinates();
+    }
+  });
+
+/* ===== ???? ?? ????????? ?? ?????????? ===== */
+
 </script>
 </body>
 </html>
