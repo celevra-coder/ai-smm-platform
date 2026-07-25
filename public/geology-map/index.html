@@ -412,6 +412,457 @@ function buildGemFaultPopup(feature) {
   return html;
 }
 
+let gemFaultAnalysisBufferLayer = null;
+let gemFaultNearbyObjectsLayer = null;
+
+function gemFaultObjectDistance(feature, faultFeature) {
+  try {
+    if (
+      !feature ||
+      !feature.geometry ||
+      feature.geometry.type !== "Point"
+    ) {
+      return null;
+    }
+
+    const distance = turf.pointToLineDistance(
+      feature,
+      faultFeature,
+      {
+        units: "kilometers"
+      }
+    );
+
+    return Number.isFinite(distance)
+      ? distance
+      : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function gemFaultCategory(properties) {
+  return String(
+    properties.display_category || ""
+  );
+}
+
+function gemFaultTemperature(properties) {
+  const value = properties.temperature_c;
+
+  if (
+    value === undefined ||
+    value === null ||
+    value === ""
+  ) {
+    return null;
+  }
+
+  const parsed = parseFloat(
+    String(value).replace(",", ".")
+  );
+
+  return Number.isFinite(parsed)
+    ? parsed
+    : null;
+}
+
+function gemFaultFacilityName(properties) {
+  return (
+    properties.facility ||
+    properties.deposit ||
+    properties.settlement ||
+    "\u0412\u043e\u0434\u0435\u043d \u043e\u0431\u0435\u043a\u0442"
+  );
+}
+
+function gemFaultDistanceLabel(distanceKm) {
+  if (distanceKm < 0.05) {
+    return "\u0432\u044a\u0440\u0445\u0443/\u0434\u043e \u0440\u0430\u0437\u043b\u043e\u043c\u0430";
+  }
+
+  if (distanceKm < 1) {
+    return Math.round(distanceKm * 1000) + " m";
+  }
+
+  return distanceKm.toFixed(2) + " km";
+}
+
+function getGemFaultNearbyObjects(
+  faultFeature,
+  maximumDistanceKm = 5
+) {
+  const objects = [];
+
+  for (const feature of data.features || []) {
+    const properties = feature.properties || {};
+    const category = gemFaultCategory(properties);
+
+    const relevant =
+      category === "\u041c\u0438\u043d\u0435\u0440\u0430\u043b\u0435\u043d \u0441\u043e\u043d\u0434\u0430\u0436" ||
+      category === "\u041a\u0430\u043f\u0442\u0430\u0436/\u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d \u0438\u0437\u0432\u043e\u0440" ||
+      category === "\u041c\u043e\u043d\u0438\u0442\u043e\u0440\u0438\u043d\u0433\u043e\u0432 \u0441\u043e\u043d\u0434\u0430\u0436";
+
+    if (!relevant) {
+      continue;
+    }
+
+    const distanceKm = gemFaultObjectDistance(
+      feature,
+      faultFeature
+    );
+
+    if (
+      distanceKm === null ||
+      distanceKm > maximumDistanceKm
+    ) {
+      continue;
+    }
+
+    objects.push({
+      feature,
+      properties,
+      category,
+      distanceKm,
+      temperature: gemFaultTemperature(properties)
+    });
+  }
+
+  objects.sort(
+    (a, b) => a.distanceKm - b.distanceKm
+  );
+
+  return objects;
+}
+
+function getGemFaultIntersections(
+  selectedFeature,
+  selectedCatalogId
+) {
+  const intersections = [];
+  const seen = new Set();
+
+  for (const [catalogId, entry] of gemFaultIndex) {
+    if (
+      catalogId === selectedCatalogId ||
+      !entry ||
+      !entry.feature
+    ) {
+      continue;
+    }
+
+    try {
+      const result = turf.lineIntersect(
+        selectedFeature,
+        entry.feature
+      );
+
+      for (const point of result.features || []) {
+        const coordinates =
+          point.geometry &&
+          point.geometry.coordinates;
+
+        if (!coordinates) {
+          continue;
+        }
+
+        const key =
+          coordinates[0].toFixed(5) +
+          "," +
+          coordinates[1].toFixed(5);
+
+        if (seen.has(key)) {
+          continue;
+        }
+
+        seen.add(key);
+
+        intersections.push({
+          catalogId,
+          coordinates
+        });
+      }
+    } catch (error) {
+      // Ignore invalid or incompatible geometries.
+    }
+  }
+
+  return intersections;
+}
+
+function calculateGemHydroScore(
+  nearbyObjects,
+  intersections
+) {
+  let score = 0;
+  let evidenceCount = 0;
+
+  for (const item of nearbyObjects) {
+    const distance = item.distanceKm;
+    const category = item.category;
+
+    let points = 0;
+
+    if (
+      category ===
+      "\u041a\u0430\u043f\u0442\u0430\u0436/\u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d \u0438\u0437\u0432\u043e\u0440"
+    ) {
+      if (distance <= 0.5) {
+        points = 14;
+      } else if (distance <= 2) {
+        points = 8;
+      } else {
+        points = 3;
+      }
+    }
+
+    if (
+      category ===
+      "\u041c\u0438\u043d\u0435\u0440\u0430\u043b\u0435\u043d \u0441\u043e\u043d\u0434\u0430\u0436"
+    ) {
+      if (distance <= 0.5) {
+        points = 10;
+      } else if (distance <= 2) {
+        points = 6;
+      } else {
+        points = 2;
+      }
+    }
+
+    if (
+      category ===
+      "\u041c\u043e\u043d\u0438\u0442\u043e\u0440\u0438\u043d\u0433\u043e\u0432 \u0441\u043e\u043d\u0434\u0430\u0436"
+    ) {
+      if (distance <= 0.5) {
+        points = 5;
+      } else if (distance <= 2) {
+        points = 3;
+      } else {
+        points = 1;
+      }
+    }
+
+    if (points > 0) {
+      score += points;
+      evidenceCount += 1;
+    }
+  }
+
+  score += Math.min(
+    intersections.length * 7,
+    21
+  );
+
+  const closeObjects = nearbyObjects.filter(
+    item => item.distanceKm <= 0.5
+  ).length;
+
+  if (closeObjects >= 3) {
+    score += 8;
+  } else if (closeObjects >= 1) {
+    score += 4;
+  }
+
+  return {
+    score: Math.min(Math.round(score), 100),
+    evidenceCount
+  };
+}
+
+function gemHydroClassification(score) {
+  if (score >= 70) {
+    return {
+      label:
+        "\u0412\u0438\u0441\u043e\u043a\u0430 \u0445\u0438\u0434\u0440\u043e\u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430 \u043f\u0435\u0440\u0441\u043f\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442",
+      explanation:
+        "\u0418\u043c\u0430 \u0441\u0438\u043b\u043d\u043e \u0441\u044a\u0432\u043f\u0430\u0434\u0435\u043d\u0438\u0435 \u043c\u0435\u0436\u0434\u0443 \u0440\u0430\u0437\u043b\u043e\u043c\u0430 \u0438 \u0432\u043e\u0434\u043d\u0438 \u043e\u0431\u0435\u043a\u0442\u0438. \u0417\u043e\u043d\u0430\u0442\u0430 \u0435 \u043f\u0435\u0440\u0441\u043f\u0435\u043a\u0442\u0438\u0432\u043d\u0430 \u0437\u0430 \u0434\u0435\u0442\u0430\u0439\u043b\u043d\u043e \u0442\u0435\u0440\u0435\u043d\u043d\u043e \u043f\u0440\u043e\u0443\u0447\u0432\u0430\u043d\u0435."
+    };
+  }
+
+  if (score >= 45) {
+    return {
+      label:
+        "\u0421\u0440\u0435\u0434\u043d\u0430 \u0434\u043e \u0434\u043e\u0431\u0440\u0430 \u0445\u0438\u0434\u0440\u043e\u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430 \u043f\u0435\u0440\u0441\u043f\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442",
+      explanation:
+        "\u0418\u043c\u0430 \u043f\u0440\u0438\u0437\u043d\u0430\u0446\u0438, \u0447\u0435 \u0447\u0430\u0441\u0442\u0438 \u043e\u0442 \u0440\u0430\u0437\u043b\u043e\u043c\u0430 \u043c\u043e\u0436\u0435 \u0434\u0430 \u0441\u0430 \u0432\u043e\u0434\u043e\u043f\u0440\u043e\u0432\u043e\u0434\u044f\u0449\u0438, \u043d\u043e \u0441\u0430 \u043d\u0443\u0436\u043d\u0438 \u043e\u0449\u0435 \u0434\u0430\u043d\u043d\u0438."
+    };
+  }
+
+  if (score >= 20) {
+    return {
+      label:
+        "\u041e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0430 \u0445\u0438\u0434\u0440\u043e\u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430 \u043f\u0435\u0440\u0441\u043f\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442",
+      explanation:
+        "\u0418\u043c\u0430 \u0435\u0434\u0438\u043d\u0438\u0447\u043d\u0438 \u0432\u043e\u0434\u043d\u0438 \u043e\u0431\u0435\u043a\u0442\u0438 \u0438\u043b\u0438 \u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u043d\u0438 \u043f\u0440\u0438\u0437\u043d\u0430\u0446\u0438, \u043d\u043e \u043d\u0435 \u0441\u0430 \u0434\u043e\u0441\u0442\u0430\u0442\u044a\u0447\u043d\u0438 \u0437\u0430 \u0441\u0438\u043b\u043d\u0430 \u043e\u0446\u0435\u043d\u043a\u0430."
+    };
+  }
+
+  return {
+    label:
+      "\u041d\u0435\u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0435\u043d\u0430 \u0445\u0438\u0434\u0440\u043e\u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430 \u043f\u0435\u0440\u0441\u043f\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442",
+    explanation:
+      "\u0412 \u043d\u0430\u043b\u0438\u0447\u043d\u0430\u0442\u0430 \u0431\u0430\u0437\u0430 \u043d\u044f\u043c\u0430 \u0434\u043e\u0441\u0442\u0430\u0442\u044a\u0447\u043d\u043e \u0431\u043b\u0438\u0437\u043a\u0438 \u0432\u043e\u0434\u043d\u0438 \u043e\u0431\u0435\u043a\u0442\u0438. \u0422\u043e\u0432\u0430 \u043d\u0435 \u043e\u0437\u043d\u0430\u0447\u0430\u0432\u0430, \u0447\u0435 \u0440\u0430\u0437\u043b\u043e\u043c\u044a\u0442 \u0435 \u0441\u0443\u0445."
+  };
+}
+
+function gemHydroConfidence(
+  nearbyObjects,
+  intersections
+) {
+  const closeObjects = nearbyObjects.filter(
+    item => item.distanceKm <= 2
+  ).length;
+
+  if (
+    closeObjects >= 5 &&
+    intersections.length >= 1
+  ) {
+    return "\u0421\u0440\u0435\u0434\u043d\u0430";
+  }
+
+  if (closeObjects >= 2) {
+    return "\u0421\u0440\u0435\u0434\u043d\u0430";
+  }
+
+  return "\u041d\u0438\u0441\u043a\u0430";
+}
+
+function renderGemFaultNearbyObjects(
+  nearbyObjects
+) {
+  const nearest = nearbyObjects.slice(0, 8);
+
+  if (!nearest.length) {
+    return (
+      "<div style=\"margin-top:8px;color:#666\">" +
+      "\u041d\u044f\u043c\u0430 \u043e\u0442\u043a\u0440\u0438\u0442\u0438 \u0432\u043e\u0434\u043d\u0438 \u043e\u0431\u0435\u043a\u0442\u0438 \u0434\u043e 5 km \u043e\u0442 \u043b\u0438\u043d\u0438\u044f\u0442\u0430." +
+      "</div>"
+    );
+  }
+
+  let html =
+    "<div style=\"margin-top:9px\">" +
+    "<strong>\u041d\u0430\u0439-\u0431\u043b\u0438\u0437\u043a\u0438 \u0432\u043e\u0434\u043d\u0438 \u043e\u0431\u0435\u043a\u0442\u0438:</strong>";
+
+  for (const item of nearest) {
+    const properties = item.properties;
+    const name = gemFaultFacilityName(properties);
+
+    let temperatureText = "";
+
+    if (item.temperature !== null) {
+      temperatureText =
+        " \u00b7 " +
+        item.temperature.toFixed(1) +
+        "\u00b0C";
+    }
+
+    html +=
+      "<div style=\"margin-top:5px;padding:5px;" +
+      "border-left:3px solid #7a2f19;" +
+      "background:#fff\">" +
+      "<strong>" +
+      esc(name) +
+      "</strong><br>" +
+      esc(item.category) +
+      " \u00b7 " +
+      esc(
+        gemFaultDistanceLabel(
+          item.distanceKm
+        )
+      ) +
+      esc(temperatureText) +
+      "</div>";
+  }
+
+  html += "</div>";
+
+  return html;
+}
+
+function showGemFaultAnalysisLayers(
+  faultFeature,
+  nearbyObjects
+) {
+  if (gemFaultAnalysisBufferLayer) {
+    map.removeLayer(
+      gemFaultAnalysisBufferLayer
+    );
+  }
+
+  if (gemFaultNearbyObjectsLayer) {
+    map.removeLayer(
+      gemFaultNearbyObjectsLayer
+    );
+  }
+
+  try {
+    const buffer = turf.buffer(
+      faultFeature,
+      2,
+      {
+        units: "kilometers"
+      }
+    );
+
+    gemFaultAnalysisBufferLayer = L.geoJSON(
+      buffer,
+      {
+        style: {
+          color: "#1769aa",
+          weight: 2,
+          dashArray: "6,5",
+          fillColor: "#1769aa",
+          fillOpacity: 0.06
+        }
+      }
+    ).addTo(map);
+  } catch (error) {
+    gemFaultAnalysisBufferLayer = null;
+  }
+
+  gemFaultNearbyObjectsLayer = L.layerGroup();
+
+  for (const item of nearbyObjects) {
+    if (item.distanceKm > 5) {
+      continue;
+    }
+
+    const coordinates =
+      item.feature.geometry.coordinates;
+
+    const marker = L.circleMarker(
+      [coordinates[1], coordinates[0]],
+      {
+        radius: item.distanceKm <= 2 ? 7 : 5,
+        color: "#1769aa",
+        weight: 2,
+        fillOpacity: 0.6
+      }
+    );
+
+    marker.bindTooltip(
+      esc(
+        gemFaultFacilityName(
+          item.properties
+        )
+      ) +
+      " \u00b7 " +
+      esc(
+        gemFaultDistanceLabel(
+          item.distanceKm
+        )
+      )
+    );
+
+    marker.addTo(
+      gemFaultNearbyObjectsLayer
+    );
+  }
+
+  gemFaultNearbyObjectsLayer.addTo(map);
+}
+
 function analyzeGemFault(encodedCatalogId) {
   const catalogId = decodeURIComponent(
     encodedCatalogId
@@ -443,56 +894,157 @@ function analyzeGemFault(encodedCatalogId) {
     selectedGemFaultLayer.bringToFront();
   }
 
-  const bounds = selectedGemFaultLayer.getBounds();
+  const bounds =
+    selectedGemFaultLayer.getBounds();
 
   if (bounds && bounds.isValid()) {
     map.fitBounds(bounds, {
       padding: [35, 35],
-      maxZoom: 13
+      maxZoom: 12
     });
   }
 
-  const p = entry.feature.properties || {};
+  const properties =
+    entry.feature.properties || {};
+
+  const nearbyObjects =
+    getGemFaultNearbyObjects(
+      entry.feature,
+      5
+    );
+
+  const intersections =
+    getGemFaultIntersections(
+      entry.feature,
+      catalogId
+    );
+
+  const scoreResult =
+    calculateGemHydroScore(
+      nearbyObjects,
+      intersections
+    );
+
+  const classification =
+    gemHydroClassification(
+      scoreResult.score
+    );
+
+  const confidence =
+    gemHydroConfidence(
+      nearbyObjects,
+      intersections
+    );
+
+  const springs = nearbyObjects.filter(
+    item =>
+      item.category ===
+      "\u041a\u0430\u043f\u0442\u0430\u0436/\u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d \u0438\u0437\u0432\u043e\u0440"
+  );
+
+  const mineralWells = nearbyObjects.filter(
+    item =>
+      item.category ===
+      "\u041c\u0438\u043d\u0435\u0440\u0430\u043b\u0435\u043d \u0441\u043e\u043d\u0434\u0430\u0436"
+  );
+
+  const monitoringWells =
+    nearbyObjects.filter(
+      item =>
+        item.category ===
+        "\u041c\u043e\u043d\u0438\u0442\u043e\u0440\u0438\u043d\u0433\u043e\u0432 \u0441\u043e\u043d\u0434\u0430\u0436"
+    );
+
+  const temperatures = nearbyObjects
+    .map(item => item.temperature)
+    .filter(value => value !== null);
+
+  const maximumTemperature =
+    temperatures.length
+      ? Math.max(...temperatures)
+      : null;
+
+  showGemFaultAnalysisLayers(
+    entry.feature,
+    nearbyObjects
+  );
+
   const status = document.getElementById(
     "analysis-status"
   );
+
   const result = document.getElementById(
     "analysis-result"
   );
 
   if (status) {
     status.textContent =
-      "\u0418\u0437\u0431\u0440\u0430\u043d \u0430\u043a\u0442\u0438\u0432\u0435\u043d \u0440\u0430\u0437\u043b\u043e\u043c: " +
+      "\u0410\u043d\u0430\u043b\u0438\u0437\u0438\u0440\u0430\u043d \u0440\u0430\u0437\u043b\u043e\u043c: " +
       catalogId;
   }
 
   if (result) {
-    const slipType = translateGemSlipType(
-      p.slip_type
-    );
+    let html =
+      "<div style=\"margin-top:9px\">" +
+      "<strong style=\"font-size:14px\">" +
+      "\u0425\u0438\u0434\u0440\u043e\u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430 \u043e\u0446\u0435\u043d\u043a\u0430" +
+      "</strong>" +
+      "<div style=\"margin-top:7px;padding:8px;" +
+      "background:#eef7f2;border-left:4px solid #0b6b43\">" +
+      "<strong>" +
+      esc(classification.label) +
+      "</strong><br>" +
+      "\u0418\u043d\u0434\u0435\u043a\u0441: <strong>" +
+      scoreResult.score +
+      "/100</strong><br>" +
+      "\u0423\u0432\u0435\u0440\u0435\u043d\u043e\u0441\u0442: <strong>" +
+      esc(confidence) +
+      "</strong>" +
+      "</div>";
 
-    const lineLength = calculateGemFaultLength(
-      entry.feature
-    );
-
-    result.innerHTML =
+    html +=
       "<div style=\"margin-top:8px\">" +
-      "<strong>\u041f\u0440\u0435\u0434\u0432\u0430\u0440\u0438\u0442\u0435\u043b\u0435\u043d \u0430\u043d\u0430\u043b\u0438\u0437</strong><br>" +
-      gemPopupRow(
-        "\u041a\u043e\u0434",
-        catalogId
-      ) +
-      gemPopupRow(
-        "\u0422\u0438\u043f \u043d\u0430 \u0434\u0432\u0438\u0436\u0435\u043d\u0438\u0435",
-        slipType
-      ) +
-      gemPopupRow(
-        "\u0414\u044a\u043b\u0436\u0438\u043d\u0430 \u043d\u0430 \u043b\u0438\u043d\u0438\u044f\u0442\u0430",
-        lineLength
-      ) +
-      "<div style=\"margin-top:7px;color:#555\">" +
-      "\u0421\u043b\u0435\u0434\u0432\u0430\u0449\u0430 \u0441\u0442\u044a\u043f\u043a\u0430: \u0430\u043d\u0430\u043b\u0438\u0437 \u043d\u0430 \u0431\u043b\u0438\u0437\u043a\u0438 \u0441\u043e\u043d\u0434\u0430\u0436\u0438, \u0432\u043e\u0434\u043d\u0438 \u0442\u0435\u043b\u0430 \u0438 AIDU \u0438\u0437\u043c\u0435\u0440\u0432\u0430\u043d\u0438\u044f." +
+      esc(classification.explanation) +
+      "</div>";
+
+    html +=
+      "<div style=\"margin-top:9px\">" +
+      "<strong>\u0414\u0430\u043d\u043d\u0438 \u0434\u043e 5 km \u043e\u0442 \u0440\u0430\u0437\u043b\u043e\u043c\u0430</strong><br>" +
+      "\u0418\u0437\u0432\u043e\u0440\u0438/\u043a\u0430\u043f\u0442\u0430\u0436\u0438: " +
+      springs.length +
+      "<br>" +
+      "\u041c\u0438\u043d\u0435\u0440\u0430\u043b\u043d\u0438 \u0441\u043e\u043d\u0434\u0430\u0436\u0438: " +
+      mineralWells.length +
+      "<br>" +
+      "\u041c\u043e\u043d\u0438\u0442\u043e\u0440\u0438\u043d\u0433\u043e\u0432\u0438 \u0441\u043e\u043d\u0434\u0430\u0436\u0438: " +
+      monitoringWells.length +
+      "<br>" +
+      "\u041f\u0440\u0435\u0441\u0438\u0447\u0430\u043d\u0438\u044f \u0441 \u0434\u0440\u0443\u0433\u0438 GEM \u0440\u0430\u0437\u043b\u043e\u043c\u0438: " +
+      intersections.length;
+
+    if (maximumTemperature !== null) {
+      html +=
+        "<br>\u041c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u043d\u0430 \u0438\u0437\u0432\u0435\u0441\u0442\u043d\u0430 \u0442\u0435\u043c\u043f\u0435\u0440\u0430\u0442\u0443\u0440\u0430: <strong>" +
+        maximumTemperature.toFixed(1) +
+        "\u00b0C</strong>";
+    }
+
+    html += "</div>";
+
+    html += renderGemFaultNearbyObjects(
+      nearbyObjects
+    );
+
+    html +=
+      "<div style=\"margin-top:10px;padding:7px;" +
+      "background:#fff7e6;border:1px solid #e2c079;" +
+      "font-size:11px\">" +
+      "<strong>\u0412\u0430\u0436\u043d\u043e:</strong> " +
+      "\u041e\u0446\u0435\u043d\u043a\u0430\u0442\u0430 \u043f\u043e\u043a\u0430\u0437\u0432\u0430 \u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u043d\u0430 \u0438 \u0445\u0438\u0434\u0440\u043e\u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430 \u043f\u0435\u0440\u0441\u043f\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442, \u0430 \u043d\u0435 \u0434\u043e\u043a\u0430\u0437\u0430\u043d \u0434\u0435\u0431\u0438\u0442. " +
+      "\u0412 \u0431\u0430\u0437\u0430\u0442\u0430 \u0432\u0441\u0435 \u043e\u0449\u0435 \u043d\u044f\u043c\u0430 \u043f\u044a\u043b\u0435\u043d \u0441\u043b\u043e\u0439 \u0441 \u043e\u0431\u0438\u043a\u043d\u043e\u0432\u0435\u043d\u0438 \u0441\u0442\u0443\u0434\u0435\u043d\u0438, \u0441\u0443\u0445\u0438 \u0438 \u0443\u0441\u043f\u0435\u0448\u043d\u0438 \u0441\u043e\u043d\u0434\u0430\u0436\u0438." +
       "</div></div>";
+
+    result.innerHTML = html;
   }
 
   map.closePopup();
