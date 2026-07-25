@@ -1469,70 +1469,609 @@ function proximityClass(km){
  return 'далеч от най-близкия разлом в използвания слой';
 }
 
-async function analyzeLocation(lat,lon,label='Избрана точка'){
- const status=document.getElementById('analysis-status');
- const result=document.getElementById('analysis-result');
- status.textContent='Зареждам векторните GIS данни и изчислявам…';
- result.innerHTML='';
 
- if(analysisMarker)map.removeLayer(analysisMarker);
- if(analysisBufferLayer)map.removeLayer(analysisBufferLayer);
- analysisMarker=L.marker([lat,lon],{
-   icon:L.divIcon({className:'',html:'<div class="analysis-marker">🎯</div>',iconSize:[28,28],iconAnchor:[14,14]})
- }).addTo(map).bindTooltip(label).openTooltip();
- analysisBufferLayer=L.circle([lat,lon],{radius:5000,color:'#555',weight:1,dashArray:'5,5',fillOpacity:0.03}).addTo(map);
+// COMPLEX_POINT_HELPERS_START
 
- const point=turf.point([lon,lat]);
- const [faultRes,gwRes]=await Promise.allSettled([
-   fetchFaultsNear(lon,lat,25),
-   fetchGroundwaterNear(lon,lat,10)
- ]);
+function getPointObjectDistance(feature, point) {
+  try {
+    if (
+      !feature ||
+      !feature.geometry ||
+      feature.geometry.type !== "Point"
+    ) {
+      return null;
+    }
 
- let html=`<hr><b>${esc(label)}</b><br>
- Координати: <span class="coord">${lat.toFixed(7)}, ${lon.toFixed(7)}</span><br>`;
+    return turf.distance(
+      point,
+      feature,
+      { units: "kilometers" }
+    );
+  } catch (error) {
+    return null;
+  }
+}
 
- if(faultRes.status==='fulfilled'){
-   const nearest=nearestFaultAnalysis(faultRes.value,point);
-   if(nearest){
-     const p=nearest.feature.properties||{};
-     const faultName=firstUsefulProperty(p,['fault_name','name','Name','faultName','local_name','title']);
-     const faultType=firstUsefulProperty(p,['fault_type','type','Type','faultType','movement_type']);
-     html+=`<b>Най-близък известен разлом:</b> ${nearest.distanceKm<1
-       ? Math.round(nearest.distanceKm*1000)+' m'
-       : nearest.distanceKm.toFixed(2)+' km'}<br>
-       <b>Оценка:</b> ${proximityClass(nearest.distanceKm)}<br>
-       ${faultName?'<b>Име:</b> '+esc(faultName)+'<br>':''}
-       ${faultType?'<b>Тип:</b> '+esc(faultType)+'<br>':''}`;
-     L.polyline([[lat,lon],[nearest.nearest.geometry.coordinates[1],nearest.nearest.geometry.coordinates[0]]],
-       {color:'#7a4a21',weight:3,dashArray:'6,5'}).addTo(map);
-   }else{
-     html+='<b>Разломи:</b> няма намерена линия в радиус 25 km в използваната база.<br>';
-   }
- }else{
-   html+='<b>Разломи:</b> векторната услуга не отговори. Визуалният WMS слой остава наличен.<br>';
- }
+function getObjectsNearPoint(point, radiusKm) {
+  const found = [];
 
- if(gwRes.status==='fulfilled'){
-   const body=groundwaterAnalysis(gwRes.value,point);
-   if(body){
-     const p=body.properties||{};
-     const code=firstUsefulProperty(p,['inspireId_localId','localId','code','EU_CD','euCode','id','identifier']);
-     const name=firstUsefulProperty(p,['name','Name','localName','waterBodyName','nameText']);
-     html+=`<b>Подземно водно тяло:</b> ${esc(name||code||'границата е установена, но наименованието липсва')}<br>`;
-     if(code&&name)html+=`<b>Код:</b> ${esc(code)}<br>`;
-   }else{
-     html+='<b>Подземно водно тяло:</b> точката не беше открита в върнатите полигони.<br>';
-   }
- }else{
-   html+='<b>Подземно водно тяло:</b> векторната услуга не отговори. Визуалният WMS слой остава наличен.<br>';
- }
+  for (const feature of data.features || []) {
+    const distanceKm =
+      getPointObjectDistance(feature, point);
 
- html+=`<div class="small" style="margin-top:6px">
- Резултатът показва пространствено съвпадение с регионални картографирани структури. 
- Той не доказва самостоятелно наличие, дебит или дълбочина на вода.
- </div>`;
- result.innerHTML=html;
- status.textContent='Анализът е завършен.';
+    if (
+      distanceKm === null ||
+      distanceKm > radiusKm
+    ) {
+      continue;
+    }
+
+    const properties = feature.properties || {};
+
+    found.push({
+      feature,
+      properties,
+      distanceKm,
+      category:
+        properties.display_category || "",
+      depth: num(properties.depth_m),
+      temperature: num(
+        properties.temperature_c
+      )
+    });
+  }
+
+  found.sort(
+    (a, b) => a.distanceKm - b.distanceKm
+  );
+
+  return found;
+}
+
+function formatAnalysisDistance(distanceKm) {
+  if (distanceKm < 1) {
+    return Math.round(distanceKm * 1000) + " m";
+  }
+
+  return distanceKm.toFixed(2) + " km";
+}
+
+function analysisObjectName(item) {
+  const p = item.properties || {};
+
+  return (
+    p.facility ||
+    p.deposit ||
+    p.settlement ||
+    "\u0412\u043e\u0434\u0435\u043d \u043e\u0431\u0435\u043a\u0442"
+  );
+}
+
+function calculatePointStatistics(objects) {
+  const depths = objects
+    .map(item => item.depth)
+    .filter(value => value !== null);
+
+  const temperatures = objects
+    .map(item => item.temperature)
+    .filter(value => value !== null);
+
+  return {
+    minimumDepth:
+      depths.length
+        ? Math.min(...depths)
+        : null,
+
+    maximumDepth:
+      depths.length
+        ? Math.max(...depths)
+        : null,
+
+    averageDepth:
+      depths.length
+        ? depths.reduce((a, b) => a + b, 0) /
+          depths.length
+        : null,
+
+    minimumTemperature:
+      temperatures.length
+        ? Math.min(...temperatures)
+        : null,
+
+    maximumTemperature:
+      temperatures.length
+        ? Math.max(...temperatures)
+        : null
+  };
+}
+
+function calculatePointHydroScore(
+  objects1,
+  objects5,
+  nearestFault,
+  groundwaterBody
+) {
+  let score = 0;
+  const reasons = [];
+
+  const springs1 = objects1.filter(
+    item =>
+      item.category ===
+      "\u041a\u0430\u043f\u0442\u0430\u0436/\u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d \u0438\u0437\u0432\u043e\u0440"
+  );
+
+  const springs5 = objects5.filter(
+    item =>
+      item.category ===
+      "\u041a\u0430\u043f\u0442\u0430\u0436/\u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d \u0438\u0437\u0432\u043e\u0440"
+  );
+
+  const wells1 = objects1.filter(
+    item =>
+      String(item.category)
+        .toLowerCase()
+        .includes(
+          "\u0441\u043e\u043d\u0434\u0430\u0436"
+        )
+  );
+
+  const wells5 = objects5.filter(
+    item =>
+      String(item.category)
+        .toLowerCase()
+        .includes(
+          "\u0441\u043e\u043d\u0434\u0430\u0436"
+        )
+  );
+
+  if (springs1.length) {
+    score += Math.min(
+      springs1.length * 15,
+      30
+    );
+
+    reasons.push(
+      "\u0418\u043c\u0430 \u043a\u0430\u043f\u0442\u0430\u0436\u0438 \u0438\u043b\u0438 \u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d\u0438 \u0438\u0437\u0432\u043e\u0440\u0438 \u0434\u043e 1 km."
+    );
+  } else if (springs5.length) {
+    score += Math.min(
+      springs5.length * 5,
+      15
+    );
+
+    reasons.push(
+      "\u0418\u043c\u0430 \u0438\u0437\u0432\u043e\u0440\u0438 \u0438\u043b\u0438 \u043a\u0430\u043f\u0442\u0430\u0436\u0438 \u0434\u043e 5 km."
+    );
+  }
+
+  if (wells1.length) {
+    score += Math.min(
+      wells1.length * 10,
+      25
+    );
+
+    reasons.push(
+      "\u0418\u043c\u0430 \u043a\u0430\u0440\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0440\u0430\u043d\u0438 \u0441\u043e\u043d\u0434\u0430\u0436\u0438 \u0434\u043e 1 km."
+    );
+  } else if (wells5.length) {
+    score += Math.min(
+      wells5.length * 4,
+      20
+    );
+
+    reasons.push(
+      "\u0418\u043c\u0430 \u043a\u0430\u0440\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0440\u0430\u043d\u0438 \u0441\u043e\u043d\u0434\u0430\u0436\u0438 \u0434\u043e 5 km."
+    );
+  }
+
+  if (groundwaterBody) {
+    score += 15;
+
+    reasons.push(
+      "\u0422\u043e\u0447\u043a\u0430\u0442\u0430 \u043f\u043e\u043f\u0430\u0434\u0430 \u0432 \u043a\u0430\u0440\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0440\u0430\u043d\u043e \u043f\u043e\u0434\u0437\u0435\u043c\u043d\u043e \u0432\u043e\u0434\u043d\u043e \u0442\u044f\u043b\u043e."
+    );
+  }
+
+  if (nearestFault) {
+    if (nearestFault.distanceKm <= 0.25) {
+      score += 20;
+
+      reasons.push(
+        "\u0422\u043e\u0447\u043a\u0430\u0442\u0430 \u0435 \u043c\u043d\u043e\u0433\u043e \u0431\u043b\u0438\u0437\u043e \u0434\u043e \u043a\u0430\u0440\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0440\u0430\u043d \u0440\u0430\u0437\u043b\u043e\u043c."
+      );
+    } else if (
+      nearestFault.distanceKm <= 1
+    ) {
+      score += 12;
+
+      reasons.push(
+        "\u0422\u043e\u0447\u043a\u0430\u0442\u0430 \u0435 \u0432 \u0431\u043b\u0438\u0437\u043e\u0441\u0442 \u0434\u043e \u0440\u0430\u0437\u043b\u043e\u043c."
+      );
+    } else if (
+      nearestFault.distanceKm <= 5
+    ) {
+      score += 5;
+    }
+  }
+
+  score = Math.min(score, 100);
+
+  let label =
+    "\u041d\u0435\u043e\u043f\u0440\u0435\u0434\u0435\u043b\u0435\u043d\u0430 \u043f\u043e \u043d\u0430\u043b\u0438\u0447\u043d\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u0438";
+
+  if (score >= 70) {
+    label =
+      "\u0412\u0438\u0441\u043e\u043a\u0430 \u0440\u0435\u0433\u0438\u043e\u043d\u0430\u043b\u043d\u0430 \u0445\u0438\u0434\u0440\u043e\u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430 \u043f\u0435\u0440\u0441\u043f\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442";
+  } else if (score >= 45) {
+    label =
+      "\u0421\u0440\u0435\u0434\u043d\u0430 \u0434\u043e \u0434\u043e\u0431\u0440\u0430 \u043f\u0435\u0440\u0441\u043f\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442";
+  } else if (score >= 20) {
+    label =
+      "\u041e\u0433\u0440\u0430\u043d\u0438\u0447\u0435\u043d\u0430 \u043f\u0435\u0440\u0441\u043f\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442";
+  }
+
+  return {
+    score,
+    label,
+    reasons
+  };
+}
+
+function renderAnalysisObjects(objects) {
+  if (!objects.length) {
+    return (
+      "<div class=\"small\">" +
+      "\u041d\u044f\u043c\u0430 \u043a\u0430\u0440\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0440\u0430\u043d\u0438 \u043e\u0431\u0435\u043a\u0442\u0438 \u0434\u043e 10 km." +
+      "</div>"
+    );
+  }
+
+  let html = "";
+
+  for (const item of objects.slice(0, 8)) {
+    let detail =
+      esc(item.category) +
+      " \u00b7 " +
+      formatAnalysisDistance(
+        item.distanceKm
+      );
+
+    if (item.depth !== null) {
+      detail +=
+        " \u00b7 " +
+        item.depth.toFixed(1) +
+        " m";
+    }
+
+    if (item.temperature !== null) {
+      detail +=
+        " \u00b7 " +
+        item.temperature.toFixed(1) +
+        "\u00b0C";
+    }
+
+    html +=
+      "<div style=\"margin-top:5px;" +
+      "padding:6px;background:#f7fbff;" +
+      "border-left:3px solid #2878b5\">" +
+      "<strong>" +
+      esc(analysisObjectName(item)) +
+      "</strong><br>" +
+      "<span class=\"small\">" +
+      detail +
+      "</span></div>";
+  }
+
+  return html;
+}
+
+// COMPLEX_POINT_HELPERS_END
+
+async function analyzeLocation(
+  lat,
+  lon,
+  label = "\u0418\u0437\u0431\u0440\u0430\u043d\u0430 \u0442\u043e\u0447\u043a\u0430"
+) {
+  const status = document.getElementById(
+    "analysis-status"
+  );
+
+  const result = document.getElementById(
+    "analysis-result"
+  );
+
+  status.textContent =
+    "\u0417\u0430\u0440\u0435\u0436\u0434\u0430\u043c \u043a\u0430\u0440\u0442\u043e\u0432\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u0438\u2026";
+
+  result.innerHTML = "";
+
+  if (analysisMarker) {
+    map.removeLayer(analysisMarker);
+  }
+
+  if (analysisBufferLayer) {
+    map.removeLayer(analysisBufferLayer);
+  }
+
+  analysisMarker = L.marker(
+    [lat, lon],
+    {
+      icon: L.divIcon({
+        className: "",
+        html:
+          "<div class=\"analysis-marker\">\ud83c\udfaf</div>",
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      })
+    }
+  )
+    .addTo(map)
+    .bindTooltip(label)
+    .openTooltip();
+
+  analysisBufferLayer = L.circle(
+    [lat, lon],
+    {
+      radius: 5000,
+      color: "#555",
+      weight: 1,
+      dashArray: "5,5",
+      fillOpacity: 0.03
+    }
+  ).addTo(map);
+
+  const point = turf.point([lon, lat]);
+
+  const objects10 =
+    getObjectsNearPoint(point, 10);
+
+  const objects5 = objects10.filter(
+    item => item.distanceKm <= 5
+  );
+
+  const objects1 = objects10.filter(
+    item => item.distanceKm <= 1
+  );
+
+  const [
+    faultResult,
+    groundwaterResult
+  ] = await Promise.allSettled([
+    fetchFaultsNear(lon, lat, 25),
+    fetchGroundwaterNear(lon, lat, 10)
+  ]);
+
+  let nearestFault = null;
+  let groundwaterBody = null;
+
+  if (
+    faultResult.status === "fulfilled"
+  ) {
+    nearestFault = nearestFaultAnalysis(
+      faultResult.value,
+      point
+    );
+  }
+
+  if (
+    groundwaterResult.status ===
+    "fulfilled"
+  ) {
+    groundwaterBody = groundwaterAnalysis(
+      groundwaterResult.value,
+      point
+    );
+  }
+
+  const assessment =
+    calculatePointHydroScore(
+      objects1,
+      objects5,
+      nearestFault,
+      groundwaterBody
+    );
+
+  const statistics =
+    calculatePointStatistics(objects10);
+
+  const springs = objects10.filter(
+    item =>
+      item.category ===
+      "\u041a\u0430\u043f\u0442\u0430\u0436/\u0435\u0441\u0442\u0435\u0441\u0442\u0432\u0435\u043d \u0438\u0437\u0432\u043e\u0440"
+  );
+
+  const wells = objects10.filter(
+    item =>
+      String(item.category)
+        .toLowerCase()
+        .includes(
+          "\u0441\u043e\u043d\u0434\u0430\u0436"
+        )
+  );
+
+  let html =
+    "<hr><strong style=\"font-size:15px\">" +
+    esc(label) +
+    "</strong><br>" +
+    "<span class=\"coord\">" +
+    lat.toFixed(7) +
+    ", " +
+    lon.toFixed(7) +
+    "</span>";
+
+  html +=
+    "<div style=\"margin-top:10px;" +
+    "padding:8px;background:#eef7f2;" +
+    "border-left:4px solid #0b6b43\">" +
+    "<strong>" +
+    esc(assessment.label) +
+    "</strong><br>" +
+    "\u0418\u043d\u0434\u0435\u043a\u0441: <strong>" +
+    assessment.score +
+    "/100</strong></div>";
+
+  if (assessment.reasons.length) {
+    html +=
+      "<div style=\"margin-top:7px\">" +
+      assessment.reasons
+        .map(reason => "\u2022 " + esc(reason))
+        .join("<br>") +
+      "</div>";
+  }
+
+  html +=
+    "<div style=\"margin-top:12px\">" +
+    "<strong>\u041f\u043e\u0434\u0437\u0435\u043c\u043d\u0438 \u0432\u043e\u0434\u0438</strong><br>";
+
+  if (groundwaterBody) {
+    const p =
+      groundwaterBody.properties || {};
+
+    const code = firstUsefulProperty(
+      p,
+      [
+        "inspireId_localId",
+        "localId",
+        "code",
+        "EU_CD",
+        "euCode",
+        "id",
+        "identifier"
+      ]
+    );
+
+    const name = firstUsefulProperty(
+      p,
+      [
+        "name",
+        "Name",
+        "localName",
+        "waterBodyName",
+        "nameText"
+      ]
+    );
+
+    html +=
+      "\u041f\u043e\u0434\u0437\u0435\u043c\u043d\u043e \u0432\u043e\u0434\u043d\u043e \u0442\u044f\u043b\u043e: <strong>" +
+      esc(
+        name ||
+        code ||
+        "\u043d\u0435\u0438\u043c\u0435\u043d\u0443\u0432\u0430\u043d\u043e"
+      ) +
+      "</strong><br>";
+
+    if (code && name) {
+      html +=
+        "\u041a\u043e\u0434: " +
+        esc(code) +
+        "<br>";
+    }
+  } else {
+    html +=
+      "\u041d\u0435 \u0435 \u043f\u043e\u0442\u0432\u044a\u0440\u0434\u0435\u043d\u043e \u0432\u043e\u0434\u043d\u043e \u0442\u044f\u043b\u043e \u043e\u0442 \u0432\u044a\u0440\u043d\u0430\u0442\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u0438.<br>";
+  }
+
+  html +=
+    "\u041a\u0430\u043f\u0442\u0430\u0436\u0438/\u0438\u0437\u0432\u043e\u0440\u0438 \u0434\u043e 10 km: " +
+    springs.length +
+    "<br>" +
+    "\u0421\u043e\u043d\u0434\u0430\u0436\u0438 \u0434\u043e 10 km: " +
+    wells.length +
+    "</div>";
+
+  html +=
+    "<div style=\"margin-top:12px\">" +
+    "<strong>\u041d\u0430\u0439-\u0431\u043b\u0438\u0437\u043a\u0438 \u043e\u0431\u0435\u043a\u0442\u0438</strong>" +
+    renderAnalysisObjects(objects10) +
+    "</div>";
+
+  if (statistics.minimumDepth !== null) {
+    html +=
+      "<div style=\"margin-top:10px\">" +
+      "<strong>\u0414\u044a\u043b\u0431\u043e\u0447\u0438\u043d\u0438 \u043d\u0430 \u0431\u043b\u0438\u0437\u043a\u0438\u0442\u0435 \u0441\u044a\u043e\u0440\u044a\u0436\u0435\u043d\u0438\u044f</strong><br>" +
+      "\u041c\u0438\u043d\u0438\u043c\u0430\u043b\u043d\u0430: " +
+      statistics.minimumDepth.toFixed(1) +
+      " m<br>" +
+      "\u0421\u0440\u0435\u0434\u043d\u0430: " +
+      statistics.averageDepth.toFixed(1) +
+      " m<br>" +
+      "\u041c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u043d\u0430: " +
+      statistics.maximumDepth.toFixed(1) +
+      " m</div>";
+  }
+
+  if (
+    statistics.minimumTemperature !== null
+  ) {
+    html +=
+      "<div style=\"margin-top:8px\">" +
+      "<strong>\u0422\u0435\u043c\u043f\u0435\u0440\u0430\u0442\u0443\u0440\u0438:</strong> " +
+      statistics.minimumTemperature.toFixed(1) +
+      "\u2013" +
+      statistics.maximumTemperature.toFixed(1) +
+      "\u00b0C</div>";
+  }
+
+  html +=
+    "<div style=\"margin-top:12px\">" +
+    "<strong>\u0420\u0430\u0437\u043b\u043e\u043c\u0438</strong><br>";
+
+  if (nearestFault) {
+    html +=
+      "\u041d\u0430\u0439-\u0431\u043b\u0438\u0437\u044a\u043a \u043a\u0430\u0440\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0440\u0430\u043d \u0440\u0430\u0437\u043b\u043e\u043c: <strong>" +
+      formatAnalysisDistance(
+        nearestFault.distanceKm
+      ) +
+      "</strong><br>" +
+      "\u041e\u0446\u0435\u043d\u043a\u0430: " +
+      esc(
+        proximityClass(
+          nearestFault.distanceKm
+        )
+      );
+
+    L.polyline(
+      [
+        [lat, lon],
+        [
+          nearestFault.nearest.geometry
+            .coordinates[1],
+          nearestFault.nearest.geometry
+            .coordinates[0]
+        ]
+      ],
+      {
+        color: "#7a4a21",
+        weight: 3,
+        dashArray: "6,5"
+      }
+    ).addTo(map);
+  } else {
+    html +=
+      "\u041d\u044f\u043c\u0430 \u043d\u0430\u043c\u0435\u0440\u0435\u043d\u0430 \u0440\u0430\u0437\u043b\u043e\u043c\u043d\u0430 \u043b\u0438\u043d\u0438\u044f \u0434\u043e 25 km.";
+  }
+
+  html += "</div>";
+
+  html +=
+    "<div style=\"margin-top:12px\">" +
+    "<strong>\u041f\u043e\u0447\u0432\u0430 \u0438 \u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430</strong><br>" +
+    "<span class=\"small\">" +
+    "\u0412\u0441\u0435 \u043e\u0449\u0435 \u043d\u044f\u043c\u0430 \u0441\u0432\u044a\u0440\u0437\u0430\u043d \u043d\u0430\u0434\u0435\u0436\u0434\u0435\u043d \u043b\u0438\u0442\u043e\u043b\u043e\u0436\u043a\u0438 \u0438 \u043f\u043e\u0447\u0432\u0435\u043d \u0441\u043b\u043e\u0439. \u0421\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u0430\u0442\u0430 \u043d\u0435 \u0441\u0435 \u043f\u0440\u0435\u0434\u043f\u043e\u043b\u0430\u0433\u0430." +
+    "</span></div>";
+
+  html +=
+    "<div style=\"margin-top:10px;" +
+    "padding:7px;background:#fff7e6;" +
+    "border:1px solid #e2c079;" +
+    "font-size:11px\">" +
+    "\u0422\u043e\u0432\u0430 \u0435 \u0440\u0435\u0433\u0438\u043e\u043d\u0430\u043b\u0435\u043d \u043a\u0430\u0440\u0442\u043e\u0432 \u0430\u043d\u0430\u043b\u0438\u0437. \u0422\u043e\u0439 \u043d\u0435 \u0434\u043e\u043a\u0430\u0437\u0432\u0430 \u0434\u0435\u0431\u0438\u0442, \u0442\u043e\u0447\u043d\u0430 \u0434\u044a\u043b\u0431\u043e\u0447\u0438\u043d\u0430 \u0438\u043b\u0438 \u0432\u0435\u0440\u0442\u0438\u043a\u0430\u043b\u0435\u043d \u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0438 \u0440\u0430\u0437\u0440\u0435\u0437." +
+    "</div>";
+
+  result.innerHTML = html;
+
+  status.textContent =
+    "\u041a\u043e\u043c\u043f\u043b\u0435\u043a\u0441\u043d\u0438\u044f\u0442 \u0430\u043d\u0430\u043b\u0438\u0437 \u0435 \u0437\u0430\u0432\u044a\u0440\u0448\u0435\u043d.";
 }
 
 applyFilters();fitVisible();
