@@ -24,6 +24,53 @@
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
+  function parseCoordinates(raw) {
+    if (!raw) {
+      return {
+        latitude: null,
+        longitude: null
+      };
+    }
+
+    const normalized = raw
+      .trim()
+      .replace(/[;|]/g, ",")
+      .replace(/\s+/g, " ");
+
+    let parts = normalized
+      .split(",")
+      .map(part => part.trim())
+      .filter(Boolean);
+
+    if (parts.length < 2) {
+      parts = normalized
+        .split(" ")
+        .map(part => part.trim())
+        .filter(Boolean);
+    }
+
+    const latitude = Number(parts[0]);
+    const longitude = Number(parts[1]);
+
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      return {
+        latitude: null,
+        longitude: null
+      };
+    }
+
+    return {
+      latitude,
+      longitude
+    };
+  }
 
   function createInterface() {
     const style = document.createElement("style");
@@ -259,23 +306,12 @@
             </select>
           </div>
 
-          <div>
-            <input
-              id="geo-ai-latitude"
-              type="number"
-              step="0.0000001"
-              placeholder="Ширина – незадължително"
-            >
-          </div>
-
-          <div>
-            <input
-              id="geo-ai-longitude"
-              type="number"
-              step="0.0000001"
-              placeholder="Дължина – незадължително"
-            >
-          </div>
+          <div class="geo-ai-full">
+  <input
+    id="geo-ai-coordinates"
+    placeholder="Координати от Google Maps, например 43.214050, 27.914733"
+  >
+</div>
 
           <div class="geo-ai-full">
             <textarea
