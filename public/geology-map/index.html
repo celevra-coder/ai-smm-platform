@@ -1767,6 +1767,97 @@ function renderAnalysisObjects(objects) {
 
 // COMPLEX_POINT_HELPERS_END
 
+
+// GEM_POINT_DISTANCE_START
+
+function nearestGemFaultToPoint(point) {
+  let best = null;
+
+  if (
+    typeof gemFaultIndex === "undefined" ||
+    !gemFaultIndex ||
+    !gemFaultIndex.size
+  ) {
+    return null;
+  }
+
+  for (const [catalogId, entry] of gemFaultIndex) {
+    if (
+      !entry ||
+      !entry.feature ||
+      !entry.feature.geometry
+    ) {
+      continue;
+    }
+
+    const feature = entry.feature;
+    const geometries = [];
+
+    if (feature.geometry.type === "LineString") {
+      geometries.push(feature);
+    }
+
+    if (feature.geometry.type === "MultiLineString") {
+      for (
+        const coordinates of
+        feature.geometry.coordinates
+      ) {
+        geometries.push(
+          turf.lineString(
+            coordinates,
+            feature.properties || {}
+          )
+        );
+      }
+    }
+
+    for (const line of geometries) {
+      try {
+        const snapped = turf.nearestPointOnLine(
+          line,
+          point,
+          {
+            units: "kilometers"
+          }
+        );
+
+        const distanceKm =
+          snapped.properties &&
+          Number.isFinite(
+            snapped.properties.dist
+          )
+            ? snapped.properties.dist
+            : turf.distance(
+                point,
+                snapped,
+                {
+                  units: "kilometers"
+                }
+              );
+
+        if (
+          best === null ||
+          distanceKm < best.distanceKm
+        ) {
+          best = {
+            distanceKm,
+            feature,
+            nearest: snapped,
+            catalogId,
+            source: "GEM"
+          };
+        }
+      } catch (error) {
+        // Ignore invalid geometry.
+      }
+    }
+  }
+
+  return best;
+}
+
+// GEM_POINT_DISTANCE_END
+
 async function analyzeLocation(
   lat,
   lon,
@@ -1833,13 +1924,23 @@ async function analyzeLocation(
     item => item.distanceKm <= 1
   );
 
-  const [
-    faultResult,
-    groundwaterResult
-  ] = await Promise.allSettled([
-    fetchFaultsNear(lon, lat, 25),
-    fetchGroundwaterNear(lon, lat, 10)
-  ]);
+  if (
+    typeof loadFaults === "function" &&
+    typeof faultsLoaded !== "undefined" &&
+    !faultsLoaded
+  ) {
+    await loadFaults();
+  }
+
+  const groundwaterResult =
+    await Promise.allSettled([
+      fetchGroundwaterNear(lon, lat, 10)
+    ]).then(results => results[0]);
+
+  const faultResult = {
+    status: "fulfilled",
+    value: null
+  };
 
   let nearestFault = null;
   let groundwaterBody = null;
@@ -1847,10 +1948,8 @@ async function analyzeLocation(
   if (
     faultResult.status === "fulfilled"
   ) {
-    nearestFault = nearestFaultAnalysis(
-      faultResult.value,
-      point
-    );
+    nearestFault =
+      nearestGemFaultToPoint(point);
   }
 
   if (
@@ -2017,12 +2116,38 @@ async function analyzeLocation(
     "<strong>\u0420\u0430\u0437\u043b\u043e\u043c\u0438</strong><br>";
 
   if (nearestFault) {
+    const faultProperties =
+      nearestFault.feature.properties || {};
+
+    const gemCode =
+      faultProperties.catalog_id ||
+      nearestFault.catalogId ||
+      "";
+
+    const gemType =
+      faultProperties.slip_type || "";
+
     html +=
       "\u041d\u0430\u0439-\u0431\u043b\u0438\u0437\u044a\u043a \u043a\u0430\u0440\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0440\u0430\u043d \u0440\u0430\u0437\u043b\u043e\u043c: <strong>" +
       formatAnalysisDistance(
         nearestFault.distanceKm
       ) +
       "</strong><br>" +
+      (gemCode
+        ? "\u041a\u043e\u0434 GEM: <strong>" +
+          esc(gemCode) +
+          "</strong><br>"
+        : "") +
+      (gemType
+        ? "\u0422\u0438\u043f: " +
+          esc(
+            typeof translateGemSlipType ===
+              "function"
+              ? translateGemSlipType(gemType)
+              : gemType
+          ) +
+          "<br>"
+        : "") +
       "\u041e\u0446\u0435\u043d\u043a\u0430: " +
       esc(
         proximityClass(
