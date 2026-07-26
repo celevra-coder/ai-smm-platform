@@ -176,6 +176,14 @@ async function loadGroundwaterBodies(){
          fillOpacity:0.22
        }),
        onEachFeature:(feature,l)=>{
+      l.on("click", event => {
+        showGemFaultHypothesisPopup(
+          feature,
+          l,
+          event.latlng
+        );
+      });
+
          const p=feature.properties||{};
          const name=p.name||p.Name||p.WATERBODY_NAME||p.WB_NAME||p.euName||'Подземно водно тяло';
          const code=p.euCode||p.EU_CD||p.code||p.Code||p.WB_CODE||'—';
@@ -2080,6 +2088,948 @@ function groundwaterDebugProperties(properties) {
 }
 
 // GROUNDWATER_PROPERTY_READER_END
+
+
+// FAULT_BRANCH_HYPOTHESIS_START
+
+let selectedGemFaultForHypothesis = null;
+let faultHypothesisLayer = null;
+
+function ensureFaultHypothesisLayer() {
+  if (!map.getPane("faultHypothesisPane")) {
+    map.createPane("faultHypothesisPane");
+
+    map.getPane(
+      "faultHypothesisPane"
+    ).style.zIndex = "640";
+
+    map.getPane(
+      "faultHypothesisPane"
+    ).style.pointerEvents = "none";
+  }
+
+  if (!faultHypothesisLayer) {
+    faultHypothesisLayer =
+      L.layerGroup().addTo(map);
+  }
+
+  return faultHypothesisLayer;
+}
+
+function clearFaultHypothesis() {
+  if (faultHypothesisLayer) {
+    faultHypothesisLayer.clearLayers();
+  }
+}
+
+function normalizeAngle(angle) {
+  let result = Number(angle) % 360;
+
+  if (result < 0) {
+    result += 360;
+  }
+
+  return result;
+}
+
+function axialAngleDifference(a, b) {
+  const first = normalizeAngle(a);
+  const second = normalizeAngle(b);
+
+  let difference = Math.abs(
+    first - second
+  );
+
+  if (difference > 180) {
+    difference = 360 - difference;
+  }
+
+  if (difference > 90) {
+    difference = 180 - difference;
+  }
+
+  return Math.abs(difference);
+}
+
+function signedAngleDifference(a, b) {
+  let difference =
+    normalizeAngle(a) -
+    normalizeAngle(b);
+
+  while (difference > 180) {
+    difference -= 360;
+  }
+
+  while (difference < -180) {
+    difference += 360;
+  }
+
+  return difference;
+}
+
+function gemFeatureLineParts(feature) {
+  if (
+    !feature ||
+    !feature.geometry
+  ) {
+    return [];
+  }
+
+  if (
+    feature.geometry.type ===
+    "LineString"
+  ) {
+    return [feature];
+  }
+
+  if (
+    feature.geometry.type ===
+    "MultiLineString"
+  ) {
+    return feature.geometry.coordinates.map(
+      coordinates =>
+        turf.lineString(
+          coordinates,
+          feature.properties || {}
+        )
+    );
+  }
+
+  return [];
+}
+
+function nearestGemSegmentInformation(
+  feature,
+  point
+) {
+  let best = null;
+
+  for (
+    const line of
+    gemFeatureLineParts(feature)
+  ) {
+    const coordinates =
+      line.geometry.coordinates || [];
+
+    for (
+      let index = 0;
+      index < coordinates.length - 1;
+      index++
+    ) {
+      const start = turf.point(
+        coordinates[index]
+      );
+
+      const end = turf.point(
+        coordinates[index + 1]
+      );
+
+      let snapped;
+
+      try {
+        snapped = turf.nearestPointOnLine(
+          turf.lineString([
+            coordinates[index],
+            coordinates[index + 1]
+          ]),
+          point,
+          {
+            units: "kilometers"
+          }
+        );
+      } catch (error) {
+        continue;
+      }
+
+      const distanceKm = turf.distance(
+        point,
+        snapped,
+        {
+          units: "kilometers"
+        }
+      );
+
+      if (
+        best === null ||
+        distanceKm < best.distanceKm
+      ) {
+        best = {
+          distanceKm,
+          snapped,
+          start,
+          end,
+          bearing: normalizeAngle(
+            turf.bearing(start, end)
+          )
+        };
+      }
+    }
+  }
+
+  return best;
+}
+
+function getMappedWaterObjectsNear(
+  point,
+  radiusKm
+) {
+  const objects = [];
+
+  if (
+    typeof data === "undefined" ||
+    !data ||
+    !Array.isArray(data.features)
+  ) {
+    return objects;
+  }
+
+  for (const feature of data.features) {
+    if (
+      !feature ||
+      !feature.geometry ||
+      feature.geometry.type !== "Point"
+    ) {
+      continue;
+    }
+
+    const properties =
+      feature.properties || {};
+
+    const category = String(
+      properties.display_category || ""
+    ).toLowerCase();
+
+    const isWaterObject =
+      category.includes(
+        "\u0441\u043e\u043d\u0434\u0430\u0436"
+      ) ||
+      category.includes(
+        "\u0438\u0437\u0432\u043e\u0440"
+      ) ||
+      category.includes(
+        "\u043a\u0430\u043f\u0442\u0430\u0436"
+      );
+
+    if (!isWaterObject) {
+      continue;
+    }
+
+    const distanceKm = turf.distance(
+      point,
+      feature,
+      {
+        units: "kilometers"
+      }
+    );
+
+    if (distanceKm > radiusKm) {
+      continue;
+    }
+
+    objects.push({
+      feature,
+      properties,
+      distanceKm,
+      bearing: normalizeAngle(
+        turf.bearing(point, feature)
+      ),
+      category
+    });
+  }
+
+  objects.sort(
+    (a, b) =>
+      a.distanceKm - b.distanceKm
+  );
+
+  return objects;
+}
+
+function clusterWaterDirections(
+  objects,
+  mainBearing
+) {
+  const clusters = [];
+  const tolerance = 18;
+
+  for (const object of objects) {
+    /*
+      ?? ?????????? ??????, ????? ?? ?????
+      ?? ???? ?? ???????? ??????, ??????
+      ?????? ???????? ???????????.
+    */
+    const difference =
+      axialAngleDifference(
+        object.bearing,
+        mainBearing
+      );
+
+    if (difference < 20) {
+      continue;
+    }
+
+    let selectedCluster = null;
+
+    for (const cluster of clusters) {
+      if (
+        axialAngleDifference(
+          cluster.bearing,
+          object.bearing
+        ) <= tolerance
+      ) {
+        selectedCluster = cluster;
+        break;
+      }
+    }
+
+    if (!selectedCluster) {
+      selectedCluster = {
+        bearing: object.bearing,
+        objects: [],
+        totalWeight: 0
+      };
+
+      clusters.push(selectedCluster);
+    }
+
+    const weight =
+      1 / Math.max(
+        object.distanceKm,
+        0.25
+      );
+
+    const currentCount =
+      selectedCluster.objects.length;
+
+    /*
+      ????????????? ? ??????????????.
+      ?????? ????? ?? ????? ????????.
+    */
+    selectedCluster.bearing =
+      normalizeAngle(
+        (
+          selectedCluster.bearing *
+            currentCount +
+          object.bearing
+        ) /
+          (currentCount + 1)
+      );
+
+    selectedCluster.objects.push(
+      object
+    );
+
+    selectedCluster.totalWeight +=
+      weight;
+  }
+
+  clusters.sort((a, b) => {
+    if (
+      b.objects.length !==
+      a.objects.length
+    ) {
+      return (
+        b.objects.length -
+        a.objects.length
+      );
+    }
+
+    return (
+      b.totalWeight -
+      a.totalWeight
+    );
+  });
+
+  return clusters;
+}
+
+function getAllGemFeatures() {
+  const features = [];
+
+  if (
+    typeof gemFaultIndex !== "undefined" &&
+    gemFaultIndex &&
+    typeof gemFaultIndex.values ===
+      "function"
+  ) {
+    for (
+      const entry of
+      gemFaultIndex.values()
+    ) {
+      if (
+        entry &&
+        entry.feature &&
+        entry.feature.geometry
+      ) {
+        features.push(
+          entry.feature
+        );
+      }
+    }
+  }
+
+  return features;
+}
+
+function findNearbyGemIntersections(
+  selectedFeature,
+  centerPoint,
+  radiusKm
+) {
+  const intersections = [];
+
+  for (
+    const otherFeature of
+    getAllGemFeatures()
+  ) {
+    if (
+      otherFeature === selectedFeature
+    ) {
+      continue;
+    }
+
+    for (
+      const selectedLine of
+      gemFeatureLineParts(
+        selectedFeature
+      )
+    ) {
+      for (
+        const otherLine of
+        gemFeatureLineParts(
+          otherFeature
+        )
+      ) {
+        let result;
+
+        try {
+          result = turf.lineIntersect(
+            selectedLine,
+            otherLine
+          );
+        } catch (error) {
+          continue;
+        }
+
+        for (
+          const intersection of
+          result.features || []
+        ) {
+          const distanceKm =
+            turf.distance(
+              centerPoint,
+              intersection,
+              {
+                units: "kilometers"
+              }
+            );
+
+          if (
+            distanceKm <= radiusKm
+          ) {
+            intersections.push({
+              point: intersection,
+              distanceKm,
+              feature: otherFeature
+            });
+          }
+        }
+      }
+    }
+  }
+
+  intersections.sort(
+    (a, b) =>
+      a.distanceKm - b.distanceKm
+  );
+
+  return intersections;
+}
+
+function hypothesisConfidence(
+  objectCount,
+  intersectionCount,
+  nearestDistance
+) {
+  let score = 15;
+
+  score += Math.min(
+    objectCount * 18,
+    54
+  );
+
+  score += Math.min(
+    intersectionCount * 12,
+    24
+  );
+
+  if (
+    nearestDistance !== null &&
+    nearestDistance <= 1
+  ) {
+    score += 10;
+  } else if (
+    nearestDistance !== null &&
+    nearestDistance <= 3
+  ) {
+    score += 5;
+  }
+
+  score = Math.min(score, 95);
+
+  let label =
+    "\u043d\u0438\u0441\u043a\u0430";
+
+  if (score >= 70) {
+    label =
+      "\u0441\u0440\u0435\u0434\u043d\u0430 \u043a\u044a\u043c \u0432\u0438\u0441\u043e\u043a\u0430";
+  } else if (score >= 45) {
+    label =
+      "\u0441\u0440\u0435\u0434\u043d\u0430";
+  }
+
+  return {
+    score,
+    label
+  };
+}
+
+function drawHypothesisBranch(
+  originPoint,
+  bearing,
+  lengthKm,
+  confidence
+) {
+  const destination =
+    turf.destination(
+      originPoint,
+      lengthKm,
+      bearing,
+      {
+        units: "kilometers"
+      }
+    );
+
+  const coordinates = [
+    originPoint.geometry.coordinates,
+    destination.geometry.coordinates
+  ];
+
+  const line = L.polyline(
+    coordinates.map(
+      coordinate => [
+        coordinate[1],
+        coordinate[0]
+      ]
+    ),
+    {
+      pane: "faultHypothesisPane",
+      color: "#f28e2b",
+      weight:
+        confidence.score >= 70
+          ? 5
+          : 4,
+      opacity:
+        confidence.score >= 70
+          ? 0.9
+          : 0.75,
+      dashArray: "10,8",
+      interactive: false
+    }
+  );
+
+  line.addTo(
+    ensureFaultHypothesisLayer()
+  );
+
+  /*
+    ????????????? ??????????????
+    ?????????? ??????? ????? ???????.
+  */
+  try {
+    const buffered = turf.buffer(
+      turf.lineString(coordinates),
+      confidence.score >= 70
+        ? 0.18
+        : 0.12,
+      {
+        units: "kilometers"
+      }
+    );
+
+    L.geoJSON(
+      buffered,
+      {
+        pane: "faultHypothesisPane",
+        interactive: false,
+        style: {
+          color: "#f28e2b",
+          weight: 1,
+          opacity: 0.35,
+          fillOpacity: 0.08
+        }
+      }
+    ).addTo(
+      ensureFaultHypothesisLayer()
+    );
+  } catch (error) {
+    // ??????? ? ???? ???????? ?????.
+  }
+
+  return destination;
+}
+
+function showGemFaultHypothesisPopup(
+  feature,
+  layer,
+  latlng
+) {
+  selectedGemFaultForHypothesis = {
+    feature,
+    layer,
+    latlng
+  };
+
+  const properties =
+    feature.properties || {};
+
+  const code =
+    properties.catalog_id ||
+    properties.catalog_name ||
+    "\u0431\u0435\u0437 \u043a\u043e\u0434";
+
+  const slipType =
+    properties.slip_type || "";
+
+  const popup =
+    "<div style=\"min-width:245px\">" +
+    "<strong>\u0410\u043a\u0442\u0438\u0432\u0435\u043d GEM \u0440\u0430\u0437\u043b\u043e\u043c</strong><br>" +
+    "\u041a\u043e\u0434: " +
+    esc(code) +
+    "<br>" +
+    (
+      slipType
+        ? "\u0422\u0438\u043f: " +
+          esc(slipType) +
+          "<br>"
+        : ""
+    ) +
+    "<button type=\"button\"" +
+    " style=\"width:100%;margin-top:9px;" +
+    "padding:8px;border:0;border-radius:6px;" +
+    "background:#a64b00;color:white;" +
+    "font-weight:bold;cursor:pointer\"" +
+    " onclick=\"analyzeSelectedGemFaultHypothesis()\">" +
+    "\u041f\u0440\u043e\u0433\u043d\u043e\u0437\u0438\u0440\u0430\u0439 \u0440\u0430\u0437\u043a\u043b\u043e\u043d\u0435\u043d\u0438\u044f \u0438 \u0432\u043e\u0434\u043e\u043d\u043e\u0441\u043d\u0438 \u0437\u043e\u043d\u0438" +
+    "</button>" +
+    "<div style=\"font-size:11px;margin-top:6px\">" +
+    "\u0420\u0435\u0437\u0443\u043b\u0442\u0430\u0442\u044a\u0442 \u0435 \u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u043d\u043e-\u0445\u0438\u0434\u0440\u043e\u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430 \u0445\u0438\u043f\u043e\u0442\u0435\u0437\u0430." +
+    "</div>" +
+    "</div>";
+
+  /*
+    setTimeout ????????? ???? popup
+    ?? ?? ?????? ???? ??????????? popup.
+  */
+  setTimeout(() => {
+    L.popup({
+      maxWidth: 330
+    })
+      .setLatLng(latlng)
+      .setContent(popup)
+      .openOn(map);
+  }, 0);
+}
+
+function analyzeSelectedGemFaultHypothesis() {
+  if (!selectedGemFaultForHypothesis) {
+    alert(
+      "\u041d\u044f\u043c\u0430 \u0438\u0437\u0431\u0440\u0430\u043d \u0440\u0430\u0437\u043b\u043e\u043c."
+    );
+    return;
+  }
+
+  map.closePopup();
+
+  const selected =
+    selectedGemFaultForHypothesis;
+
+  analyzeGemFaultHypothesis(
+    selected.feature,
+    selected.latlng
+  );
+}
+
+function analyzeGemFaultHypothesis(
+  feature,
+  latlng
+) {
+  clearFaultHypothesis();
+
+  const result =
+    document.getElementById(
+      "analysis-result"
+    );
+
+  const status =
+    document.getElementById(
+      "analysis-status"
+    );
+
+  if (!result || !status) {
+    return;
+  }
+
+  status.textContent =
+    "\u0410\u043d\u0430\u043b\u0438\u0437\u0438\u0440\u0430\u043c \u0433\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u044f\u0442\u0430 \u043d\u0430 \u0440\u0430\u0437\u043b\u043e\u043c\u0430 \u0438 \u0431\u043b\u0438\u0437\u043a\u0438\u0442\u0435 \u0432\u043e\u0434\u043d\u0438 \u043e\u0431\u0435\u043a\u0442\u0438\u2026";
+
+  const clickedPoint =
+    turf.point([
+      latlng.lng,
+      latlng.lat
+    ]);
+
+  const segment =
+    nearestGemSegmentInformation(
+      feature,
+      clickedPoint
+    );
+
+  if (!segment) {
+    status.textContent =
+      "\u0420\u0430\u0437\u043b\u043e\u043c\u043d\u0430\u0442\u0430 \u0433\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u044f \u043d\u0435 \u043c\u043e\u0436\u0435 \u0434\u0430 \u0441\u0435 \u0430\u043d\u0430\u043b\u0438\u0437\u0438\u0440\u0430.";
+
+    return;
+  }
+
+  const originPoint =
+    segment.snapped;
+
+  const waterObjects =
+    getMappedWaterObjectsNear(
+      originPoint,
+      7
+    );
+
+  const clusters =
+    clusterWaterDirections(
+      waterObjects,
+      segment.bearing
+    );
+
+  const intersections =
+    findNearbyGemIntersections(
+      feature,
+      originPoint,
+      7
+    );
+
+  const candidates = [];
+
+  for (
+    const cluster of
+    clusters.slice(0, 3)
+  ) {
+    const nearestDistance =
+      cluster.objects.length
+        ? Math.min(
+            ...cluster.objects.map(
+              object =>
+                object.distanceKm
+            )
+          )
+        : null;
+
+    const confidence =
+      hypothesisConfidence(
+        cluster.objects.length,
+        intersections.length,
+        nearestDistance
+      );
+
+    const lengthKm = Math.min(
+      5,
+      Math.max(
+        1.5,
+        cluster.objects.length
+          ? Math.max(
+              ...cluster.objects.map(
+                object =>
+                  object.distanceKm
+              )
+            )
+          : 2.5
+      )
+    );
+
+    drawHypothesisBranch(
+      originPoint,
+      cluster.bearing,
+      lengthKm,
+      confidence
+    );
+
+    candidates.push({
+      bearing: cluster.bearing,
+      objects: cluster.objects,
+      confidence,
+      lengthKm
+    });
+  }
+
+  /*
+    ??? ????? ?? ??????? ?? ???? ???
+    ????? ?????? ?? ??????? ?????????
+    ????? ????. ????????? ????
+    ???????????? ?????????.
+  */
+  const properties =
+    feature.properties || {};
+
+  const code =
+    properties.catalog_id ||
+    properties.catalog_name ||
+    "\u0431\u0435\u0437 \u043a\u043e\u0434";
+
+  let html =
+    "<hr>" +
+    "<strong style=\"font-size:15px\">" +
+    "\u0425\u0438\u043f\u043e\u0442\u0435\u0437\u0430 \u0437\u0430 \u0440\u0430\u0437\u043a\u043b\u043e\u043d\u0435\u043d\u0438\u044f \u043d\u0430 GEM \u0440\u0430\u0437\u043b\u043e\u043c" +
+    "</strong><br>" +
+    "\u041a\u043e\u0434: <strong>" +
+    esc(code) +
+    "</strong><br>" +
+    "\u0410\u043d\u0430\u043b\u0438\u0437\u0438\u0440\u0430\u043d\u0430 \u0442\u043e\u0447\u043a\u0430: " +
+    latlng.lat.toFixed(6) +
+    ", " +
+    latlng.lng.toFixed(6) +
+    "<br>" +
+    "\u041b\u043e\u043a\u0430\u043b\u043d\u0430 \u043f\u043e\u0441\u043e\u043a\u0430 \u043d\u0430 \u043e\u0441\u043d\u043e\u0432\u043d\u0438\u044f \u0440\u0430\u0437\u043b\u043e\u043c: <strong>" +
+    Math.round(
+      segment.bearing
+    ) +
+    "\u00b0</strong>";
+
+  html +=
+    "<div style=\"margin-top:10px\">" +
+    "<strong>\u0418\u0437\u043f\u043e\u043b\u0437\u0432\u0430\u043d\u0438 \u0438\u043d\u0434\u0438\u043a\u0430\u0442\u043e\u0440\u0438</strong><br>" +
+    "\u0412\u043e\u0434\u043d\u0438 \u043e\u0431\u0435\u043a\u0442\u0438 \u0434\u043e 7 km: <strong>" +
+    waterObjects.length +
+    "</strong><br>" +
+    "\u041f\u0440\u0435\u0441\u0438\u0447\u0430\u043d\u0438\u044f \u0441 \u0434\u0440\u0443\u0433\u0438 GEM \u0440\u0430\u0437\u043b\u043e\u043c\u0438 \u0434\u043e 7 km: <strong>" +
+    intersections.length +
+    "</strong>" +
+    "</div>";
+
+  if (!candidates.length) {
+    html +=
+      "<div style=\"margin-top:10px;" +
+      "padding:8px;background:#fff4e5;" +
+      "border-left:4px solid #c66b00\">" +
+      "<strong>\u041d\u0435\u0434\u043e\u0441\u0442\u0430\u0442\u044a\u0447\u043d\u043e \u0438\u043d\u0434\u0438\u043a\u0430\u0442\u043e\u0440\u0438</strong><br>" +
+      "\u041d\u044f\u043c\u0430 \u0434\u043e\u0441\u0442\u0430\u0442\u044a\u0447\u043d\u043e \u0433\u0440\u0443\u043f\u0438\u0440\u0430\u043d\u0438 \u0438\u0437\u0432\u043e\u0440\u0438 \u0438\u043b\u0438 \u0441\u043e\u043d\u0434\u0430\u0436\u0438, \u0437\u0430 \u0434\u0430 \u0441\u0435 \u043d\u0430\u0447\u0435\u0440\u0442\u0430\u0435 \u0432\u0435\u0440\u043e\u044f\u0442\u043d\u043e \u0432\u0442\u043e\u0440\u0438\u0447\u043d\u043e \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u0435." +
+      "</div>";
+  } else {
+    html +=
+      "<div style=\"margin-top:11px\">" +
+      "<strong>\u0412\u0435\u0440\u043e\u044f\u0442\u043d\u0438 \u0432\u0442\u043e\u0440\u0438\u0447\u043d\u0438 \u043f\u0443\u043a\u043d\u0430\u0442\u0438\u043d\u043d\u0438 \u0437\u043e\u043d\u0438</strong>";
+
+    candidates.forEach(
+      (candidate, index) => {
+        html +=
+          "<div style=\"margin-top:7px;" +
+          "padding:8px;background:#fff8ed;" +
+          "border-left:4px dashed #e87912\">" +
+          "<strong>\u0425\u0438\u043f\u043e\u0442\u0435\u0437\u0430 " +
+          (index + 1) +
+          "</strong><br>" +
+          "\u041f\u043e\u0441\u043e\u043a\u0430: <strong>" +
+          Math.round(
+            candidate.bearing
+          ) +
+          "\u00b0</strong><br>" +
+          "\u0414\u044a\u043b\u0436\u0438\u043d\u0430 \u043d\u0430 \u0432\u0438\u0437\u0443\u0430\u043b\u0438\u0437\u0438\u0440\u0430\u043d\u0430\u0442\u0430 \u0437\u043e\u043d\u0430: " +
+          candidate.lengthKm.toFixed(1) +
+          " km<br>" +
+          "\u0412\u043e\u0434\u043d\u0438 \u043e\u0431\u0435\u043a\u0442\u0438 \u043f\u043e \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u0435\u0442\u043e: " +
+          candidate.objects.length +
+          "<br>" +
+          "\u0423\u0432\u0435\u0440\u0435\u043d\u043e\u0441\u0442: <strong>" +
+          esc(
+            candidate.confidence.label
+          ) +
+          " (" +
+          candidate.confidence.score +
+          "/100)</strong>" +
+          "</div>";
+      }
+    );
+
+    html += "</div>";
+  }
+
+  if (intersections.length) {
+    html +=
+      "<div style=\"margin-top:11px\">" +
+      "<strong>\u0417\u043e\u043d\u0438 \u043d\u0430 \u043f\u0440\u0435\u0441\u0438\u0447\u0430\u043d\u0435</strong><br>" +
+      "\u041f\u0440\u0435\u0441\u0438\u0447\u0430\u043d\u0438\u044f\u0442\u0430 \u043d\u0430 \u0440\u0430\u0437\u043b\u043e\u043c\u0438 \u043c\u043e\u0433\u0430\u0442 \u0434\u0430 \u0438\u043c\u0430\u0442 \u043f\u043e-\u0433\u043e\u043b\u044f\u043c\u0430 \u043f\u0443\u043a\u043d\u0430\u0442\u0438\u043d\u043d\u0430 \u0441\u0432\u044a\u0440\u0437\u0430\u043d\u043e\u0441\u0442, \u043d\u043e \u043d\u0435 \u0435 \u0437\u0430\u0434\u044a\u043b\u0436\u0438\u0442\u0435\u043b\u043d\u043e \u0434\u0430 \u0441\u0430 \u0432\u043e\u0434\u043e\u043d\u043e\u0441\u043d\u0438." +
+      "</div>";
+
+    for (
+      const intersection of
+      intersections.slice(0, 5)
+    ) {
+      const coordinates =
+        intersection.point.geometry
+          .coordinates;
+
+      L.circleMarker(
+        [
+          coordinates[1],
+          coordinates[0]
+        ],
+        {
+          pane: "faultHypothesisPane",
+          radius: 8,
+          color: "#b42318",
+          weight: 3,
+          fillColor: "#ffd6d2",
+          fillOpacity: 0.65,
+          interactive: false
+        }
+      ).addTo(
+        ensureFaultHypothesisLayer()
+      );
+    }
+  }
+
+  html +=
+    "<div style=\"margin-top:12px;" +
+    "padding:8px;background:#f2f4f7;" +
+    "border:1px solid #c7ccd1;" +
+    "font-size:11px\">" +
+    "<strong>\u0412\u0430\u0436\u043d\u043e:</strong> " +
+    "\u041f\u0440\u0435\u043a\u044a\u0441\u043d\u0430\u0442\u0438\u0442\u0435 \u043e\u0440\u0430\u043d\u0436\u0435\u0432\u0438 \u043b\u0438\u043d\u0438\u0438 \u043d\u0435 \u0441\u0430 \u043a\u0430\u0440\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0440\u0430\u043d\u0438 \u0440\u0430\u0437\u043b\u043e\u043c\u0438 \u0438 \u043d\u0435 \u0434\u043e\u043a\u0430\u0437\u0432\u0430\u0442 \u0432\u043e\u0434\u043d\u0430 \u0436\u0438\u043b\u0430. \u0422\u0435 \u043f\u043e\u043a\u0430\u0437\u0432\u0430\u0442 \u0432\u0435\u0440\u043e\u044f\u0442\u043d\u0438 \u0432\u0442\u043e\u0440\u0438\u0447\u043d\u0438 \u043f\u0443\u043a\u043d\u0430\u0442\u0438\u043d\u043d\u0438 \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u0438\u044f, \u043a\u043e\u0438\u0442\u043e \u0442\u0440\u044f\u0431\u0432\u0430 \u0434\u0430 \u0441\u0435 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0442 \u0441 \u0442\u0435\u0440\u0435\u043d\u043d\u0430 \u0433\u0435\u043e\u0444\u0438\u0437\u0438\u043a\u0430." +
+    "</div>";
+
+  result.innerHTML = html;
+
+  status.textContent =
+    "\u0421\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u043d\u043e-\u0445\u0438\u0434\u0440\u043e\u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430\u0442\u0430 \u0445\u0438\u043f\u043e\u0442\u0435\u0437\u0430 \u0435 \u0433\u043e\u0442\u043e\u0432\u0430.";
+
+  /*
+    ????????? ??????????? GEM ???????
+    ??? ??????????? ????? ? ????????.
+  */
+  if (
+    typeof keepGemFaultsClickable ===
+      "function"
+  ) {
+    keepGemFaultsClickable();
+  }
+}
+
+// FAULT_BRANCH_HYPOTHESIS_END
 
 async function analyzeLocation(
   lat,
