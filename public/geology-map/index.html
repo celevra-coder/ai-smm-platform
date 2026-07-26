@@ -176,14 +176,6 @@ async function loadGroundwaterBodies(){
          fillOpacity:0.22
        }),
        onEachFeature:(feature,l)=>{
-      l.on("click", event => {
-        showGemFaultHypothesisPopup(
-          feature,
-          l,
-          event.latlng
-        );
-      });
-
          const p=feature.properties||{};
          const name=p.name||p.Name||p.WATERBODY_NAME||p.WB_NAME||p.euName||'Подземно водно тяло';
          const code=p.euCode||p.EU_CD||p.code||p.Code||p.WB_CODE||'—';
@@ -1137,6 +1129,96 @@ async function loadFaults(){
       }),
 
       onEachFeature: (feature, featureLayer) => {
+        // GEM_HYPOTHESIS_POPUP_BUTTON_START
+
+        featureLayer.on("click", event => {
+          selectedGemFaultForHypothesis = {
+            feature: feature,
+            layer: featureLayer,
+            latlng: event.latlng
+          };
+        });
+
+        featureLayer.on("popupopen", () => {
+          const popup = featureLayer.getPopup();
+
+          if (!popup) {
+            return;
+          }
+
+          const popupElement = popup.getElement();
+
+          if (!popupElement) {
+            return;
+          }
+
+          const popupContent =
+            popupElement.querySelector(
+              ".leaflet-popup-content"
+            );
+
+          if (!popupContent) {
+            return;
+          }
+
+          if (
+            popupContent.querySelector(
+              ".gem-hypothesis-button"
+            )
+          ) {
+            return;
+          }
+
+          const button =
+            document.createElement("button");
+
+          button.type = "button";
+
+          button.className =
+            "analysis-btn gem-hypothesis-button";
+
+          button.style.width = "100%";
+          button.style.marginTop = "7px";
+          button.style.padding = "8px";
+          button.style.border = "0";
+          button.style.borderRadius = "6px";
+          button.style.background = "#b85c00";
+          button.style.color = "#ffffff";
+          button.style.fontWeight = "bold";
+          button.style.cursor = "pointer";
+
+          button.textContent =
+            "\u041f\u0440\u043e\u0433\u043d\u043e\u0437\u0438\u0440\u0430\u0439 \u0440\u0430\u0437\u043a\u043b\u043e\u043d\u0435\u043d\u0438\u044f \u0438 \u0432\u043e\u0434\u043e\u043d\u043e\u0441\u043d\u0438 \u0437\u043e\u043d\u0438";
+
+          button.addEventListener(
+            "click",
+            event => {
+              event.preventDefault();
+              event.stopPropagation();
+
+              if (
+                !selectedGemFaultForHypothesis
+              ) {
+                const center =
+                  featureLayer.getBounds()
+                    .getCenter();
+
+                selectedGemFaultForHypothesis = {
+                  feature: feature,
+                  layer: featureLayer,
+                  latlng: center
+                };
+              }
+
+              analyzeSelectedGemFaultHypothesis();
+            }
+          );
+
+          popupContent.appendChild(button);
+        });
+
+        // GEM_HYPOTHESIS_POPUP_BUTTON_END
+
         const p = feature.properties || {};
         const catalogId = gemHasValue(p.catalog_id)
           ? String(p.catalog_id)
