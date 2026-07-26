@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
   "use strict";
 
   const MAX_IMAGES = 12;
@@ -257,13 +257,6 @@
               <option value="Термална вода">Термална вода</option>
               <option value="Неуточнена">Неуточнена</option>
             </select>
-          </div>
-
-          <div>
-            <input
-              id="geo-ai-target-depth"
-              placeholder="Търсена дълбочина, например 30–60 m"
-            >
           </div>
 
           <div>
