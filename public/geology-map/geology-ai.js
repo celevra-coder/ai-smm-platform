@@ -663,8 +663,6 @@
         document.getElementById("geo-ai-survey-type").value,
       waterType:
         document.getElementById("geo-ai-water-type").value,
-      targetDepth:
-        document.getElementById("geo-ai-target-depth").value.trim(),
       dowsingNotes:
         document.getElementById("geo-ai-dowsing").value.trim(),
       notes:
@@ -719,7 +717,6 @@
       formData.append("equipment", values.equipment);
       formData.append("surveyType", values.surveyType);
       formData.append("waterType", values.waterType);
-      formData.append("targetDepth", values.targetDepth);
       formData.append("dowsingNotes", values.dowsingNotes);
       formData.append("notes", values.notes);
 
