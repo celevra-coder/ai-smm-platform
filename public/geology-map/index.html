@@ -107,6 +107,21 @@ button{background:#202020;color:#fff;border:0;cursor:pointer}
 <script src="https://unpkg.com/esri-leaflet@3.0.15/dist/esri-leaflet.js"></script>
 <script>
 const map=L.map('map').setView([42.72,25.35],7);
+
+const gemFaultPaneName = "gemFaultPane";
+
+if (!map.getPane(gemFaultPaneName)) {
+  map.createPane(gemFaultPaneName);
+
+  map.getPane(
+    gemFaultPaneName
+  ).style.zIndex = "650";
+
+  map.getPane(
+    gemFaultPaneName
+  ).style.pointerEvents = "auto";
+}
+
 const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map);
 const topo=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'© OpenTopoMap'});
 
@@ -1106,6 +1121,7 @@ async function loadFaults(){
     gemFaultIndex.clear();
 
     const layer = L.geoJSON(bgFc, {
+      pane: gemFaultPaneName,
       style: () => ({
         color: "#7a2f19",
         weight: 3,
@@ -1907,7 +1923,8 @@ async function analyzeLocation(
       color: "#555",
       weight: 1,
       dashArray: "5,5",
-      fillOpacity: 0.03
+      fillOpacity: 0.03,
+      interactive: false
     }
   ).addTo(map);
 
@@ -2168,7 +2185,8 @@ async function analyzeLocation(
       {
         color: "#7a4a21",
         weight: 3,
-        dashArray: "6,5"
+        dashArray: "6,5",
+        interactive: false
       }
     ).addTo(map);
   } else {
@@ -2296,13 +2314,34 @@ function parseCoordinates(value) {
   return { latitude, longitude };
 }
 
+
+// SEARCHED_LOCATION_ANALYSIS_START
+
+function analyzeSearchedLocation(
+  latitude,
+  longitude
+) {
+  map.closePopup();
+
+  analyzeLocation(
+    Number(latitude),
+    Number(longitude),
+    "\u0422\u044a\u0440\u0441\u0435\u043d\u0430 \u043b\u043e\u043a\u0430\u0446\u0438\u044f"
+  );
+}
+
+// SEARCHED_LOCATION_ANALYSIS_END
+
 function searchCoordinates() {
   const input = document.getElementById("search");
+
   const status = document.getElementById(
     "coordinate-search-status"
   );
 
-  const coordinates = parseCoordinates(input.value);
+  const coordinates = parseCoordinates(
+    input.value
+  );
 
   if (!coordinates) {
     status.textContent =
@@ -2314,36 +2353,55 @@ function searchCoordinates() {
   const longitude = coordinates.longitude;
   const originalValue = input.value;
 
-  /*
-    ???????????? ?? ?????? ?? ?? ????????? ???? ??????? ??????.
-    ?????????? ?????? ????????, ????????? ?????? ??????
-    ? ???? ???? ??????? ?????????? ??????????.
-  */
-  if (typeof applyFilters === "function") {
+  if (
+    typeof applyFilters === "function"
+  ) {
     input.value = "";
     applyFilters();
     input.value = originalValue;
   }
 
   if (coordinateSearchMarker) {
-    map.removeLayer(coordinateSearchMarker);
+    map.removeLayer(
+      coordinateSearchMarker
+    );
   }
 
-  coordinateSearchMarker = L.marker([
-    latitude,
-    longitude
-  ]).addTo(map);
+  coordinateSearchMarker = L.marker(
+    [latitude, longitude]
+  ).addTo(map);
+
+  const popupHtml =
+    "<div style=\"min-width:230px\">" +
+    "<strong>\u0422\u044a\u0440\u0441\u0435\u043d\u0430 \u043b\u043e\u043a\u0430\u0446\u0438\u044f</strong><br>" +
+    "<span class=\"coord\">" +
+    latitude.toFixed(7) +
+    ", " +
+    longitude.toFixed(7) +
+    "</span><br>" +
+    "<button type=\"button\"" +
+    " style=\"margin-top:9px;" +
+    "width:100%;padding:8px;" +
+    "border:0;border-radius:6px;" +
+    "background:#087849;color:#fff;" +
+    "font-weight:bold;cursor:pointer\"" +
+    " onclick=\"analyzeSearchedLocation(" +
+    latitude +
+    "," +
+    longitude +
+    ")\">" +
+    "\u0410\u043d\u0430\u043b\u0438\u0437\u0438\u0440\u0430\u0439 \u0442\u0430\u0437\u0438 \u043b\u043e\u043a\u0430\u0446\u0438\u044f" +
+    "</button>" +
+    "</div>";
 
   coordinateSearchMarker
-    .bindPopup(
-      "<strong>\u0422\u044a\u0440\u0441\u0435\u043d\u0438 \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442\u0438</strong><br>" +
-      latitude.toFixed(7) +
-      ", " +
-      longitude.toFixed(7)
-    )
+    .bindPopup(popupHtml)
     .openPopup();
 
-  map.setView([latitude, longitude], 14);
+  map.setView(
+    [latitude, longitude],
+    14
+  );
 
   status.textContent =
     "\u041f\u043e\u043a\u0430\u0437\u0430\u043d\u0430 \u0442\u043e\u0447\u043a\u0430: " +
