@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="bg">
 <head>
 <meta charset="utf-8">
@@ -3665,5 +3665,69 @@ document
 /* ===== ???? ?? ????Отиди до координати ===== */
 
 </script>
+<!-- SUPABASE GEOLOGY CONNECTION -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+window.geologySupabase = null;
+window.geologySupabaseStatus = {
+  connected: false,
+  surveysCount: 0,
+  error: null
+};
+
+async function initializeGeologySupabase() {
+  try {
+    const response = await fetch("/api/geology-config", {
+      cache: "no-store"
+    });
+
+    const config = await response.json();
+
+    if (!response.ok || !config.ok) {
+      throw new Error(
+        config.error || "Supabase configuration could not be loaded."
+      );
+    }
+
+    window.geologySupabase = window.supabase.createClient(
+      config.supabaseUrl,
+      config.supabaseKey
+    );
+
+    const result = await window.geologySupabase
+      .from("surveys")
+      .select("id", { count: "exact", head: true });
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    window.geologySupabaseStatus = {
+      connected: true,
+      surveysCount: result.count || 0,
+      error: null
+    };
+
+    console.log(
+      "[Geology Supabase] Connected successfully. Surveys:",
+      window.geologySupabaseStatus.surveysCount
+    );
+  } catch (error) {
+    window.geologySupabaseStatus = {
+      connected: false,
+      surveysCount: 0,
+      error: error && error.message ? error.message : String(error)
+    };
+
+    console.error(
+      "[Geology Supabase] Connection failed:",
+      window.geologySupabaseStatus.error
+    );
+  }
+}
+
+initializeGeologySupabase();
+</script>
+<!-- END SUPABASE GEOLOGY CONNECTION -->
 </body>
 </html>
