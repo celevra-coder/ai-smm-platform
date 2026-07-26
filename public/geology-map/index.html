@@ -1874,6 +1874,213 @@ function nearestGemFaultToPoint(point) {
 
 // GEM_POINT_DISTANCE_END
 
+
+// GROUNDWATER_PROPERTY_READER_START
+
+function cleanGroundwaterValue(value) {
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "";
+  }
+
+  if (typeof value === "object") {
+    if (value.value !== undefined) {
+      return cleanGroundwaterValue(value.value);
+    }
+
+    if (value.text !== undefined) {
+      return cleanGroundwaterValue(value.text);
+    }
+
+    if (value.localId !== undefined) {
+      return cleanGroundwaterValue(value.localId);
+    }
+
+    try {
+      return JSON.stringify(value);
+    } catch (error) {
+      return "";
+    }
+  }
+
+  return String(value).trim();
+}
+
+function groundwaterPropertyByPatterns(
+  properties,
+  patterns
+) {
+  if (!properties) {
+    return "";
+  }
+
+  const entries = Object.entries(properties);
+
+  for (const pattern of patterns) {
+    for (const [key, rawValue] of entries) {
+      const normalizedKey = String(key)
+        .toLowerCase()
+        .replace(/[^a-z0-9\u0430-\u044f]/g, "");
+
+      if (!pattern.test(normalizedKey)) {
+        continue;
+      }
+
+      const value =
+        cleanGroundwaterValue(rawValue);
+
+      if (
+        value &&
+        value !== "null" &&
+        value !== "undefined"
+      ) {
+        return value;
+      }
+    }
+  }
+
+  return "";
+}
+
+function groundwaterDisplayData(properties) {
+  const name = groundwaterPropertyByPatterns(
+    properties,
+    [
+      /waterbodyname/,
+      /localname/,
+      /name/,
+      /\u0438\u043c\u0435/,
+      /designation/,
+      /label/,
+      /title/
+    ]
+  );
+
+  const code = groundwaterPropertyByPatterns(
+    properties,
+    [
+      /eucode/,
+      /eucd/,
+      /waterbodycode/,
+      /localid/,
+      /inspireid/,
+      /identifier/,
+      /code/,
+      /\u043a\u043e\u0434/
+    ]
+  );
+
+  const type = groundwaterPropertyByPatterns(
+    properties,
+    [
+      /groundwatertype/,
+      /watertype/,
+      /bodytype/,
+      /aquifertype/,
+      /type/,
+      /\u0442\u0438\u043f/
+    ]
+  );
+
+  const status = groundwaterPropertyByPatterns(
+    properties,
+    [
+      /quantitativestatus/,
+      /chemicalstatus/,
+      /overallstatus/,
+      /status/,
+      /\u0441\u0442\u0430\u0442\u0443\u0441/
+    ]
+  );
+
+  const basin = groundwaterPropertyByPatterns(
+    properties,
+    [
+      /riverbasindistrict/,
+      /basindistrict/,
+      /basin/,
+      /district/,
+      /\u0431\u0430\u0441\u0435\u0439\u043d/
+    ]
+  );
+
+  return {
+    name,
+    code,
+    type,
+    status,
+    basin
+  };
+}
+
+function groundwaterDebugProperties(properties) {
+  if (!properties) {
+    return "";
+  }
+
+  const ignored = new Set([
+    "bbox",
+    "geometry",
+    "geom",
+    "shape",
+    "the_geom"
+  ]);
+
+  const rows = [];
+
+  for (const [key, rawValue] of Object.entries(
+    properties
+  )) {
+    if (
+      ignored.has(
+        String(key).toLowerCase()
+      )
+    ) {
+      continue;
+    }
+
+    const value =
+      cleanGroundwaterValue(rawValue);
+
+    if (
+      !value ||
+      value === "null" ||
+      value === "undefined"
+    ) {
+      continue;
+    }
+
+    rows.push(
+      "<div style=\"margin-top:3px\">" +
+      "<strong>" +
+      esc(key) +
+      ":</strong> " +
+      esc(value) +
+      "</div>"
+    );
+  }
+
+  if (!rows.length) {
+    return "";
+  }
+
+  return (
+    "<details style=\"margin-top:8px\">" +
+    "<summary style=\"cursor:pointer\">" +
+    "\u0412\u0441\u0438\u0447\u043a\u0438 \u0434\u0430\u043d\u043d\u0438 \u043e\u0442 \u0432\u043e\u0434\u043d\u0438\u044f \u0441\u043b\u043e\u0439" +
+    "</summary>" +
+    "<div class=\"small\" style=\"margin-top:5px\">" +
+    rows.join("") +
+    "</div>" +
+    "</details>"
+  );
+}
+
+// GROUNDWATER_PROPERTY_READER_END
+
 async function analyzeLocation(
   lat,
   lon,
@@ -2043,45 +2250,49 @@ async function analyzeLocation(
     const p =
       groundwaterBody.properties || {};
 
-    const code = firstUsefulProperty(
-      p,
-      [
-        "inspireId_localId",
-        "localId",
-        "code",
-        "EU_CD",
-        "euCode",
-        "id",
-        "identifier"
-      ]
-    );
-
-    const name = firstUsefulProperty(
-      p,
-      [
-        "name",
-        "Name",
-        "localName",
-        "waterBodyName",
-        "nameText"
-      ]
-    );
+    const groundwaterData =
+      groundwaterDisplayData(p);
 
     html +=
       "\u041f\u043e\u0434\u0437\u0435\u043c\u043d\u043e \u0432\u043e\u0434\u043d\u043e \u0442\u044f\u043b\u043e: <strong>" +
       esc(
-        name ||
-        code ||
-        "\u043d\u0435\u0438\u043c\u0435\u043d\u0443\u0432\u0430\u043d\u043e"
+        groundwaterData.name ||
+        groundwaterData.code ||
+        "\u041a\u0430\u0440\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0440\u0430\u043d\u043e \u0432\u043e\u0434\u043d\u043e \u0442\u044f\u043b\u043e"
       ) +
       "</strong><br>";
 
-    if (code && name) {
+    if (groundwaterData.code) {
       html +=
-        "\u041a\u043e\u0434: " +
-        esc(code) +
+        "\u041a\u043e\u0434: <strong>" +
+        esc(groundwaterData.code) +
+        "</strong><br>";
+    }
+
+    if (groundwaterData.type) {
+      html +=
+        "\u0422\u0438\u043f: " +
+        esc(groundwaterData.type) +
         "<br>";
     }
+
+    if (groundwaterData.status) {
+      html +=
+        "\u0421\u0442\u0430\u0442\u0443\u0441: " +
+        esc(groundwaterData.status) +
+        "<br>";
+    }
+
+    if (groundwaterData.basin) {
+      html +=
+        "\u0411\u0430\u0441\u0435\u0439\u043d/\u0440\u0430\u0439\u043e\u043d: " +
+        esc(groundwaterData.basin) +
+        "<br>";
+    }
+
+    html +=
+      groundwaterDebugProperties(p);
+
   } else {
     html +=
       "\u041d\u0435 \u0435 \u043f\u043e\u0442\u0432\u044a\u0440\u0434\u0435\u043d\u043e \u0432\u043e\u0434\u043d\u043e \u0442\u044f\u043b\u043e \u043e\u0442 \u0432\u044a\u0440\u043d\u0430\u0442\u0438\u0442\u0435 \u0434\u0430\u043d\u043d\u0438.<br>";
