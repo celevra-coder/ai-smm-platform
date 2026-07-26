@@ -2,7 +2,7 @@
   "use strict";
 
   const MAX_IMAGES = 12;
-  const MAX_TOTAL_BYTES = 3.8 * 1024 * 1024;
+  const MAX_TOTAL_BYTES = 2.8 * 1024 * 1024;
 
   let selectedImages = [];
   let latestAnalysis = null;
@@ -407,7 +407,7 @@
       image.onload = function () {
         URL.revokeObjectURL(objectUrl);
 
-        const maxDimension = 1500;
+        const maxDimension = 1100;
         const scale = Math.min(
           1,
           maxDimension / Math.max(image.width, image.height)
@@ -738,7 +738,20 @@
         body: formData
       });
 
-      const payload = await response.json();
+      const responseText = await response.text();
+
+      let payload;
+
+      try {
+        payload = JSON.parse(responseText);
+      } catch {
+        throw new Error(
+          response.status === 413
+            ? "Снимките са прекалено големи. Качи по-малко снимки наведнъж."
+            : "Сървърът върна грешка: " +
+              responseText.slice(0, 300)
+        );
+      }
 
       if (!response.ok || !payload.success) {
         throw new Error(
