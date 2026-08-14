@@ -39,14 +39,14 @@ button{background:#202020;color:#fff;border:0;cursor:pointer}
 <div class="small">Символът показва типа на съоръжението, а цветът при минералните сондажи показва температурата.</div>
 
 <div class="grid">
-<div class="full"><input id="search" placeholder="Търси сондаж, находище или населено място">
+<div class="full"><input id="search" placeholder="Населено място или координати">
 <button
   type="button"
   id="coordinate-search-button"
   onclick="searchCoordinates()"
   style="margin-top:8px;width:100%;padding:9px;cursor:pointer;"
 >
-  Отиди до координати
+  Търси място или координати
 </button>
 
 <div
@@ -3485,7 +3485,7 @@ legend.onAdd=()=>{
 legend.addTo(map);
 
 
-/* ===== ??Отиди до координати ===== */
+/* ===== ??Търси място или координати ===== */
 
 let coordinateSearchMarker = null;
 
@@ -3575,94 +3575,123 @@ function analyzeSearchedLocation(
 
 // SEARCHED_LOCATION_ANALYSIS_END
 
-function searchCoordinates() {
+async function searchCoordinates() {
   const input = document.getElementById("search");
 
   const status = document.getElementById(
     "coordinate-search-status"
   );
 
-  const coordinates = parseCoordinates(
-    input.value
-  );
+  const query = String(input.value || "").trim();
 
-  if (!coordinates) {
+  if (!query) {
     status.textContent =
-      "\u0412\u044a\u0432\u0435\u0434\u0438 \u043d\u0430\u043f\u0440\u0438\u043c\u0435\u0440: 42.1354, 24.7453";
+      "\u0412\u044a\u0432\u0435\u0434\u0438 \u043d\u0430\u0441\u0435\u043b\u0435\u043d\u043e \u043c\u044f\u0441\u0442\u043e \u0438\u043b\u0438 \u043a\u043e\u043e\u0440\u0434\u0438\u043d\u0430\u0442\u0438.";
     return;
   }
 
-  const latitude = coordinates.latitude;
-  const longitude = coordinates.longitude;
-  const originalValue = input.value;
+  const coordinates = parseCoordinates(query);
 
-  if (
-    typeof applyFilters === "function"
-  ) {
-    input.value = "";
-    applyFilters();
-    input.value = originalValue;
-  }
-
-  if (coordinateSearchMarker) {
-    map.removeLayer(
-      coordinateSearchMarker
+  if (coordinates) {
+    showSearchedCoordinates(
+      coordinates.latitude,
+      coordinates.longitude,
+      status
     );
+    return;
   }
-
-  coordinateSearchMarker = L.marker(
-    [latitude, longitude]
-  ).addTo(map);
-
-  const popupHtml =
-    "<div style=\"min-width:230px\">" +
-    "<strong>\u0422\u044a\u0440\u0441\u0435\u043d\u0430 \u043b\u043e\u043a\u0430\u0446\u0438\u044f</strong><br>" +
-    "<span class=\"coord\">" +
-    latitude.toFixed(7) +
-    ", " +
-    longitude.toFixed(7) +
-    "</span><br>" +
-    "<button type=\"button\"" +
-    " style=\"margin-top:9px;" +
-    "width:100%;padding:8px;" +
-    "border:0;border-radius:6px;" +
-    "background:#087849;color:#fff;" +
-    "font-weight:bold;cursor:pointer\"" +
-    " onclick=\"analyzeSearchedLocation(" +
-    latitude +
-    "," +
-    longitude +
-    ")\">" +
-    "\u0410\u043d\u0430\u043b\u0438\u0437\u0438\u0440\u0430\u0439 \u0442\u0430\u0437\u0438 \u043b\u043e\u043a\u0430\u0446\u0438\u044f" +
-    "</button>" +
-    "</div>";
-
-  coordinateSearchMarker
-    .bindPopup(popupHtml)
-    .openPopup();
-
-  map.setView(
-    [latitude, longitude],
-    14
-  );
 
   status.textContent =
-    "\u041f\u043e\u043a\u0430\u0437\u0430\u043d\u0430 \u0442\u043e\u0447\u043a\u0430: " +
-    latitude.toFixed(7) +
-    ", " +
-    longitude.toFixed(7);
-}
+    "\u0422\u044a\u0440\u0441\u0435\u043d\u0435 \u043d\u0430 \u043c\u044f\u0441\u0442\u043e...";
 
+  try {
+    const url =
+      "https://nominatim.openstreetmap.org/search" +
+      "?format=jsonv2" +
+      "&countrycodes=bg" +
+      "&limit=5" +
+      "&q=" +
+      encodeURIComponent(query);
+
+    const response = await fetch(url, {
+      headers: {
+        "Accept-Language": "bg"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Place search failed.");
+    }
+
+    const results = await response.json();
+
+    if (!Array.isArray(results) || results.length === 0) {
+      status.textContent =
+        "\u041d\u0435 \u0435 \u043d\u0430\u043c\u0435\u0440\u0435\u043d\u043e \u0442\u0430\u043a\u043e\u0432\u0430 \u043c\u044f\u0441\u0442\u043e \u0432 \u0411\u044a\u043b\u0433\u0430\u0440\u0438\u044f.";
+      return;
+    }
+
+    const result = results[0];
+
+    const latitude = Number(result.lat);
+    const longitude = Number(result.lon);
+
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude)
+    ) {
+      throw new Error("Invalid place coordinates.");
+    }
+
+    if (coordinateSearchMarker) {
+      map.removeLayer(coordinateSearchMarker);
+    }
+
+    coordinateSearchMarker = L.marker(
+      [latitude, longitude]
+    ).addTo(map);
+
+    const popup =
+      "<div style=\"min-width:240px\">" +
+      "<strong>" +
+      (result.display_name || query) +
+      "</strong><br>" +
+      "<span class=\"coord\">" +
+      latitude.toFixed(6) +
+      ", " +
+      longitude.toFixed(6) +
+      "</span>" +
+      "</div>";
+
+    coordinateSearchMarker
+      .bindPopup(popup)
+      .openPopup();
+
+    map.setView(
+      [latitude, longitude],
+      14
+    );
+
+    status.textContent =
+      "\u041d\u0430\u043c\u0435\u0440\u0435\u043d\u043e: " +
+      (result.display_name || query);
+  } catch (error) {
+    console.error("[Place search]", error);
+
+    status.textContent =
+      "\u0413\u0440\u0435\u0448\u043a\u0430 \u043f\u0440\u0438 \u0442\u044a\u0440\u0441\u0435\u043d\u0435 \u043d\u0430 \u043d\u0430\u0441\u0435\u043b\u0435\u043d\u043e\u0442\u043e \u043c\u044f\u0441\u0442\u043e.";
+  }
+}
 document
   .getElementById("search")
   .addEventListener("keydown", function (event) {
-    if (event.key === "Enter" && parseCoordinates(this.value)) {
+    if (event.key === "Enter") {
       event.preventDefault();
       searchCoordinates();
     }
   });
 
-/* ===== ???? ?? ????Отиди до координати ===== */
+/* ===== ???? ?? ????Търси място или координати ===== */
 
 </script>
 <!-- SUPABASE GEOLOGY CONNECTION -->
