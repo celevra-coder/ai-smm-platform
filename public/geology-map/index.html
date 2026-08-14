@@ -3575,6 +3575,53 @@ function analyzeSearchedLocation(
 
 // SEARCHED_LOCATION_ANALYSIS_END
 
+function showSearchedCoordinates(latitude, longitude, status) {
+  if (coordinateSearchMarker) {
+    map.removeLayer(coordinateSearchMarker);
+  }
+
+  coordinateSearchMarker = L.marker(
+    [latitude, longitude]
+  ).addTo(map);
+
+  const popupHtml =
+    "<div style=\"min-width:230px\">" +
+    "<strong>Търсена локация</strong><br>" +
+    "<span class=\"coord\">" +
+    latitude.toFixed(7) +
+    ", " +
+    longitude.toFixed(7) +
+    "</span><br>" +
+    "<button type=\"button\"" +
+    " style=\"margin-top:9px;width:100%;padding:8px;" +
+    "border:0;border-radius:6px;background:#087849;" +
+    "color:#fff;font-weight:bold;cursor:pointer\"" +
+    " onclick=\"analyzeSearchedLocation(" +
+    latitude +
+    "," +
+    longitude +
+    ")\">" +
+    "Анализирай тази локация" +
+    "</button>" +
+    "</div>";
+
+  coordinateSearchMarker
+    .bindPopup(popupHtml)
+    .openPopup();
+
+  map.setView(
+    [latitude, longitude],
+    15
+  );
+
+  if (status) {
+    status.textContent =
+      "Показана точка: " +
+      latitude.toFixed(7) +
+      ", " +
+      longitude.toFixed(7);
+  }
+}
 async function searchCoordinates() {
   const input = document.getElementById("search");
 
