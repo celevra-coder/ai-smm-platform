@@ -70,6 +70,8 @@ button{background:#202020;color:#fff;border:0;cursor:pointer}
 <label class="layerrow"><input type="checkbox" id="layer-inactive" checked> ⚫ Ликвидирани и консервирани</label>
 <label class="layerrow"><input type="checkbox" id="layer-other" checked> ◇ Други минерални съоръжения</label>
 <label class="layerrow"><input type="checkbox" id="layer-groundwater"> 🟦 Подземни водни тела (EEA/WFD)</label><div id="gw-load-status" class="small" style="margin-left:24px">изключено</div>
+<label class="layerrow"><input type="checkbox" id="layer-bd-ibr"> 🔷 Подземни водни тела – БД ИБР / ПУРБ3</label>
+<div id="bd-ibr-load-status" class="small" style="margin-left:24px">изключено</div>
 <label class="layerrow"><input type="checkbox" id="layer-faults"> 🟤 Активни разломи (GEM)</label><div id="fault-load-status" class="small" style="margin-left:24px">изключено</div>
 <label class="layerrow future"><input type="checkbox" disabled> 📍 AIDU измервания — ще се добавят по-късно</label>
 <label class="layerrow future"><input type="checkbox" disabled> ⭐ Потвърдени успешни сондажи — ще се добавят по-късно</label>
@@ -126,8 +128,11 @@ const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZ
 const topo=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:17,attribution:'© OpenTopoMap'});
 
 const groundwaterLayer = L.layerGroup();
+const bdIbrGroundwaterLayer = L.layerGroup();
 const faultsLayer = L.layerGroup();
 let groundwaterLoaded=false;
+let bdIbrGroundwaterLoaded=false;
+let bdIbrGroundwaterLoading=false;
 let groundwaterLoading=false;
 let faultsLoaded=false;
 let faultsLoading=false;
@@ -136,6 +141,7 @@ L.control.layers(
  {'Карта':osm,'Релеф':topo},
  {
    '🟦 Подземни водни тела (EEA/WFD)':groundwaterLayer,
+   '🔷 Подземни водни тела – БД ИБР / ПУРБ3':bdIbrGroundwaterLayer,
    '🟤 Активни разломи (GEM)':faultsLayer
  },
  {collapsed:false}
@@ -147,6 +153,131 @@ function setLayerStatus(id,text,color){
    el.textContent=text;
    el.style.color=color||'#555';
  }
+}
+
+
+async function loadBdIbrGroundwaterBodies(){
+  if(bdIbrGroundwaterLoaded || bdIbrGroundwaterLoading) return;
+
+  bdIbrGroundwaterLoading = true;
+  setLayerStatus(
+    'bd-ibr-load-status',
+    'зарежда се…',
+    '#a05a00'
+  );
+
+  try {
+    const response = await fetch(
+      '/geology-map/data/bd_ibr_groundwater_bodies.geojson'
+    );
+
+    if(!response.ok){
+      throw new Error('HTTP ' + response.status);
+    }
+
+    const data = await response.json();
+
+    const layer = L.geoJSON(data, {
+      style: function(feature){
+        return {
+          color: '#006f8b',
+          weight: 2,
+          opacity: 0.9,
+          fillColor: '#2aa9c7',
+          fillOpacity: 0.18
+        };
+      },
+
+      onEachFeature: function(feature, featureLayer){
+        const p = feature.properties || {};
+
+        const code = p.localId || '—';
+        const name = p.nameText || p.nameTxtInt || 'Подземно водно тяло';
+        const area = Number(p.sizeValue);
+        const areaText = Number.isFinite(area)
+          ? area.toFixed(2) + ' ' + (p.sizeUoM || 'km²')
+          : '—';
+
+        const horizons = p.horizons || '—';
+        const type = p.Type || '—';
+        const location = p.LOCATION || '—';
+        const basin = p.BASIN || '—';
+        const protectionCode = p['Êîä_íà_ÇÇÂ'] || '—';
+
+        const html =
+          '<div style="min-width:280px;line-height:1.45">' +
+          '<div style="font-weight:700;font-size:14px;margin-bottom:5px">' +
+          name +
+          '</div>' +
+
+          '<div><b>Код:</b> ' + code + '</div>' +
+          '<div><b>Площ:</b> ' + areaText + '</div>' +
+          '<div><b>Хоризонт:</b> ' + horizons + '</div>' +
+          '<div><b>Тип:</b> ' + type + '</div>' +
+          '<div><b>Район:</b> ' + location + '</div>' +
+          '<div><b>Басейн:</b> ' + basin + '</div>' +
+          '<div><b>Код ЗЗВ:</b> ' + protectionCode + '</div>' +
+
+          '<div style="margin-top:7px;font-size:11px;color:#555">' +
+          'Източник: Басейнова дирекция „Източнобеломорски район“ – ПУРБ3' +
+          '</div>' +
+          '</div>';
+
+        featureLayer.bindPopup(html);
+
+        featureLayer.on('mouseover', function(){
+          this.setStyle({
+            weight: 3,
+            fillOpacity: 0.28
+          });
+        });
+
+        featureLayer.on('mouseout', function(){
+          this.setStyle({
+            weight: 2,
+            fillOpacity: 0.18
+          });
+        });
+      }
+    });
+
+    layer.addTo(bdIbrGroundwaterLayer);
+
+    bdIbrGroundwaterLoaded = true;
+    bdIbrGroundwaterLoading = false;
+
+    const count =
+      data && Array.isArray(data.features)
+        ? data.features.length
+        : 0;
+
+    setLayerStatus(
+      'bd-ibr-load-status',
+      'заредено ✓ (' + count + ' водни тела)',
+      '#0b6b43'
+    );
+
+    window.bdIbrGroundwaterGeoJson = data;
+
+    console.log(
+      '[BD IBR] Groundwater bodies loaded:',
+      count
+    );
+
+  } catch(error){
+    bdIbrGroundwaterLoading = false;
+
+    console.error(
+      '[BD IBR] Load error:',
+      error
+    );
+
+    setLayerStatus(
+      'bd-ibr-load-status',
+      'грешка при зареждане',
+      '#b00020'
+    );
+  }
 }
 
 async function loadGroundwaterBodies(){
@@ -1412,6 +1543,16 @@ function toggleUnmapped(){
 ['search','basin','category','tempMin','depthMax','layer-wells','layer-springs','layer-monitoring','layer-inactive','layer-other']
 .forEach(i=>document.getElementById(i).addEventListener('input',applyFilters));
 
+
+document.getElementById('layer-bd-ibr').addEventListener('change',e=>{
+  if(e.target.checked){
+    bdIbrGroundwaterLayer.addTo(map);
+    loadBdIbrGroundwaterBodies();
+  }else{
+    map.removeLayer(bdIbrGroundwaterLayer);
+  }
+});
+
 document.getElementById('layer-groundwater').addEventListener('change',e=>{
  if(e.target.checked){
    groundwaterLayer.addTo(map);
@@ -1425,6 +1566,10 @@ document.getElementById('layer-faults').addEventListener('change',e=>{
  }else map.removeLayer(faultsLayer);
 });
 map.on('overlayadd',e=>{
+ if(e.layer===bdIbrGroundwaterLayer){
+   document.getElementById('layer-bd-ibr').checked=true;
+   loadBdIbrGroundwaterBodies();
+ }
  if(e.layer===groundwaterLayer){
    document.getElementById('layer-groundwater').checked=true;
    loadGroundwaterBodies();
@@ -1435,6 +1580,9 @@ map.on('overlayadd',e=>{
  }
 });
 map.on('overlayremove',e=>{
+ if(e.layer===bdIbrGroundwaterLayer){
+   document.getElementById('layer-bd-ibr').checked=false;
+ }
  if(e.layer===groundwaterLayer) document.getElementById('layer-groundwater').checked=false;
  if(e.layer===faultsLayer) document.getElementById('layer-faults').checked=false;
 });
