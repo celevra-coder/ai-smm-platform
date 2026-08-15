@@ -72,6 +72,8 @@ button{background:#202020;color:#fff;border:0;cursor:pointer}
 <label class="layerrow"><input type="checkbox" id="layer-groundwater"> 🟦 Подземни водни тела (EEA/WFD)</label><div id="gw-load-status" class="small" style="margin-left:24px">изключено</div>
 <label class="layerrow"><input type="checkbox" id="layer-bd-ibr"> 🔷 Подземни водни тела – БД ИБР / ПУРБ3</label>
 <div id="bd-ibr-load-status" class="small" style="margin-left:24px">изключено</div>
+<label class="layerrow"><input type="checkbox" id="layer-geology-age"> 🪨 Геоложка възраст – БД ИБР</label>
+<div id="geology-age-load-status" class="small" style="margin-left:24px">изключено</div>
 <label class="layerrow"><input type="checkbox" id="layer-quant-monitoring"> 🟣 Количествен мониторинг – НИМХ 2019–2020</label>
 <div id="quant-monitoring-load-status" class="small" style="margin-left:24px">изключено</div>
 <label class="layerrow"><input type="checkbox" id="layer-faults"> 🟤 Активни разломи (GEM)</label><div id="fault-load-status" class="small" style="margin-left:24px">изключено</div>
@@ -131,6 +133,22 @@ const topo=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZo
 
 const groundwaterLayer = L.layerGroup();
 const bdIbrGroundwaterLayer = L.layerGroup();
+
+const geologyAgeBounds = [
+  [40.96405463472572, 23.499441370514838],
+  [43.13414097146175, 26.964034660575408]
+];
+
+const geologyAgeLayer = L.imageOverlay(
+  '/geology-map/data/bd_ibr_geology_2024_affine.png',
+  geologyAgeBounds,
+  {
+    opacity: 0.62,
+    interactive: false,
+    crossOrigin: true
+  }
+);
+
 const quantitativeMonitoringLayer = L.layerGroup();
 const faultsLayer = L.layerGroup();
 let groundwaterLoaded=false;
@@ -147,6 +165,7 @@ L.control.layers(
  {
    '🟦 Подземни водни тела (EEA/WFD)':groundwaterLayer,
    '🔷 Подземни водни тела – БД ИБР / ПУРБ3':bdIbrGroundwaterLayer,
+   '🪨 Геоложка възраст – БД ИБР':geologyAgeLayer,
    '🟣 Количествен мониторинг – НИМХ 2019–2020':quantitativeMonitoringLayer,
    '🟤 Активни разломи (GEM)':faultsLayer
  },
@@ -1814,6 +1833,32 @@ document.getElementById('layer-bd-ibr').addEventListener('change',e=>{
 });
 
 
+
+document.getElementById('layer-geology-age').addEventListener('change',e=>{
+  if(e.target.checked){
+    geologyAgeLayer.addTo(map);
+
+    if(geologyAgeLayer.bringToBack){
+      geologyAgeLayer.bringToBack();
+    }
+
+    setLayerStatus(
+      'geology-age-load-status',
+      'заредено ✓',
+      '#0b6b43'
+    );
+
+  }else{
+    map.removeLayer(geologyAgeLayer);
+
+    setLayerStatus(
+      'geology-age-load-status',
+      'изключено',
+      '#666'
+    );
+  }
+});
+
 document.getElementById('layer-quant-monitoring').addEventListener('change',e=>{
   if(e.target.checked){
     quantitativeMonitoringLayer.addTo(map);
@@ -1836,6 +1881,22 @@ document.getElementById('layer-faults').addEventListener('change',e=>{
  }else map.removeLayer(faultsLayer);
 });
 map.on('overlayadd',e=>{
+ if(e.layer===geologyAgeLayer){
+   document.getElementById('layer-geology-age').checked=true;
+
+   setLayerStatus(
+     'geology-age-load-status',
+     'заредено ✓',
+     '#0b6b43'
+   );
+
+   setTimeout(()=>{
+     if(geologyAgeLayer.bringToBack){
+       geologyAgeLayer.bringToBack();
+     }
+   },0);
+ }
+
  if(e.layer===bdIbrGroundwaterLayer){
    document.getElementById('layer-bd-ibr').checked=true;
    loadBdIbrGroundwaterBodies();
@@ -1854,6 +1915,16 @@ map.on('overlayadd',e=>{
  }
 });
 map.on('overlayremove',e=>{
+ if(e.layer===geologyAgeLayer){
+   document.getElementById('layer-geology-age').checked=false;
+
+   setLayerStatus(
+     'geology-age-load-status',
+     'изключено',
+     '#666'
+   );
+ }
+
  if(e.layer===bdIbrGroundwaterLayer){
    document.getElementById('layer-bd-ibr').checked=false;
  }
@@ -3536,6 +3607,662 @@ function analyzeGemFaultHypothesis(
 
 // FAULT_BRANCH_HYPOTHESIS_END
 
+
+let geologyMachinePromise = null;
+
+function geologyLoadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+
+      const ctx = canvas.getContext(
+        "2d",
+        { willReadFrequently: true }
+      );
+
+      ctx.drawImage(img, 0, 0);
+
+      resolve({
+        image: img,
+        canvas,
+        ctx,
+        width: canvas.width,
+        height: canvas.height
+      });
+    };
+
+    img.onerror = () =>
+      reject(
+        new Error(
+          "Не може да се зареди геоложкият raster: " +
+          url
+        )
+      );
+
+    img.src = url;
+  });
+}
+
+
+async function loadGeologyMachineData() {
+
+  if (geologyMachinePromise) {
+    return geologyMachinePromise;
+  }
+
+  geologyMachinePromise = (async () => {
+
+    const metaResponse = await fetch(
+      "/geology-map/data/bd_ibr_geology_lookup.json"
+    );
+
+    if (!metaResponse.ok) {
+      throw new Error(
+        "Не може да се зареди bd_ibr_geology_lookup.json"
+      );
+    }
+
+    const meta = await metaResponse.json();
+
+    const [
+      direct,
+      reliable,
+      obscured
+    ] = await Promise.all([
+      geologyLoadImage(meta.rasters.direct),
+      geologyLoadImage(meta.rasters.reliable),
+      geologyLoadImage(meta.rasters.source_obscured)
+    ]);
+
+    const w = meta.master.width;
+    const h = meta.master.height;
+
+    if (
+      direct.width !== w ||
+      direct.height !== h ||
+      reliable.width !== w ||
+      reliable.height !== h ||
+      obscured.width !== w ||
+      obscured.height !== h
+    ) {
+      throw new Error(
+        "Размерите на геоложките raster-и не съвпадат."
+      );
+    }
+
+    const unitById = {};
+
+    for (const unit of meta.units || []) {
+      unitById[Number(unit.id)] = unit;
+    }
+
+    return {
+      meta,
+      direct,
+      reliable,
+      obscured,
+      unitById
+    };
+
+  })();
+
+  return geologyMachinePromise;
+}
+
+
+/*
+  WGS84 longitude/latitude -> UTM Zone 35N
+
+  Самостоятелна реализация, за да не зависим
+  от външна JS GIS библиотека.
+*/
+function geologyLonLatToUTM35(lon, lat) {
+
+  const a = 6378137.0;
+  const f = 1 / 298.257223563;
+
+  const k0 = 0.9996;
+  const e2 = f * (2 - f);
+  const ep2 = e2 / (1 - e2);
+
+  const rad = Math.PI / 180;
+
+  const phi = lat * rad;
+  const lambda = lon * rad;
+
+  // Central meridian of UTM zone 35
+  const lambda0 = 27 * rad;
+
+  const sinPhi = Math.sin(phi);
+  const cosPhi = Math.cos(phi);
+  const tanPhi = Math.tan(phi);
+
+  const N =
+    a / Math.sqrt(
+      1 - e2 * sinPhi * sinPhi
+    );
+
+  const T =
+    tanPhi * tanPhi;
+
+  const C =
+    ep2 * cosPhi * cosPhi;
+
+  const A =
+    cosPhi * (lambda - lambda0);
+
+  const e4 = e2 * e2;
+  const e6 = e4 * e2;
+
+  const M =
+    a * (
+      (1 -
+        e2 / 4 -
+        3 * e4 / 64 -
+        5 * e6 / 256
+      ) * phi
+
+      -
+
+      (
+        3 * e2 / 8 +
+        3 * e4 / 32 +
+        45 * e6 / 1024
+      ) * Math.sin(2 * phi)
+
+      +
+
+      (
+        15 * e4 / 256 +
+        45 * e6 / 1024
+      ) * Math.sin(4 * phi)
+
+      -
+
+      (
+        35 * e6 / 3072
+      ) * Math.sin(6 * phi)
+    );
+
+  const easting =
+    k0 * N * (
+      A +
+
+      (1 - T + C) *
+      Math.pow(A, 3) / 6 +
+
+      (
+        5 -
+        18 * T +
+        T * T +
+        72 * C -
+        58 * ep2
+      ) *
+      Math.pow(A, 5) / 120
+    ) +
+    500000.0;
+
+  let northing =
+    k0 * (
+      M +
+
+      N * tanPhi * (
+        A * A / 2 +
+
+        (
+          5 -
+          T +
+          9 * C +
+          4 * C * C
+        ) *
+        Math.pow(A, 4) / 24 +
+
+        (
+          61 -
+          58 * T +
+          T * T +
+          600 * C -
+          330 * ep2
+        ) *
+        Math.pow(A, 6) / 720
+      )
+    );
+
+  // България е в северното полукълбо.
+  if (lat < 0) {
+    northing += 10000000.0;
+  }
+
+  return {
+    easting,
+    northing
+  };
+}
+
+
+function geologyUTMToMasterPixel(
+  east,
+  north,
+  meta
+) {
+
+  const inv =
+    meta.affine.utm_to_pixel_matrix;
+
+  const eCoef =
+    meta.affine.pixel_to_utm_easting;
+
+  const nCoef =
+    meta.affine.pixel_to_utm_northing;
+
+  const offsetE =
+    Number(eCoef[2]);
+
+  const offsetN =
+    Number(nCoef[2]);
+
+  const de =
+    east - offsetE;
+
+  const dn =
+    north - offsetN;
+
+  const cropPixelX =
+    inv[0][0] * de +
+    inv[0][1] * dn;
+
+  const cropPixelY =
+    inv[1][0] * de +
+    inv[1][1] * dn;
+
+  const fullLowX =
+    cropPixelX +
+    Number(meta.master.crop_x);
+
+  const fullLowY =
+    cropPixelY +
+    Number(meta.master.crop_y);
+
+  const x = Math.round(
+    fullLowX *
+    Number(meta.master.scale_x)
+  );
+
+  const y = Math.round(
+    fullLowY *
+    Number(meta.master.scale_y)
+  );
+
+  return { x, y };
+}
+
+
+function geologyRasterValue(raster, x, y) {
+
+  const pixel =
+    raster.ctx.getImageData(
+      x,
+      y,
+      1,
+      1
+    ).data;
+
+  return Number(pixel[0]);
+}
+
+
+async function geologyAtLocation(lat, lon) {
+
+  try {
+
+    const machine =
+      await loadGeologyMachineData();
+
+    const meta =
+      machine.meta;
+
+    const utm =
+      geologyLonLatToUTM35(
+        lon,
+        lat
+      );
+
+    const pixel =
+      geologyUTMToMasterPixel(
+        utm.easting,
+        utm.northing,
+        meta
+      );
+
+    if (
+      pixel.x < 0 ||
+      pixel.y < 0 ||
+      pixel.x >= meta.master.width ||
+      pixel.y >= meta.master.height
+    ) {
+      return {
+        status: "OUTSIDE_RASTER",
+        unit: null,
+        pixel
+      };
+    }
+
+    const directId =
+      geologyRasterValue(
+        machine.direct,
+        pixel.x,
+        pixel.y
+      );
+
+    const reliableId =
+      geologyRasterValue(
+        machine.reliable,
+        pixel.x,
+        pixel.y
+      );
+
+    const obscured =
+      geologyRasterValue(
+        machine.obscured,
+        pixel.x,
+        pixel.y
+      ) > 0;
+
+    let status;
+    let classId = 0;
+
+    if (obscured) {
+
+      status = "SOURCE_OBSCURED";
+
+    } else if (reliableId === 0) {
+
+      status = "UNRESOLVED";
+
+    } else if (directId > 0) {
+
+      status = "DIRECT";
+      classId = directId;
+
+    } else {
+
+      status = "GAP_FILL";
+      classId = reliableId;
+    }
+
+    return {
+      status,
+      classId,
+      directId,
+      reliableId,
+      obscured,
+      unit:
+        classId > 0
+          ? machine.unitById[classId] || null
+          : null,
+      pixel,
+      source: meta.source,
+      sourceScale: meta.source_scale,
+      qa: meta.qa || {}
+    };
+
+  } catch (err) {
+
+    console.error(
+      "Geology lookup error:",
+      err
+    );
+
+    return {
+      status: "ERROR",
+      unit: null,
+      error:
+        err && err.message
+          ? err.message
+          : String(err)
+    };
+  }
+}
+
+
+function geologyStatusText(status) {
+
+  if (status === "DIRECT") {
+    return "директно класифицирана";
+  }
+
+  if (status === "GAP_FILL") {
+    return "консервативно интерполирана";
+  }
+
+  if (status === "SOURCE_OBSCURED") {
+    return "неопределена – изходната карта е закрита/нечетима в тази зона";
+  }
+
+  if (status === "UNRESOLVED") {
+    return "неопределена";
+  }
+
+  if (status === "OUTSIDE_RASTER") {
+    return "извън обхвата на геоложкия raster";
+  }
+
+  if (status === "ERROR") {
+    return "грешка при четене";
+  }
+
+  return status || "неизвестен";
+}
+
+
+function geologyStatusColor(status) {
+
+  if (status === "DIRECT") {
+    return "#0b6b43";
+  }
+
+  if (status === "GAP_FILL") {
+    return "#a36a00";
+  }
+
+  return "#777";
+}
+
+
+
+function bdIbrGroundwaterAtPoint(point) {
+
+  const data =
+    window.bdIbrGroundwaterGeoJson;
+
+  if (
+    !data ||
+    !Array.isArray(data.features)
+  ) {
+    return null;
+  }
+
+  const matches = [];
+
+  for (const feature of data.features) {
+
+    if (
+      !feature ||
+      !feature.geometry
+    ) {
+      continue;
+    }
+
+    try {
+
+      if (
+        turf.booleanPointInPolygon(
+          point,
+          feature
+        )
+      ) {
+        matches.push(feature);
+      }
+
+    } catch (err) {
+      console.warn(
+        "BD IBR polygon test failed:",
+        err
+      );
+    }
+  }
+
+  if (!matches.length) {
+    return null;
+  }
+
+  /*
+    Подземните водни тела могат да се припокриват
+    планово на различни хидрогеоложки нива.
+    Не преопределяме автоматично официалния код.
+  */
+  return {
+    primary: matches[0],
+    all: matches
+  };
+}
+
+
+function nearestQuantitativeMonitoring(
+  point,
+  maxDistanceKm = 50
+) {
+
+  const data =
+    window.quantitativeMonitoringGeoJson;
+
+  if (
+    !data ||
+    !Array.isArray(data.features)
+  ) {
+    return null;
+  }
+
+  let best = null;
+
+  for (const feature of data.features) {
+
+    if (
+      !feature ||
+      !feature.geometry ||
+      feature.geometry.type !== "Point"
+    ) {
+      continue;
+    }
+
+    try {
+
+      const d = turf.distance(
+        point,
+        feature,
+        {units:"kilometers"}
+      );
+
+      if (
+        !best ||
+        d < best.distanceKm
+      ) {
+        best = {
+          feature,
+          distanceKm: d
+        };
+      }
+
+    } catch (err) {
+      console.warn(
+        "Monitoring distance failed:",
+        err
+      );
+    }
+  }
+
+  if (
+    !best ||
+    best.distanceKm >
+      maxDistanceKm
+  ) {
+    return null;
+  }
+
+  return best;
+}
+
+
+function monitoringMeasurementText(p) {
+
+  const type =
+    p.measurement_type || "";
+
+  const v2019 =
+    p.mean_2019 ??
+    p.value_2019 ??
+    null;
+
+  const v2020 =
+    p.mean_2020 ??
+    p.value_2020 ??
+    null;
+
+  let unit = "";
+
+  if (type === "level") {
+    unit = " cm";
+  }
+
+  if (type === "discharge") {
+    unit = " l/s";
+  }
+
+  return {
+    type,
+    v2019,
+    v2020,
+    unit
+  };
+}
+
+
+function officialMonitoringTypeBg(type) {
+
+  if (type === "level") {
+    return "ниво";
+  }
+
+  if (type === "discharge") {
+    return "дебит";
+  }
+
+  return "неуточнен";
+}
+
+
+function officialMonitoringQaBg(status) {
+
+  if (status === "confirmed") {
+    return "потвърден";
+  }
+
+  if (status === "boundary_near") {
+    return "близо до граница на ПВТ";
+  }
+
+  if (status === "review") {
+    return "за преглед";
+  }
+
+  return status || "—";
+}
+
+
 async function analyzeLocation(
   lat,
   lon,
@@ -3611,6 +4338,19 @@ async function analyzeLocation(
     await loadFaults();
   }
 
+  const officialHydroLoads =
+    await Promise.allSettled([
+      typeof loadBdIbrGroundwaterBodies ===
+        "function"
+        ? loadBdIbrGroundwaterBodies()
+        : Promise.resolve(),
+
+      typeof loadQuantitativeMonitoring ===
+        "function"
+        ? loadQuantitativeMonitoring()
+        : Promise.resolve()
+    ]);
+
   const groundwaterResult =
     await Promise.allSettled([
       fetchGroundwaterNear(lon, lat, 10)
@@ -3640,6 +4380,18 @@ async function analyzeLocation(
       point
     );
   }
+
+  const geologyResult =
+    await geologyAtLocation(lat, lon);
+
+  const officialBdIbrResult =
+    bdIbrGroundwaterAtPoint(point);
+
+  const nearestMonitoring =
+    nearestQuantitativeMonitoring(
+      point,
+      50
+    );
 
   const assessment =
     calculatePointHydroScore(
@@ -3762,6 +4514,275 @@ async function analyzeLocation(
     "</div>";
 
   html +=
+    "<div style=\"margin-top:12px;" +
+    "padding:9px 10px;" +
+    "background:#eef6fa;" +
+    "border-left:4px solid #247f96\">" +
+    "<strong>💧 Официална хидрогеология – БД ИБР</strong><br>";
+
+  if (
+    officialBdIbrResult &&
+    officialBdIbrResult.all &&
+    officialBdIbrResult.all.length
+  ) {
+
+    const bodies =
+      officialBdIbrResult.all;
+
+    html +=
+      "ПВТ в избраната координата: <strong>" +
+      bodies.length +
+      "</strong><br>";
+
+    bodies.forEach((f, index) => {
+
+      const p =
+        f.properties || {};
+
+      const code =
+        p.localId ||
+        p["Êîä_íà_ÇÇÂ"] ||
+        "—";
+
+      const name =
+        p.nameText ||
+        p.nameTxtInt ||
+        "Подземно водно тяло";
+
+      html +=
+        "<div style=\"margin-top:8px;" +
+        "padding:7px 8px;" +
+        "background:#ffffff;" +
+        "border:1px solid #cfe1e8;" +
+        "border-radius:5px\">" +
+
+        "<strong>" +
+        (index + 1) +
+        ". " +
+        esc(code) +
+        "</strong><br>" +
+
+        esc(name) +
+        "<br>";
+
+      if (p.horizon_bg) {
+        html +=
+          "Хидрогеоложки хоризонт: <strong>" +
+          esc(p.horizon_bg) +
+          "</strong><br>";
+      }
+
+      if (p.water_type_bg) {
+        html +=
+          "Тип води: " +
+          esc(p.water_type_bg) +
+          "<br>";
+      }
+
+      if (p.gwb_type_name_bg) {
+        html +=
+          "Тип ПВТ: " +
+          esc(p.gwb_type_name_bg) +
+          "<br>";
+      }
+
+      if (p.horizons) {
+        html +=
+          "GIS хоризонт: " +
+          esc(p.horizons) +
+          "<br>";
+      }
+
+      if (p.Type) {
+        html +=
+          "GIS тип: " +
+          esc(p.Type) +
+          "<br>";
+      }
+
+      html += "</div>";
+    });
+
+    if (bodies.length > 1) {
+      html +=
+        "<span class=\"small\">" +
+        "Припокриването може да отразява различни " +
+        "хидрогеоложки нива. Системата не избира " +
+        "автоматично едно ПВТ за единствено правилно." +
+        "</span><br>";
+    }
+
+  } else {
+
+    html +=
+      "Няма намерено ПВТ от официалния слой " +
+      "на БД ИБР за тази координата.<br>";
+  }
+
+
+  html +=
+    "<div style=\"margin-top:8px\">" +
+    "<strong>📍 Най-близък количествен мониторинг</strong><br>";
+
+  if (
+    nearestMonitoring &&
+    nearestMonitoring.feature
+  ) {
+
+    const mp =
+      nearestMonitoring.feature.properties ||
+      {};
+
+    const measurement =
+      monitoringMeasurementText(mp);
+
+    html +=
+      "Пункт: <strong>" +
+      esc(
+        mp.station_no ||
+        "—"
+      ) +
+      "</strong>";
+
+    if (mp.location) {
+      html +=
+        " – " +
+        esc(mp.location);
+    }
+
+    html += "<br>";
+
+    html +=
+      "Разстояние: <strong>" +
+      formatAnalysisDistance(
+        nearestMonitoring.distanceKm
+      ) +
+      "</strong><br>";
+
+    if (mp.point_type) {
+      html +=
+        "Съоръжение: " +
+        esc(mp.point_type) +
+        "<br>";
+    }
+
+    html +=
+      "Измерване: " +
+      esc(
+        officialMonitoringTypeBg(
+          measurement.type
+        )
+      ) +
+      "<br>";
+
+    if (
+      measurement.v2019 !== null &&
+      measurement.v2019 !== undefined &&
+      measurement.v2019 !== ""
+    ) {
+      html +=
+        "2019: <strong>" +
+        esc(String(measurement.v2019)) +
+        esc(measurement.unit) +
+        "</strong><br>";
+    }
+
+    if (
+      measurement.v2020 !== null &&
+      measurement.v2020 !== undefined &&
+      measurement.v2020 !== ""
+    ) {
+      html +=
+        "2020: <strong>" +
+        esc(String(measurement.v2020)) +
+        esc(measurement.unit) +
+        "</strong><br>";
+    }
+
+    const monitoringGwb =
+      mp.gwb_code ||
+      mp.gwb_code_original ||
+      "";
+
+    if (monitoringGwb) {
+
+      let matchedBody = null;
+
+      if (
+        officialBdIbrResult &&
+        officialBdIbrResult.all
+      ) {
+
+        matchedBody =
+          officialBdIbrResult.all.find(f => {
+
+            const p =
+              f.properties || {};
+
+            const code =
+              p.localId ||
+              p["Êîä_íà_ÇÇÂ"] ||
+              "";
+
+            return String(code) ===
+              String(monitoringGwb);
+          }) || null;
+      }
+
+      html +=
+        "ПВТ на пункта: <strong>" +
+        esc(monitoringGwb) +
+        "</strong>";
+
+      if (matchedBody) {
+        html +=
+          " <span style=\"color:#0b6b43\">" +
+          "✓ съвпада с едно от ПВТ в точката" +
+          "</span>";
+      } else {
+        html +=
+          " <span style=\"color:#a36a00\">" +
+          "⚠ не съвпада директно с ПВТ в точката" +
+          "</span>";
+      }
+
+      html += "<br>";
+    }
+
+    if (mp.geological_index) {
+      html +=
+        "Геоложки индекс: " +
+        esc(mp.geological_index) +
+        "<br>";
+    }
+
+    if (mp.qa_status) {
+      html +=
+        "QA: <strong>" +
+        esc(
+          officialMonitoringQaBg(
+            mp.qa_status
+          )
+        ) +
+        "</strong><br>";
+    }
+
+  } else {
+
+    html +=
+      "Няма количествен мониторингов пункт " +
+      "в радиус 50 km.<br>";
+  }
+
+  html +=
+    "</div>" +
+    "<span class=\"small\">" +
+    "Източници: БД ИБР / ПУРБ3 и " +
+    "НИМХ 2019–2020." +
+    "</span>" +
+    "</div>";
+
+  html +=
     "<div style=\"margin-top:12px\">" +
     "<strong>\u041d\u0430\u0439-\u0431\u043b\u0438\u0437\u043a\u0438 \u043e\u0431\u0435\u043a\u0442\u0438</strong>" +
     renderAnalysisObjects(objects10) +
@@ -3863,11 +4884,93 @@ async function analyzeLocation(
   html += "</div>";
 
   html +=
-    "<div style=\"margin-top:12px\">" +
-    "<strong>\u041f\u043e\u0447\u0432\u0430 \u0438 \u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430</strong><br>" +
+    "<div style=\"margin-top:12px;" +
+    "padding:9px 10px;" +
+    "background:#f6f3ed;" +
+    "border-left:4px solid " +
+    geologyStatusColor(
+      geologyResult.status
+    ) +
+    "\">" +
+    "<strong>🪨 Геоложка основа</strong><br>";
+
+  if (
+    geologyResult &&
+    geologyResult.unit
+  ) {
+
+    html +=
+      "Геоложка единица: <strong>" +
+      esc(geologyResult.unit.code) +
+      " – " +
+      esc(geologyResult.unit.name_bg) +
+      "</strong><br>" +
+
+      "Статус: <strong>" +
+      esc(
+        geologyStatusText(
+          geologyResult.status
+        )
+      ) +
+      "</strong><br>";
+
+    if (
+      geologyResult.unit.name_en
+    ) {
+      html +=
+        "<span class=\"small\">" +
+        esc(
+          geologyResult.unit.name_en
+        ) +
+        "</span><br>";
+    }
+
+  } else {
+
+    html +=
+      "Геоложка единица: <strong>неопределена</strong><br>" +
+      "Статус: " +
+      esc(
+        geologyStatusText(
+          geologyResult
+            ? geologyResult.status
+            : "ERROR"
+        )
+      ) +
+      "<br>";
+  }
+
+  html +=
     "<span class=\"small\">" +
-    "\u0412\u0441\u0435 \u043e\u0449\u0435 \u043d\u044f\u043c\u0430 \u0441\u0432\u044a\u0440\u0437\u0430\u043d \u043d\u0430\u0434\u0435\u0436\u0434\u0435\u043d \u043b\u0438\u0442\u043e\u043b\u043e\u0436\u043a\u0438 \u0438 \u043f\u043e\u0447\u0432\u0435\u043d \u0441\u043b\u043e\u0439. \u0421\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u0430\u0442\u0430 \u043d\u0435 \u0441\u0435 \u043f\u0440\u0435\u0434\u043f\u043e\u043b\u0430\u0433\u0430." +
-    "</span></div>";
+    "Източник: БД ИБР – Геоложка карта 2024; " +
+    "мащаб 1:850 000.";
+
+  if (
+    geologyResult &&
+    geologyResult.status ===
+      "GAP_FILL"
+  ) {
+    html +=
+      " Резултатът е консервативно попълнен от " +
+      "най-близката надеждно класифицирана зона.";
+  }
+
+  if (
+    geologyResult &&
+    geologyResult.status ===
+      "DIRECT"
+  ) {
+    html +=
+      " Единицата е директно разпозната от " +
+      "класифицирания изходен raster.";
+  }
+
+  html +=
+    " Геоложката граница е регионална и не трябва " +
+    "да се интерпретира като точна литология или " +
+    "дълбочина в конкретната сондажна точка." +
+    "</span>" +
+    "</div>";
 
   html +=
     "<div style=\"margin-top:10px;" +

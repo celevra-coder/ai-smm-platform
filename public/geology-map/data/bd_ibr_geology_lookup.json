@@ -1,0 +1,280 @@
+{
+  "version": 1,
+  "source": "BD IBR Geological Map 2024",
+  "source_scale": "1:850000",
+  "crs": {
+    "geographic": "EPSG:4326",
+    "projected": "EPSG:32635"
+  },
+  "master": {
+    "width": 4210,
+    "height": 2977,
+    "low_width": 2105,
+    "low_height": 1489,
+    "crop_x": 45,
+    "crop_y": 70,
+    "scale_x": 2.0,
+    "scale_y": 1.9993284083277367
+  },
+  "affine": {
+    "pixel_to_utm_easting": [
+      173.8865487033382,
+      -1.5867202301059251,
+      207553.80597407662
+    ],
+    "pixel_to_utm_northing": [
+      0.7730129705451082,
+      -173.15126563037938,
+      4774424.659136715
+    ],
+    "utm_to_pixel_matrix": [
+      [
+        0.005751110403425921,
+        -5.270191464940413e-05
+      ],
+      [
+        2.5675139714977354e-05,
+        -0.005775532368318649
+      ]
+    ]
+  },
+  "rasters": {
+    "direct": "/geology-map/data/bd_ibr_geology_direct_ids.png",
+    "reliable": "/geology-map/data/bd_ibr_geology_reliable_ids.png",
+    "source_obscured": "/geology-map/data/bd_ibr_geology_source_obscured.png"
+  },
+  "classification": {
+    "0": "unresolved",
+    "direct_definition": "Class present in original conservative 18-class raster",
+    "gap_fill_definition": "Class absent in direct raster but present in reliable raster",
+    "source_obscured_definition": "Source cartography prevents reliable geological classification"
+  },
+  "units": [
+    {
+      "id": 1,
+      "code": "Q",
+      "name_bg": "Кватернер",
+      "name_en": "Quaternary",
+      "style": "pattern",
+      "rgb": [
+        255,
+        255,
+        255
+      ]
+    },
+    {
+      "id": 2,
+      "code": "N",
+      "name_bg": "Неоген",
+      "name_en": "Neogene",
+      "style": "solid",
+      "rgb": [
+        255,
+        255,
+        190
+      ]
+    },
+    {
+      "id": 3,
+      "code": "Pg-N",
+      "name_bg": "Палеоген - Неоген",
+      "name_en": "Paleogene - Neogene",
+      "style": "solid",
+      "rgb": [
+        255,
+        255,
+        0
+      ]
+    },
+    {
+      "id": 4,
+      "code": "Pg",
+      "name_bg": "Палеоген",
+      "name_en": "Paleogene",
+      "style": "solid",
+      "rgb": [
+        255,
+        211,
+        128
+      ]
+    },
+    {
+      "id": 5,
+      "code": "K",
+      "name_bg": "Креда",
+      "name_en": "Cretaceous",
+      "style": "solid",
+      "rgb": [
+        170,
+        205,
+        101
+      ]
+    },
+    {
+      "id": 6,
+      "code": "J-K",
+      "name_bg": "Юра - Креда",
+      "name_en": "Jurassic - Cretaceous",
+      "style": "solid",
+      "rgb": [
+        137,
+        205,
+        102
+      ]
+    },
+    {
+      "id": 7,
+      "code": "J",
+      "name_bg": "Юра",
+      "name_en": "Jurassic",
+      "style": "solid",
+      "rgb": [
+        115,
+        178,
+        255
+      ]
+    },
+    {
+      "id": 8,
+      "code": "T-J",
+      "name_bg": "Триас - Юра",
+      "name_en": "Triassic - Jurassic",
+      "style": "solid",
+      "rgb": [
+        232,
+        190,
+        254
+      ]
+    },
+    {
+      "id": 9,
+      "code": "T",
+      "name_bg": "Триас",
+      "name_en": "Triassic",
+      "style": "solid",
+      "rgb": [
+        202,
+        122,
+        245
+      ]
+    },
+    {
+      "id": 10,
+      "code": "P",
+      "name_bg": "Перм",
+      "name_en": "Permian",
+      "style": "solid",
+      "rgb": [
+        229,
+        76,
+        0
+      ]
+    },
+    {
+      "id": 11,
+      "code": "C-P",
+      "name_bg": "Карбон - Перм",
+      "name_en": "Carboniferous - Permian",
+      "style": "solid",
+      "rgb": [
+        168,
+        0,
+        0
+      ]
+    },
+    {
+      "id": 12,
+      "code": "C",
+      "name_bg": "Карбон",
+      "name_en": "Carboniferous",
+      "style": "solid",
+      "rgb": [
+        116,
+        38,
+        0
+      ]
+    },
+    {
+      "id": 13,
+      "code": "D",
+      "name_bg": "Девон",
+      "name_en": "Devonian",
+      "style": "solid",
+      "rgb": [
+        246,
+        217,
+        222
+      ]
+    },
+    {
+      "id": 14,
+      "code": "S-D",
+      "name_bg": "Силур - Девон",
+      "name_en": "Silurian - Devonian",
+      "style": "solid",
+      "rgb": [
+        255,
+        190,
+        232
+      ]
+    },
+    {
+      "id": 15,
+      "code": "S",
+      "name_bg": "Силур",
+      "name_en": "Silurian",
+      "style": "solid",
+      "rgb": [
+        255,
+        115,
+        222
+      ]
+    },
+    {
+      "id": 16,
+      "code": "O",
+      "name_bg": "Ордовик",
+      "name_en": "Ordovician",
+      "style": "solid",
+      "rgb": [
+        214,
+        157,
+        189
+      ]
+    },
+    {
+      "id": 17,
+      "code": "Cm-O",
+      "name_bg": "Камбрий - Ордовик",
+      "name_en": "Cambrian - Ordovician",
+      "style": "solid",
+      "rgb": [
+        246,
+        122,
+        182
+      ]
+    },
+    {
+      "id": 18,
+      "code": "Cm",
+      "name_bg": "Камбрий",
+      "name_en": "Cambrian",
+      "style": "solid",
+      "rgb": [
+        205,
+        103,
+        153
+      ]
+    }
+  ],
+  "qa": {
+    "reference_boundary": "WISE WFD 2022 River Basin District BG3000",
+    "boundary_validation_points": 9713,
+    "median_error_m": 86.8,
+    "mean_error_m": 140.6,
+    "p75_error_m": 243.0,
+    "p90_error_m": 433.6,
+    "p95_error_m": 554.8,
+    "max_error_m": 1335.8
+  }
+}
