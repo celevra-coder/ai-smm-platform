@@ -4980,6 +4980,31 @@ async function analyzeLocation(
     "\u0422\u043e\u0432\u0430 \u0435 \u0440\u0435\u0433\u0438\u043e\u043d\u0430\u043b\u0435\u043d \u043a\u0430\u0440\u0442\u043e\u0432 \u0430\u043d\u0430\u043b\u0438\u0437. \u0422\u043e\u0439 \u043d\u0435 \u0434\u043e\u043a\u0430\u0437\u0432\u0430 \u0434\u0435\u0431\u0438\u0442, \u0442\u043e\u0447\u043d\u0430 \u0434\u044a\u043b\u0431\u043e\u0447\u0438\u043d\u0430 \u0438\u043b\u0438 \u0432\u0435\u0440\u0442\u0438\u043a\u0430\u043b\u0435\u043d \u0433\u0435\u043e\u043b\u043e\u0436\u043a\u0438 \u0440\u0430\u0437\u0440\u0435\u0437." +
     "</div>";
 
+
+  html +=
+    "<div style=\"margin-top:16px\">" +
+    "<a " +
+    "href=\"/geology/report?lat=" +
+    encodeURIComponent(lat.toFixed(7)) +
+    "&lon=" +
+    encodeURIComponent(lon.toFixed(7)) +
+    "\" " +
+    "target=\"_blank\" " +
+    "rel=\"noopener noreferrer\" " +
+    "style=\"" +
+      "display:block;" +
+      "text-align:center;" +
+      "padding:12px 14px;" +
+      "background:#173f32;" +
+      "color:#fff;" +
+      "font-weight:700;" +
+      "text-decoration:none;" +
+      "border-radius:8px;" +
+    "\">" +
+    "📄 Отвори подробен анализ" +
+    "</a>" +
+    "</div>";
+
   result.innerHTML = html;
 
   status.textContent =
