@@ -72,6 +72,8 @@ button{background:#202020;color:#fff;border:0;cursor:pointer}
 <label class="layerrow"><input type="checkbox" id="layer-groundwater"> 🟦 Подземни водни тела (EEA/WFD)</label><div id="gw-load-status" class="small" style="margin-left:24px">изключено</div>
 <label class="layerrow"><input type="checkbox" id="layer-bd-ibr"> 🔷 Подземни водни тела – БД ИБР / ПУРБ3</label>
 <div id="bd-ibr-load-status" class="small" style="margin-left:24px">изключено</div>
+<label class="layerrow"><input type="checkbox" id="layer-quant-monitoring"> 🟣 Количествен мониторинг – НИМХ 2019–2020</label>
+<div id="quant-monitoring-load-status" class="small" style="margin-left:24px">изключено</div>
 <label class="layerrow"><input type="checkbox" id="layer-faults"> 🟤 Активни разломи (GEM)</label><div id="fault-load-status" class="small" style="margin-left:24px">изключено</div>
 <label class="layerrow future"><input type="checkbox" disabled> 📍 AIDU измервания — ще се добавят по-късно</label>
 <label class="layerrow future"><input type="checkbox" disabled> ⭐ Потвърдени успешни сондажи — ще се добавят по-късно</label>
@@ -129,10 +131,13 @@ const topo=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZo
 
 const groundwaterLayer = L.layerGroup();
 const bdIbrGroundwaterLayer = L.layerGroup();
+const quantitativeMonitoringLayer = L.layerGroup();
 const faultsLayer = L.layerGroup();
 let groundwaterLoaded=false;
 let bdIbrGroundwaterLoaded=false;
 let bdIbrGroundwaterLoading=false;
+let quantitativeMonitoringLoaded=false;
+let quantitativeMonitoringLoading=false;
 let groundwaterLoading=false;
 let faultsLoaded=false;
 let faultsLoading=false;
@@ -142,6 +147,7 @@ L.control.layers(
  {
    '🟦 Подземни водни тела (EEA/WFD)':groundwaterLayer,
    '🔷 Подземни водни тела – БД ИБР / ПУРБ3':bdIbrGroundwaterLayer,
+   '🟣 Количествен мониторинг – НИМХ 2019–2020':quantitativeMonitoringLayer,
    '🟤 Активни разломи (GEM)':faultsLayer
  },
  {collapsed:false}
@@ -168,7 +174,7 @@ async function loadBdIbrGroundwaterBodies(){
 
   try {
     const response = await fetch(
-      '/geology-map/data/bd_ibr_groundwater_bodies.geojson'
+      '/geology-map/data/bd_ibr_groundwater_bodies_enriched.geojson'
     );
 
     if(!response.ok){
@@ -203,6 +209,11 @@ async function loadBdIbrGroundwaterBodies(){
         const location = p.LOCATION || '—';
         const basin = p.BASIN || '—';
         const protectionCode = p['Êîä_íà_ÇÇÂ'] || '—';
+        const hydroHorizon = p.horizon_bg || '—';
+        const waterTypeBg = p.water_type_bg || '—';
+        const gwbTypeNameBg = p.gwb_type_name_bg || '—';
+        const hydroSourcePage = p.hydro_source_page || '—';
+        const gwbTypeSourcePage = p.gwb_type_source_page || '—';
 
         const html =
           '<div style="min-width:280px;line-height:1.45">' +
@@ -212,14 +223,19 @@ async function loadBdIbrGroundwaterBodies(){
 
           '<div><b>Код:</b> ' + code + '</div>' +
           '<div><b>Площ:</b> ' + areaText + '</div>' +
-          '<div><b>Хоризонт:</b> ' + horizons + '</div>' +
-          '<div><b>Тип:</b> ' + type + '</div>' +
+          '<div><b>Хидрогеоложки хоризонт:</b> ' + hydroHorizon + '</div>' +
+          '<div><b>Тип подземни води:</b> ' + waterTypeBg + '</div>' +
+          '<div><b>Хоризонт в GIS:</b> ' + horizons + '</div>' +
+          '<div><b>Тип водно тяло:</b> ' + gwbTypeNameBg + '</div>' +
+          '<div><b>GIS код на типа:</b> ' + type + '</div>' +
           '<div><b>Район:</b> ' + location + '</div>' +
           '<div><b>Басейн:</b> ' + basin + '</div>' +
           '<div><b>Код ЗЗВ:</b> ' + protectionCode + '</div>' +
 
           '<div style="margin-top:7px;font-size:11px;color:#555">' +
-          'Източник: Басейнова дирекция „Източнобеломорски район“ – ПУРБ3' +
+          'Източници: БД „Източнобеломорски район“ – ПУРБ 2022–2027; ' +
+          'Приложение 1.3.3.1, стр. ' + hydroSourcePage +
+          '; Приложение 1.3.3.2, стр. ' + gwbTypeSourcePage +
           '</div>' +
           '</div>';
 
@@ -274,6 +290,250 @@ async function loadBdIbrGroundwaterBodies(){
 
     setLayerStatus(
       'bd-ibr-load-status',
+      'грешка при зареждане',
+      '#b00020'
+    );
+  }
+}
+
+
+function monitoringValue(value, digits = 2) {
+  if (value === null || value === undefined || value === "") return "—";
+
+  const n = Number(value);
+
+  if (Number.isFinite(n)) {
+    return n.toFixed(digits).replace(/\.00$/, "");
+  }
+
+  return String(value);
+}
+
+function monitoringQaColor(status) {
+  if (status === "confirmed") return "#16834a";
+  if (status === "boundary_near") return "#d18b00";
+  if (status === "review") return "#c0392b";
+  return "#666";
+}
+
+function monitoringMarkerStyle(properties) {
+  if (properties.measurement_type === "discharge") {
+    return {
+      radius: 6,
+      color: "#17658a",
+      weight: 1.5,
+      fillColor: "#5bc0eb",
+      fillOpacity: 0.9
+    };
+  }
+
+  if (properties.measurement_type === "level") {
+    return {
+      radius: 6,
+      color: "#123b73",
+      weight: 1.5,
+      fillColor: "#245fa8",
+      fillOpacity: 0.9
+    };
+  }
+
+  return {
+    radius: 6,
+    color: "#555",
+    weight: 1.5,
+    fillColor: "#aaa",
+    fillOpacity: 0.9
+  };
+}
+
+function buildQuantitativeMonitoringPopup(feature) {
+  const p = feature.properties || {};
+
+  const station = p.station_no || "Мониторингов пункт";
+  const location = p.location || "—";
+  const pointType = p.point_type || "—";
+  const gwb = p.gwb_code || p.gwb_code_original || "—";
+  const geologicalIndex = p.geological_index || "—";
+
+  const elevation =
+    p.ground_elevation_m !== null &&
+    p.ground_elevation_m !== undefined
+      ? monitoringValue(p.ground_elevation_m) + " m"
+      : "—";
+
+  const depth =
+    p.depth_m !== null &&
+    p.depth_m !== undefined
+      ? monitoringValue(p.depth_m) + " m"
+      : "—";
+
+  let measurementHtml = "";
+
+  if (p.measurement_type === "level") {
+    measurementHtml =
+      '<div><b>Средно ниво 2019:</b> ' +
+      monitoringValue(p.level_2019_cm) +
+      ' cm</div>' +
+      '<div><b>Средно ниво 2020:</b> ' +
+      monitoringValue(p.level_2020_cm) +
+      ' cm</div>';
+  }
+  else if (p.measurement_type === "discharge") {
+    measurementHtml =
+      '<div><b>Среден дебит 2019:</b> ' +
+      monitoringValue(p.discharge_2019_ls) +
+      ' l/s</div>' +
+      '<div><b>Среден дебит 2020:</b> ' +
+      monitoringValue(p.discharge_2020_ls) +
+      ' l/s</div>';
+  }
+  else {
+    measurementHtml =
+      '<div><b>Стойност 2019:</b> ' +
+      monitoringValue(p.value_2019) +
+      '</div>' +
+      '<div><b>Стойност 2020:</b> ' +
+      monitoringValue(p.value_2020) +
+      '</div>';
+  }
+
+  let qaHtml =
+    '<div style="margin-top:7px;padding-top:6px;border-top:1px solid #ddd">' +
+    '<b>Пространствен QA:</b> ' +
+    '<span style="color:' +
+    monitoringQaColor(p.spatial_qa) +
+    ';font-weight:700"> ' +
+    esc(p.spatial_qa_bg || "—") +
+    '</span>';
+
+  if (
+    p.spatial_qa !== "confirmed" &&
+    p.distance_to_expected_gwb_m !== null &&
+    p.distance_to_expected_gwb_m !== undefined
+  ) {
+    qaHtml +=
+      '<div style="font-size:11px;color:#666">' +
+      'Разстояние до записаното ПВТ: ' +
+      monitoringValue(p.distance_to_expected_gwb_m) +
+      ' m</div>';
+  }
+
+  qaHtml += '</div>';
+
+  return (
+    '<div style="min-width:285px;max-width:360px;line-height:1.45">' +
+
+    '<div style="font-size:15px;font-weight:700;margin-bottom:6px">' +
+    'Мониторингов пункт ' +
+    esc(station) +
+    '</div>' +
+
+    '<div><b>Местоположение:</b> ' + esc(location) + '</div>' +
+    '<div><b>Вид пункт:</b> ' + esc(pointType) + '</div>' +
+    '<div><b>Кота терен:</b> ' + esc(elevation) + '</div>' +
+    '<div><b>Дълбочина:</b> ' + esc(depth) + '</div>' +
+    '<div><b>Код на ПВТ:</b> ' + esc(gwb) + '</div>' +
+    '<div><b>Геоложки индекс:</b> ' + esc(geologicalIndex) + '</div>' +
+
+    '<div style="margin-top:7px;padding-top:6px;border-top:1px solid #ddd">' +
+    measurementHtml +
+    '</div>' +
+
+    qaHtml +
+
+    '<div style="margin-top:7px;font-size:11px;color:#666">' +
+    'Източник: БД ИБР / НИМХ – ПУРБ 2022–2027, ' +
+    'Приложение 1.3.1.1; средногодишни стойности 2019–2020' +
+    '</div>' +
+
+    '</div>'
+  );
+}
+
+async function loadQuantitativeMonitoring(){
+  if(
+    quantitativeMonitoringLoaded ||
+    quantitativeMonitoringLoading
+  ) return;
+
+  quantitativeMonitoringLoading = true;
+
+  setLayerStatus(
+    'quant-monitoring-load-status',
+    'зарежда се…',
+    '#a05a00'
+  );
+
+  try {
+    const response = await fetch(
+      '/geology-map/data/bd_ibr_monitoring_2019_2020.geojson'
+    );
+
+    if(!response.ok){
+      throw new Error('HTTP ' + response.status);
+    }
+
+    const monitoringData = await response.json();
+
+    const layer = L.geoJSON(monitoringData, {
+
+      pointToLayer: function(feature, latlng){
+        return L.circleMarker(
+          latlng,
+          monitoringMarkerStyle(feature.properties || {})
+        );
+      },
+
+      onEachFeature: function(feature, featureLayer){
+        const p = feature.properties || {};
+
+        featureLayer.bindPopup(
+          buildQuantitativeMonitoringPopup(feature),
+          {maxWidth:390}
+        );
+
+        featureLayer.bindTooltip(
+          (p.station_no || "Мониторингов пункт") +
+          (p.location ? " · " + p.location : "")
+        );
+      }
+    });
+
+    layer.addTo(quantitativeMonitoringLayer);
+
+    quantitativeMonitoringLoaded = true;
+    quantitativeMonitoringLoading = false;
+
+    const count =
+      monitoringData &&
+      Array.isArray(monitoringData.features)
+        ? monitoringData.features.length
+        : 0;
+
+    setLayerStatus(
+      'quant-monitoring-load-status',
+      'заредени ' + count + ' пункта ✓',
+      '#0b6b43'
+    );
+
+    window.quantitativeMonitoringGeoJson = monitoringData;
+
+    console.log(
+      '[BD IBR] Quantitative monitoring loaded:',
+      count
+    );
+
+  } catch(error) {
+
+    quantitativeMonitoringLoading = false;
+
+    console.error(
+      '[BD IBR] Quantitative monitoring load error:',
+      error
+    );
+
+    setLayerStatus(
+      'quant-monitoring-load-status',
       'грешка при зареждане',
       '#b00020'
     );
@@ -1553,6 +1813,16 @@ document.getElementById('layer-bd-ibr').addEventListener('change',e=>{
   }
 });
 
+
+document.getElementById('layer-quant-monitoring').addEventListener('change',e=>{
+  if(e.target.checked){
+    quantitativeMonitoringLayer.addTo(map);
+    loadQuantitativeMonitoring();
+  }else{
+    map.removeLayer(quantitativeMonitoringLayer);
+  }
+});
+
 document.getElementById('layer-groundwater').addEventListener('change',e=>{
  if(e.target.checked){
    groundwaterLayer.addTo(map);
@@ -1574,6 +1844,10 @@ map.on('overlayadd',e=>{
    document.getElementById('layer-groundwater').checked=true;
    loadGroundwaterBodies();
  }
+ if(e.layer===quantitativeMonitoringLayer){
+   document.getElementById('layer-quant-monitoring').checked=true;
+   loadQuantitativeMonitoring();
+ }
  if(e.layer===faultsLayer){
    document.getElementById('layer-faults').checked=true;
    loadFaults();
@@ -1584,6 +1858,7 @@ map.on('overlayremove',e=>{
    document.getElementById('layer-bd-ibr').checked=false;
  }
  if(e.layer===groundwaterLayer) document.getElementById('layer-groundwater').checked=false;
+ if(e.layer===quantitativeMonitoringLayer) document.getElementById('layer-quant-monitoring').checked=false;
  if(e.layer===faultsLayer) document.getElementById('layer-faults').checked=false;
 });
 
